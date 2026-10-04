@@ -11,8 +11,11 @@ Only free assets and libraries with licenses that allow our use.
 | Vitest | MIT | https://vitest.dev |
 | Playwright | Apache-2.0 | https://playwright.dev |
 | Biome | MIT / Apache-2.0 | https://biomejs.dev |
+| teavm-javac (vendored in public/runtimes/java) | Apache-2.0; OpenJDK parts GPLv2 + Classpath Exception | https://github.com/konsoletyper/teavm-javac |
 
-_Planned (added when installed): CodeMirror 6 (MIT), Pyodide (MPL-2.0), teavm-javac (Apache-2.0; OpenJDK parts GPLv2 + Classpath Exception)._
+| Pyodide 314.0.7 (copied to public/runtimes/python) | MPL-2.0 (CPython: PSF License) | https://pyodide.org |
+
+_Planned (added when installed): CodeMirror 6 (MIT)._
 
 ## Art & audio
 _None yet. Planned: Kenney packs (CC0)._

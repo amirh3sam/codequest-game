@@ -6,12 +6,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
-  use: { baseURL: "http://localhost:4173", trace: "on-first-retry" },
+  use: { baseURL: "http://localhost:4317", trace: "on-first-retry" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: "npm run build && npm run preview -- --port 4173 --strictPort",
-    url: "http://localhost:4173",
-    reuseExistingServer: !process.env.CI,
+    command: "npm run build:e2e && npm run preview -- --port 4317 --strictPort",
+    url: "http://localhost:4317",
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

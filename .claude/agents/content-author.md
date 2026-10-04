@@ -16,6 +16,7 @@ You are the curriculum author for CodeQuest. Players are beginners aged 13+. Are
 
 ## Rules
 - Idiomatic code for the language (Java: `public class Main` + `main`; Python 3; JS/TS: `console.log`; TS uses real type annotations).
+- Java runs on teavm-javac: no `Scanner`/`System.in`, no `%f`/`%n`/`DecimalFormat` (use `%d`, `%s`, `.formatted()`, `Math.round(x * 100) / 100.0`). See docs/ARCHITECTURE.md §6.
 - Never let a hint reveal the whole solution.
 - Plain English, short sentences, no jargon before it's explained.
 

@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "predev": "node scripts/copy-runtimes.mjs",
     "build": "tsc && vite build",
+    "prebuild": "node scripts/copy-runtimes.mjs",
+    "build:e2e": "tsc && vite build --mode e2e",
+    "prebuild:e2e": "node scripts/copy-runtimes.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -22,6 +26,7 @@
     "vitest": "^5.0.3"
   },
   "dependencies": {
-    "phaser": "^4.2.1"
+    "phaser": "^4.2.1",
+    "pyodide": "^314.0.7"
   }
 }

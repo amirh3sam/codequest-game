@@ -30,3 +30,6 @@ test-results/
 
 # Claude Code local settings (rest of .claude/ is tracked)
 .claude/settings.local.json
+
+# Runtimes copied from node_modules by scripts/copy-runtimes.mjs
+public/runtimes/python/

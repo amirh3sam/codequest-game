@@ -14,7 +14,7 @@ _Last updated: 2026-10-04 · Versions checked on npm 2026-10-04_
 | JavaScript runner | Browser JS engine inside a Web Worker | Free, instant, sandboxed in a worker. |
 | TypeScript runner | `typescript` **6.0.3** (installed as alias `typescript-js`) in a worker → type-check + transpile → JS runner | TS 7 has no JS compiler API yet; TS 6 is the last JS-based compiler and runs in the browser. Real type errors are part of learning TS. |
 | Python runner | Pyodide 314.0.7 (MPL-2.0) in a worker | Real CPython compiled to WebAssembly, free, offline. |
-| Java runner | teavm-javac (Apache-2.0): OpenJDK javac + TeaVM compiled to WebAssembly, in a worker | Real `javac` in the browser, free, no server. **Must pass the M0 spike.** Fallback: Piston (free, open-source) in local Docker. |
+| Java runner | teavm-javac (Apache-2.0): OpenJDK javac + TeaVM compiled to WebAssembly, in a worker | Real `javac` in the browser, free, no server. Spike passed 2026-10-04 (see §6 limits). Fallback if ever needed: Piston in local Docker. |
 | Unit / integration tests | Vitest 5.0.3 | Native to Vite, fast, Jest-compatible API. |
 | End-to-end tests | Playwright 1.63.0 | Drives a real browser: needed to test WASM runners and the canvas game. |
 | Lint + format | Biome 2.5.15 | One fast tool for both lint and format instead of ESLint + Prettier. |
@@ -75,7 +75,8 @@ src/
 public/
   assets/tiles/ sprites/ ui/ fonts/
   maps/area-01.tmj …      # one Tiled map per area (shared by all languages)
-  runtimes/               # self-hosted pyodide + teavm-javac files (copied by a script, git-ignored if large)
+  runtimes/java/          # vendored teavm-javac files (6.7 MB, committed, hashes in README)
+  runtimes/python/        # Pyodide (copied from node_modules by scripts/copy-runtimes.mjs, git-ignored)
 tests/
   unit/                   # Vitest: core, save, grader, content schema
   e2e/                    # Playwright: flows + "every reference solution passes"
@@ -122,11 +123,15 @@ Gems are stored per area: an area reset removes only that area's gems, and gems 
 Title (New / Continue) → Language → Hero → Name → World Map ↔ Area (HUD + panels: Scroll, Task, Boss, Pause, Out of hearts, Victory).
 
 ## 6. Code running and grading
-1. `worker-host` keeps one warm worker for the chosen language and sends it `{code, stdin}`.
+1. `worker-host` keeps one warm worker for the chosen language and sends it `{id, code, stdin}`. Runs are **queued**: one request inside the worker at a time.
 2. The worker compiles if needed (TS → JS, Java → WASM) and runs it, capturing stdout/stderr (JS/TS: patched `console.log`; Python: Pyodide `setStdout`; Java: TeaVM stdout hook).
-3. Timeout 5 s: the host calls `worker.terminate()` and starts a fresh worker.
+3. Timeouts: compiling has a 20 s safety cap; when the worker posts `{phase: "running"}` the 5 s **run** timeout starts. On timeout the host calls `worker.terminate()` and the next run spawns a fresh worker. Loading a runtime has a 60 s cap. If the runner itself fails (load error, crash, restart) the result has `runnerError`.
 4. `grade()` runs every test case, compares trimmed stdout (normalised line endings) and checks `rules`. Result: `{passed, failedCheck?, compileError?, perCase[]}`.
-5. Rules: compile/runtime error → no heart lost; wrong output or failed rule → −1 heart.
+5. Output is capped at 64 000 characters (stops print-in-endless-loop).
+6. **Java limits (teavm-javac):** no `Scanner`/`System.in` (the Java worker ignores `stdin`); `String.format` with `%f`/`%n` and `DecimalFormat` crash; runtime errors come as WebAssembly traps (e.g. "array element access out of bounds"), which the grader will translate into beginner-friendly messages. Measured: runtime load ~0.5–0.9 s, compile 1.4–4.4 s, run < 50 ms. Show a "Compiling…" indicator. Any `runnerError` result makes the host replace the worker.
+7. **Python (Pyodide):** a driver checks syntax with `compile()` (→ `compileErrors`), then `exec`s in a fresh namespace with its own `sys.stdin` (StringIO); afterwards it restores streams, `print`/`input`, the recursion limit and removes newly imported modules, so runs never affect each other; errors come back as `"IndexError: … (line N)"`. `input()` reads the request's `stdin`; no stdin → `EOFError`. Measured: load ~2.4–5.4 s, runs in ms.
+8. Hearts: compile error, runtime error, `runnerError` or `timedOut: "compile"` → **no heart lost**. Wrong output, failed rule or `timedOut: "run"` (endless loop) → −1 heart.
+9. Security: the test hook `window.__codequest` exists only in `vite build --mode e2e`. Player output must be rendered with `textContent`, never `innerHTML`. Later: random per-request nonce and result-shape validation so player code can't fake a result (Python can reach `js.postMessage` via Pyodide's `js` module; Java via JSO).
 
 ## 7. Integrations
 None in MVP (no network APIs). Later: Google/GitHub OAuth + a small backend for cloud save; optional AI tutor.

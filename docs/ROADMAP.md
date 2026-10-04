@@ -4,8 +4,8 @@ Each task fits in one session. Tags point to PRD requirements.
 
 ## M0 — Setup
 - [x] Scaffold Vite + TypeScript + Phaser, Biome, Vitest, Playwright, CI, smoke test (Phase 3 of setup)
-- [ ] **Spike: Java runner**: compile + run `System.out.println` with teavm-javac in a worker; measure load/compile time. Decide wasm vs Piston fallback (FR-8)
-- [ ] Spike: Python runner with self-hosted Pyodide in a worker (FR-8)
+- [x] **Spike: Java runner**: compile + run `System.out.println` with teavm-javac in a worker; measure load/compile time. Decide wasm vs Piston fallback (FR-8). ✅ wasm works, see DECISIONS
+- [x] Spike: Python runner with self-hosted Pyodide in a worker (FR-8)
 - [ ] Spike: TypeScript runner with `typescript-js` 6.0.3 in a worker (FR-8)
 - [ ] Pick Kenney CC0 packs (tiles, boy/girl hero, scroll, gem, boss), add `docs/CREDITS.md`
 

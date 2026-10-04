@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { BootScene } from "./game/scenes/BootScene";
+import type { Lang } from "./runners/types";
 import "./style.css";
 
 const game = new Phaser.Game({
@@ -13,5 +14,12 @@ const game = new Phaser.Game({
   scene: [BootScene],
 });
 
-// Test hook for Playwright (see tests/e2e).
-(window as unknown as { __codequest: { game: Phaser.Game } }).__codequest = { game };
+// Test hooks for Playwright, only in `vite build --mode e2e` (see tests/e2e).
+if (import.meta.env.MODE === "e2e") {
+  import("./runners/worker-host").then(({ WorkerHost }) => {
+    (window as unknown as { __codequest: unknown }).__codequest = {
+      game,
+      createRunner: (lang: Lang) => new WorkerHost(lang),
+    };
+  });
+}
