@@ -33,3 +33,4 @@ test-results/
 
 # Runtimes copied from node_modules by scripts/copy-runtimes.mjs
 public/runtimes/python/
+public/runtimes/typescript/

@@ -7,6 +7,7 @@ export type WorkerFactory = () => Worker;
 const defaultFactories: Partial<Record<Lang, WorkerFactory>> = {
   java: () => new Worker(new URL("./java.worker.ts", import.meta.url), { type: "module" }),
   python: () => new Worker(new URL("./python.worker.ts", import.meta.url), { type: "module" }),
+  typescript: () => new Worker(new URL("./typescript.worker.ts", import.meta.url), { type: "module" }),
 };
 
 /** Result used when the runner itself broke (not the player's fault, never costs a heart). */
@@ -118,9 +119,9 @@ export class WorkerHost {
           return;
         }
         finish(data);
-        // A runner that reports its own failure (e.g. Pyodide fatal error) may be unusable:
-        // replace it so the next run starts clean.
-        if (data.runnerError && this.worker === w) this.kill();
+        // A runner that failed (e.g. Pyodide fatal error) or whose built-ins were changed by
+        // player code may be unusable: replace it so the next run starts clean.
+        if ((data.runnerError || data.recycle) && this.worker === w) this.kill();
       };
       const onError = (e: ErrorEvent) => {
         finish(runnerFailure(id, e.message || "Runner crashed"));

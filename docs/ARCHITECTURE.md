@@ -77,6 +77,7 @@ public/
   maps/area-01.tmj …      # one Tiled map per area (shared by all languages)
   runtimes/java/          # vendored teavm-javac files (6.7 MB, committed, hashes in README)
   runtimes/python/        # Pyodide (copied from node_modules by scripts/copy-runtimes.mjs, git-ignored)
+  runtimes/typescript/    # libs.json: ES2022 .d.ts bundle for type-checking (generated, git-ignored)
 tests/
   unit/                   # Vitest: core, save, grader, content schema
   e2e/                    # Playwright: flows + "every reference solution passes"
@@ -130,8 +131,10 @@ Title (New / Continue) → Language → Hero → Name → World Map ↔ Area (HU
 5. Output is capped at 64 000 characters (stops print-in-endless-loop).
 6. **Java limits (teavm-javac):** no `Scanner`/`System.in` (the Java worker ignores `stdin`); `String.format` with `%f`/`%n` and `DecimalFormat` crash; runtime errors come as WebAssembly traps (e.g. "array element access out of bounds"), which the grader will translate into beginner-friendly messages. Measured: runtime load ~0.5–0.9 s, compile 1.4–4.4 s, run < 50 ms. Show a "Compiling…" indicator. Any `runnerError` result makes the host replace the worker.
 7. **Python (Pyodide):** a driver checks syntax with `compile()` (→ `compileErrors`), then `exec`s in a fresh namespace with its own `sys.stdin` (StringIO); afterwards it restores streams, `print`/`input`, the recursion limit and removes newly imported modules, so runs never affect each other; errors come back as `"IndexError: … (line N)"`. `input()` reads the request's `stdin`; no stdin → `EOFError`. Measured: load ~2.4–5.4 s, runs in ms.
-8. Hearts: compile error, runtime error, `runnerError` or `timedOut: "compile"` → **no heart lost**. Wrong output, failed rule or `timedOut: "run"` (endless loop) → −1 heart.
-9. Security: the test hook `window.__codequest` exists only in `vite build --mode e2e`. Player output must be rendered with `textContent`, never `innerHTML`. Later: random per-request nonce and result-shape validation so player code can't fake a result (Python can reach `js.postMessage` via Pyodide's `js` module; Java via JSO).
+8. **TypeScript:** `typescript-js` (TS 6.0.3) builds a program from `main.ts` + a small `globals.d.ts` (console, `prompt`, timers) + ES2022 libs (parsed once, reused). Strict mode; every file is a module. Errors → `compileErrors` (line, column). Output JS + source map run through `js-exec.ts`.
+9. **JavaScript execution (`js-exec.ts`, shared):** code runs in an `AsyncFunction` (top-level `await` works) inside a block, so names like `close` or `console` can be redeclared; worker globals (`self`, `fetch`, `postMessage`…) are shadowed. `console.log` uses `inspect.ts`, a port of Node's formatter tested against real Node. `prompt()` reads stdin lines. Timers are wrapped: the run waits for them like Node, errors inside them are runtime errors, leftovers are cleared. If built-ins were changed, the result has `recycle` and the host replaces the worker. Runtime error line comes from the `main.js` stack frame (mapped to the TS line for TypeScript). Measured TS: load ~0.6–1.6 s, compile ~30–90 ms (`skipLibCheck`).
+10. Hearts: compile error, runtime error, `runnerError` or `timedOut: "compile"` → **no heart lost**. Wrong output, failed rule or `timedOut: "run"` (endless loop) → −1 heart.
+11. Security: the test hook `window.__codequest` exists only in `vite build --mode e2e`. Player output must be rendered with `textContent`, never `innerHTML`. Later: random per-request nonce and result-shape validation so player code can't fake a result (Python can reach `js.postMessage` via Pyodide's `js` module; Java via JSO).
 
 ## 7. Integrations
 None in MVP (no network APIs). Later: Google/GitHub OAuth + a small backend for cloud save; optional AI tutor.

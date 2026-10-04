@@ -16,6 +16,8 @@ export type RunResult = {
   timedOut?: "compile" | "run";
   /** The runner itself broke (failed to load, crashed, restarted). Never the player's fault. */
   runnerError?: string;
+  /** Player code changed the worker's shared built-ins; the host replaces the worker after this run. */
+  recycle?: boolean;
   /** Time spent compiling (ms), if the language compiles. */
   compileMs?: number;
   runMs: number;
