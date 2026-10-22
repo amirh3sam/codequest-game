@@ -1,17 +1,18 @@
 # CodeQuest — Product Requirements (PRD)
 
-_Last updated: 2026-10-22 · Status: playable foundation; adventure-learning redesign planned_
+_Last updated: 2026-10-22 · Status: two districts and the first adventure-learning pilot playable_
 
 Current direction: the public release includes Variable District and Logic
 Junction in all four languages. The user's latest priority is deeper education
-and enjoyable gameplay, with code visibly repairing the city. The next milestone
-is the stranded-drone mission in [GAME-DESIGN.md](GAME-DESIGN.md); its prototype
-and playtest precede further district expansion. Older fantasy names and localhost
+and enjoyable gameplay, with code visibly repairing the city. The stranded-drone
+pilot in [GAME-DESIGN.md](GAME-DESIGN.md) now connects guided practice to a world
+repair. A keyboard-operated developer tablet adds independent coding practice.
+Beginner playtesting precedes further district expansion. Older fantasy names and localhost
 scope below describe the original requirements and will be revised as that
 redesign is implemented. Existing heart, reward and save rules remain the pilot's
 baseline.
 
-Reference art: [`reference/game-flow.png`](reference/game-flow.png) (whole game flow), [`reference/map-style-1.png`](reference/map-style-1.png) (target map style), `map-style-2/3.png` (more examples).
+Current game screenshots: [tech city](screenshots/tech-city.png), [guided drone lesson](screenshots/drone-lesson.png), [repair editor](screenshots/code-repair.png) and [developer tablet](screenshots/developer-tablet.png). Superseded planning pictures have been removed.
 
 ## 1. Problem
 Beginners find programming tutorials dry and quit early. Reading theory without practice doesn't stick, and practice sites feel like homework. CodeQuest teaches programming through a 2D top-down RPG. You walk a world, read short lessons found in the map, and solve real coding tasks to move forward.

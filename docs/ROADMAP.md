@@ -20,6 +20,7 @@ editor polish follow this pilot.
 - [x] Validate the pilot in all four languages; preserve old saves and one-time rewards.
 - [ ] Playtest comprehension and enjoyment with beginners.
 - [x] Add a T-key developer tablet with an animated opening, editor/example/console tabs, real free practice and saved per-language drafts.
+- [x] Replace unrelated GitHub planning pictures with screenshots of the running game.
 
 ## Current art direction: modern tech city (2026-10-22)
 Delivered: replaced the fantasy setting with Variable District, a modern coding campus.

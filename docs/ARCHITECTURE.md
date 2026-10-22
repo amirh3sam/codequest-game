@@ -19,7 +19,7 @@ _Last updated: 2026-10-04 · Versions checked on npm 2026-10-04_
 | End-to-end tests | Playwright 1.63.0 | Drives a real browser: needed to test WASM runners and the canvas game. |
 | Lint + format | Biome 2.5.15 | One fast tool for both lint and format instead of ESLint + Prettier. |
 | Save | `localStorage` (versioned JSON) | No server, no login; enough for MVP. |
-| Art | Kenney CC0 packs (e.g. Tiny Town, Tiny Dungeon, Roguelike Characters) | Free for any use, consistent pixel-art style close to `reference/map-style-1.png`. |
+| Art | Generated tech-city assets, retained Kenney CC0 sprites and native Phaser/CSS objects | Hoodie developers, transparent city objects and coding terminals; the drone, gates and tablet use code-native drawing. See [current screenshots](screenshots/README.md). |
 | CI | GitHub Actions | Free for private repos within monthly minutes. |
 
 ## 2. Diagram

@@ -1,5 +1,11 @@
 # Progress log (newest on top)
 
+## 2026-10-22 (GitHub game screenshots)
+- **Done:** removed the four superseded planning pictures under `docs/reference/`. The README now shows four real screenshots of the current tech city, drone lesson, repair editor and developer tablet. Updated PRD/architecture references and added a repeatable Playwright capture script plus capture notes.
+- **Checks:** all four captures completed through the real game UI without page errors and were visually reviewed. The examples printed 5 and 12 through the actual JavaScript worker, including a correctly filled 12-cell meter. Production build passed; test hooks are absent from its JavaScript. Lint and whitespace checks passed.
+- **Next:** publish the validated source, pictures and production game; verify the public release.
+- **Blockers:** none.
+
 ## 2026-10-22 (courier adventure and developer tablet)
 - **Done:** added Kai's stranded-drone mission to Variable District in all four languages. The guided sequence predicts a value, runs a worked example, explains the changing variable, lets the learner modify a real-code preview, then asks for an independent repair. A battery meter follows worker output. Accepted task `variables-2` opens a solid courier passage and enables an animated delivery; a free 4 + 3 variation checks transfer. Existing task IDs, version-1 saves and one-time rewards remain intact.
 - **Done:** added T / Tablet to raise a developer tablet with a character-and-device opening animation and perspective transition. Its editor, examples and console run the selected language through existing workers, save independent local drafts and never change mission progress, hearts or gems. Closing or changing panels cancels active execution. Tabs support keyboard navigation; reduced motion skips the reveal.
