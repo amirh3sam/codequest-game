@@ -1,5 +1,12 @@
 # Progress log (newest on top)
 
+## 2026-10-22 (courier and tablet public release)
+- **Release:** source commit `d5f1199` and screenshot commit `f539315` are public on `amirh3sam/codequest-game`. The separate Vercel project reports READY for deployment `dpl_2iVNey5pL8ECu1JGcCGYhABv9HLR`, aliased at https://codequest-game-inky.vercel.app/.
+- **Public verification:** a fresh unauthenticated Chromium browser received HTTP 200 and ran a real battery program printing 7 in the tablet in JavaScript, TypeScript, Python and Java. Practice left all mission progress, hearts and gems unchanged. The public JavaScript journey completed the badge, prediction, editable preview, accepted repair and delivery; reloading restored Kai's repaired mission. All four browsers reported zero page errors and confirmed production test hooks are absent. GitHub's contents API confirmed the four new PNGs and removal of the reference-art directory.
+- **Checks:** the production build, lint, type checking, 208 unit tests and 27 focused browser cases passed. The source release's full GitHub browser suite was still running when this entry was written; its install, lint, types and unit steps had passed.
+- **Next:** beginner playtesting of the learning/adventure loop; further discoveries and story choices remain on the roadmap.
+- **Blockers:** none for the public game.
+
 ## 2026-10-22 (GitHub game screenshots)
 - **Done:** removed the four superseded planning pictures under `docs/reference/`. The README now shows four real screenshots of the current tech city, drone lesson, repair editor and developer tablet. Updated PRD/architecture references and added a repeatable Playwright capture script plus capture notes.
 - **Checks:** all four captures completed through the real game UI without page errors and were visually reviewed. The examples printed 5 and 12 through the actual JavaScript worker, including a correctly filled 12-cell meter. Production build passed; test hooks are absent from its JavaScript. Lint and whitespace checks passed.
