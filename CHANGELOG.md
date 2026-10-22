@@ -3,6 +3,9 @@
 All notable changes to this project are documented here. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
+### Changed
+- Tablet opening now zooms toward the city character, switches to their first-person view of the attached wrist display, then enters the workspace in three seconds. Replaced the third-person character shot.
+- Practice code, Run and output now stay on one page, with results below the editor. The Console tab offers a larger view of the same output; running no longer switches away from the code.
 ### Fixed
 - Very quick E/Space presses now open nearby terminals directly on key-down, so an interaction is retained even when key-up arrives before the next rendered frame.
 - Developer walking no longer draws standing legs under the animated legs. Each pose now separates two complete leg layers, preserves the original shoes, removes detached edge fragments and keeps the laptop/backpack on the body. Added a browser regression covering all 48 boy/girl walking frames.

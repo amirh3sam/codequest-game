@@ -106,14 +106,10 @@ export function createTabletDisplay(name: string): THREE.CanvasTexture {
 
 export function createTabletRig(kind: DeveloperKind, texture: THREE.Texture) {
   const root = new THREE.Group();
-  root.name = `developer-${kind}`;
+  root.name = `first-person-${kind}`;
   const cloth = material(kind === "girl" ? 0x65499d : 0x285e9f),
     darkCloth = material(kind === "girl" ? 0x352550 : 0x193756);
   const skin = material(0xd5a17e, 0, 0.66),
-    hair = material(0x251b1e),
-    pants = material(0x182d42);
-  const sole = material(0xd5e0e5),
-    shoe = material(0x273440),
     strap = material(0x142334);
   const deviceMetal = material(0x334959, 0.8, 0.3),
     lightMetal = material(0x8fa9b8, 0.65, 0.28);
@@ -123,59 +119,14 @@ export function createTabletRig(kind: DeveloperKind, texture: THREE.Texture) {
     emissiveIntensity: 2,
     roughness: 0.3,
   });
-  box(root, [0.67, 0.71, 0.37], [0, 1.23, 0], cloth, 0.12);
-  box(root, [0.62, 0.1, 0.37], [0, 0.89, 0], darkCloth, 0.035);
-  box(root, [0.39, 0.17, 0.035], [0, 1.03, 0.198], darkCloth, 0.04);
-  for (const x of [-0.15, 0.15]) {
-    box(root, [0.024, 0.24, 0.025], [x, 1.39, 0.2], sole, 0.01);
-    box(root, [0.025, 0.035, 0.03], [x, 1.255, 0.2], lightMetal, 0.009);
-  }
-  sphere(root, [0.35, 0.19, 0.24], [0, 1.52, -0.12], darkCloth);
-  box(root, [0.54, 0.61, 0.23], [0, 1.22, -0.29], strap, 0.09);
-  box(root, [0.42, 0.09, 0.06], [0, 1.38, -0.43], deviceMetal, 0.025);
-  box(root, [0.24, 0.025, 0.01], [0, 1.28, -0.414], cyan, 0.008);
-  for (const x of [-0.23, 0.23]) box(root, [0.06, 0.48, 0.045], [x, 1.3, 0.21], strap, 0.018);
-  for (const x of [-0.175, 0.175]) {
-    box(root, [0.245, 0.72, 0.26], [x, 0.49, 0], pants, 0.06);
-    box(root, [0.26, 0.055, 0.37], [x, 0.06, 0.06], sole, 0.018);
-    box(root, [0.25, 0.13, 0.36], [x, 0.13, 0.06], shoe, 0.045);
-    box(root, [0.12, 0.014, 0.13], [x, 0.201, 0.09], sole, 0.006);
-  }
-  sphere(root, [0.105, 0.14, 0.11], [0, 1.66, 0], skin);
-  const head = new THREE.Group();
-  head.name = "head-gaze";
-  head.position.set(0, 1.73, 0);
-  root.add(head);
-  sphere(head, [0.215, 0.265, 0.205], [0, 0.17, 0], skin);
-  for (const x of [-0.214, 0.214]) sphere(head, [0.038, 0.065, 0.035], [x, 0.16, 0], skin);
-  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.237, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.53), hair);
-  cap.position.set(0, 0.285, -0.02);
-  cap.scale.set(1, 0.8, 0.94);
-  head.add(cap);
-  for (let i = 0; i < 5; i++) {
-    const tuft = sphere(head, [0.075, 0.06, 0.07], [-0.15 + i * 0.065, 0.36 + Math.sin(i) * 0.018, 0.12], hair);
-    tuft.rotation.z = -0.3;
-  }
-  if (kind === "girl") {
-    sphere(head, [0.225, 0.32, 0.125], [0, 0.11, -0.14], hair);
-    for (const x of [-0.205, 0.205]) sphere(head, [0.055, 0.25, 0.08], [x, 0.03, -0.02], hair);
-  }
-  const pupils: THREE.Mesh[] = [];
-  for (const x of [-0.082, 0.082]) {
-    sphere(head, [0.041, 0.027, 0.014], [x, 0.2, 0.189], sole);
-    pupils.push(sphere(head, [0.016, 0.02, 0.012], [x, 0.2, 0.201], hair));
-    box(head, [0.075, 0.016, 0.02], [x, 0.255, 0.188], hair, 0.007);
-  }
-  sphere(head, [0.028, 0.04, 0.035], [0, 0.135, 0.21], skin);
-  box(head, [0.064, 0.012, 0.013], [0, 0.075, 0.191], material(0x926052), 0.006);
-  const left = arm(root, -0.39, cloth, darkCloth, skin),
-    right = arm(root, 0.39, cloth, darkCloth, skin);
+  const left = arm(root, 0.39, cloth, darkCloth, skin),
+    right = arm(root, -0.39, cloth, darkCloth, skin);
   left.shoulder.name = "tablet-shoulder";
   left.elbow.name = "tablet-forearm";
   const device = new THREE.Group();
   device.name = "wrist-tablet";
   device.position.set(0, -0.22, 0.145);
-  device.rotation.x = 0.35;
+  device.rotation.set(-0.85, -0.6, Math.PI);
   left.elbow.add(device);
   box(device, [0.64, 0.43, 0.075], [0, 0, 0], deviceMetal, 0.04);
   box(device, [0.55, 0.35, 0.018], [0, 0, 0.045], strap, 0.018);
@@ -194,17 +145,14 @@ export function createTabletRig(kind: DeveloperKind, texture: THREE.Texture) {
   device.add(screenLight);
 
   const pose = (motion: Motion) => {
-    root.rotation.y = -0.1 * (1 - motion.enter);
-    left.shoulder.rotation.set(-0.12 - motion.lift * 0.78, 0, motion.lift * 0.34);
-    left.elbow.rotation.set(-0.12 - motion.lift * 0.74, 0, motion.lift * 0.12);
-    right.shoulder.rotation.set(-0.08 - motion.lift * 0.72 - motion.touch * 0.12, 0, -motion.lift * 0.32);
-    right.elbow.rotation.set(-0.1 - motion.lift * 0.9 - motion.touch * 0.14, 0, -motion.lift * 0.25);
-    right.hand.rotation.x = motion.touch * 0.2;
-    head.rotation.set(motion.gaze * 0.5, -motion.gaze * 0.1, -motion.gaze * 0.03);
-    for (const pupil of pupils) pupil.position.y = 0.2 - motion.gaze * 0.008;
+    left.shoulder.rotation.set(-0.7 - motion.lift * 0.18, 0, -0.32);
+    left.elbow.rotation.set(-0.7 - motion.lift * 0.12, 0, -0.1);
+    right.shoulder.rotation.set(-0.6 - motion.touch * 0.04, 0, 0.55);
+    right.elbow.rotation.set(-1.05 - motion.touch * 0.08, 0, 0.25);
+    right.hand.rotation.x = motion.touch * 0.15;
     screenMaterial.color.setScalar(0.16 + motion.screen * 0.84);
     screenLight.intensity = motion.screen * 0.65;
     root.updateMatrixWorld(true);
   };
-  return { root, head, left, right, device, screen, pose };
+  return { root, eye: new THREE.Vector3(0, 1.84, -0.25), left, right, device, screen, pose };
 }

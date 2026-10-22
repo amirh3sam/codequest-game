@@ -1,5 +1,13 @@
 # Progress log (newest on top)
 
+## 2026-10-22 (first-person wrist view and inline practice results)
+
+- **Done:** revised the opening to a three-second city zoom, followed by the developer's own view looking down at an attached wrist tablet and entering its screen. Removed the external full-body/head shot. Both hoodie styles retain connected arms and hands; the screen faces the wearer's eyes. Skip, reduced motion, WebGL fallback, cancellation and camera restoration remain available.
+- **Done:** placed the Run button and live output below practice code. Running keeps the editor visible; Console offers a larger view of the same result. Per-language drafts, mission grading, hearts and gems retain their existing rules.
+- **Checks:** 211 unit tests and 18 focused Chromium cases passed, covering all four tablet languages and drone missions, both first-person openings, connected wrist geometry, phone sizing, skip/close/fallback, worker cancellation, saved drafts and missions inside the device. Lint, type checking and production build passed. Production test hooks are absent. The final first-person framing and editor/output layout were inspected in actual browser captures.
+- **Media:** updated the real tablet screenshots and opening video, capture script and current documentation to match the new view and inline results; both browser captures completed without page errors.
+- **Release:** publishing and public verification follow this implementation entry.
+
 ## 2026-10-22 (verified public 3D tablet release)
 - **Release:** commit `ae867b9` is deployed by Vercel as `dpl_FZdk1sWYSQgrtoPCYx3SumwqwzrG`, READY at https://codequest-game-inky.vercel.app/. GitHub CI run `39861733403` passed lint, types, 211 unit tests and all 90 Chromium tests, without retries reported.
 - **Public verification:** a fresh unauthenticated browser received HTTP 200, watched the real 3D boy/tablet sequence, entered the full-screen workspace, completed a graded mission inside its frame and ran free practice successfully. The temporary 3D canvas was removed afterward; production test hooks were absent and no page errors occurred.

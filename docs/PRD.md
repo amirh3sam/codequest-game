@@ -7,8 +7,9 @@ Junction in all four languages. The user's latest priority is deeper education
 and enjoyable gameplay, with code visibly repairing the city. The stranded-drone
 pilot in [GAME-DESIGN.md](GAME-DESIGN.md) now connects guided practice to a world
 repair. The developer tablet now opens through a short original 3D sequence:
-camera approach, articulated hands raising the screen, a head turn toward it,
-then a move into the full-screen workspace. Its tabs hold practice code, examples,
+city camera zoom, first-person view looking down at the wearer's wrist tablet,
+then a move into the full-screen workspace. Code, Run and output share one page,
+with results below the editor. Its tabs hold practice code, examples,
 console output, mission status and the district guide. Missions use the existing
 grader and heart policy; practice remains free. Reduced motion skips the shot.
 Beginner playtesting precedes further district expansion. Older fantasy names and localhost

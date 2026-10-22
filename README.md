@@ -12,15 +12,15 @@ Start with **Mission** to meet Kai. The guided drone lesson lets you predict, ru
 
 ![The actual drone lesson with a working code example, prediction choices and battery meter](docs/screenshots/drone-lesson.png)
 
-Press **T** or click **Tablet**: the city camera moves toward your developer, a 3D character raises a wrist-mounted tablet and looks down, and the view moves into its screen. Press **T** or **Skip animation** to jump ahead. Reduced motion opens it instantly.
+Press **T** or click **Tablet**: the city camera zooms toward your developer, switches to their first-person view looking down at the tablet attached to their wrist, then enters its screen. The opening takes three seconds. Press **T** or **Skip animation** to jump ahead. Reduced motion opens it instantly.
 
-![The original 3D developer raising and looking at the wrist tablet](docs/screenshots/tablet-cinematic.png)
+![First-person view of the developer's hands and attached wrist tablet](docs/screenshots/tablet-cinematic.png)
 
 [Watch the actual tablet opening](docs/screenshots/tablet-opening.webm).
 
-The full-screen tablet holds Editor, Examples, Console, Missions and Guide tabs. Run real code, keep a separate practice draft for each language, or open your current missions inside the device. Free practice never spends hearts or awards gems; mission submissions keep their normal grading rules. Press **Esc** to return to the city.
+The full-screen tablet holds Editor, Examples, Console, Missions and Guide tabs. The editor, Run button and output stay together on one page, with results below your code. Keep a separate practice draft for each language, or open your current missions inside the device. Free practice never spends hearts or awards gems; mission submissions keep their normal grading rules. Press **Esc** to return to the city.
 
-![The in-game developer tablet with its coding workspace and practice tabs](docs/screenshots/developer-tablet.png)
+![The in-game tablet showing practice code and its real output together](docs/screenshots/developer-tablet.png)
 
 ![Writing and running the drone repair with real output and a full battery](docs/screenshots/code-repair.png)
 

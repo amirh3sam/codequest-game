@@ -6,9 +6,9 @@ real game and working code, rather than concept art or interface mockups.
 - `tech-city.png`: Variable District, a developer, city objects and coding terminals.
 - `drone-lesson.png`: a real prediction example printing 5 and updating the battery.
 - `code-repair.png`: a learner's repair printing 12 in the actual editor.
-- `developer-tablet.png`: the tablet's practice editor and tabs.
-- `tablet-cinematic.png`: the actual 3D developer, arm-mounted device and downward gaze during its opening sequence.
-- `tablet-opening.webm`: browser video of the camera approach, 3D hand/head motion and full-screen transition.
+- `developer-tablet.png`: practice code, Run and real output together on the tablet.
+- `tablet-cinematic.png`: the wearer's first-person view of their hands and attached wrist tablet.
+- `tablet-opening.webm`: browser video of the city zoom, first-person look down and full-screen transition.
 
 Regenerate with the local game running at `http://127.0.0.1:5173`:
 

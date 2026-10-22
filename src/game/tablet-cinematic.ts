@@ -32,10 +32,10 @@ function cityStage(scene: THREE.Scene): void {
   const glass = new THREE.MeshStandardMaterial({ color: 0x244865, metalness: 0.58, roughness: 0.34 });
   const trim = new THREE.MeshBasicMaterial({ color: 0x62cbdc });
   for (const [x, z, height, width] of [
-    [-3, -3, 4.8, 2.4],
-    [2.9, -4, 6, 2.3],
-    [-5, -1, 3.2, 1.9],
-    [5, -1.8, 4, 2.2],
+    [-3, 3, 4.8, 2.4],
+    [2.9, 4, 6, 2.3],
+    [-5, 1, 3.2, 1.9],
+    [5, 1.8, 4, 2.2],
   ]) {
     if (x === undefined || z === undefined || height === undefined || width === undefined) continue;
     const building = new THREE.Mesh(new THREE.BoxGeometry(width, height, 1.6), glass);
@@ -43,7 +43,7 @@ function cityStage(scene: THREE.Scene): void {
     scene.add(building);
     for (let y = 0.5; y < height; y += 0.6) {
       const strip = new THREE.Mesh(new THREE.BoxGeometry(width * 0.83, 0.027, 0.02), trim);
-      strip.position.set(x, y, z + 0.82);
+      strip.position.set(x, y, z - 0.82);
       scene.add(strip);
     }
   }
@@ -76,16 +76,15 @@ export function playTabletCinematic(
   cityStage(scene);
   const rig = createTabletRig(kind, createTabletDisplay(name));
   scene.add(rig.root);
-  const camera = new THREE.PerspectiveCamera(40, 1, 0.015, 40);
-  const wide = new THREE.Vector3(2.6, 1.95, 4.2),
-    close = new THREE.Vector3(1.6, 1.8, 2.8);
+  const camera = new THREE.PerspectiveCamera(60, 1, 0.015, 40);
+  container.dataset.view = "first-person";
   const center = new THREE.Vector3(),
     screenRotation = new THREE.Quaternion(),
     normal = new THREE.Vector3(),
     screenUp = new THREE.Vector3();
   const end = new THREE.Vector3(),
     target = new THREE.Vector3(),
-    defaultTarget = new THREE.Vector3(0, 1.34, 0.08);
+    forward = new THREE.Vector3(0, 1.65, 1.1);
   const resize = () => {
     const width = Math.max(1, container.clientWidth),
       height = Math.max(1, container.clientHeight);
@@ -155,9 +154,9 @@ export function playTabletCinematic(
     const distance =
       (Math.min(0.51 / camera.aspect, 0.319) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))) * 0.97;
     end.copy(center).addScaledVector(normal, distance);
-    camera.position.lerpVectors(wide, close, motion.approach).lerp(end, motion.enter);
+    camera.position.copy(rig.eye).lerp(end, motion.enter);
     camera.up.set(0, 1, 0).lerp(screenUp, motion.enter).normalize();
-    target.lerpVectors(defaultTarget, center, motion.enter);
+    target.lerpVectors(forward, center, motion.gaze);
     camera.lookAt(target);
     renderer.render(scene, camera);
     if (elapsed >= TABLET_SHOT_MS) {

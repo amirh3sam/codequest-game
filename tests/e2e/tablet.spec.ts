@@ -30,7 +30,11 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await page.getByLabel("Practice code", { exact: true }).fill(code);
     await page.getByRole("button", { name: "Run practice code", exact: true }).click();
     await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("7\n", { timeout: 40_000 });
-    await expect(page.getByRole("tab", { name: "Console", exact: true })).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("tab", { name: FILES[lang], exact: true })).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByLabel("Practice code", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Practice output", { exact: true })).toBeVisible();
+    await page.getByRole("tab", { name: "Console", exact: true }).click();
+    await expect(page.getByLabel("Console output", { exact: true })).toHaveText("7\n");
     expect(await progress(page, lang)).toEqual(before);
     await page.getByRole("tab", { name: "Examples", exact: true }).click();
     await page.getByRole("button", { name: "Insert say hello example", exact: true }).click();
@@ -67,9 +71,7 @@ test("closing a running tablet program cancels it and permits another run", asyn
 });
 
 for (const kind of ["boy", "girl"] as const) {
-  test(`${kind}: a real 3D raise and camera move enter the full-screen tablet, then restore walking`, async ({
-    page,
-  }) => {
+  test(`${kind}: a first-person wrist view enters the full-screen tablet, then restores walking`, async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -79,6 +81,7 @@ for (const kind of ["boy", "girl"] as const) {
     await page.getByRole("button", { name: "Tablet", exact: true }).click();
     await expect(page.locator(".tablet-cinematic-canvas")).toBeVisible({ timeout: 15_000 });
     await expect(page.locator(".tablet-cinematic")).toHaveAttribute("data-character", kind);
+    await expect(page.locator(".tablet-cinematic")).toHaveAttribute("data-view", "first-person");
     await expect
       .poll(() =>
         page.evaluate(() => (window as unknown as Harness).__codequest.game.scene.getScene("boot").cameras.main.zoom),
@@ -111,6 +114,12 @@ test("tablet and HUD fit a narrow viewport with reduced motion", async ({ page }
   expect((panel?.x ?? 0) + (panel?.width ?? 0)).toBeLessThanOrEqual(390);
   await expect(page.locator(".tablet-cinematic-canvas")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Run practice code", exact: true })).toBeVisible();
+  const editor = await page.getByLabel("Practice code", { exact: true }).boundingBox();
+  const output = await page.getByLabel("Practice output", { exact: true }).boundingBox();
+  expect(editor).not.toBeNull();
+  expect(output).not.toBeNull();
+  expect(output?.y).toBeGreaterThanOrEqual((editor?.y ?? 0) + (editor?.height ?? 0));
+  expect((output?.y ?? 0) + (output?.height ?? 0)).toBeLessThanOrEqual(844);
 });
 
 test("tablet animation can be skipped or closed before its module arrives without a stale reopen", async ({ page }) => {

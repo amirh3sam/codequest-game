@@ -63,6 +63,8 @@ try {
     .fill(
       'const project = "My next adventure";\nconst ideas = 3;\nconsole.log(project);\nconsole.log("Ready to build", ideas, "new ideas!");',
     );
+  await page.getByRole("button", { name: "Run practice code", exact: true }).click();
+  await page.getByLabel("Practice output", { exact: true }).filter({ hasText: "Ready to build" }).waitFor();
   await capture("developer-tablet");
   await page.keyboard.press("Escape");
   await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -70,7 +72,7 @@ try {
   await page.clock.pauseAt(new Date("2026-10-22T12:00:01Z"));
   await page.keyboard.press("t");
   await page.locator(".tablet-cinematic-canvas").waitFor({ timeout: 15_000 });
-  await page.clock.fastForward(2450);
+  await page.clock.fastForward(1450);
   await page.screenshot({ path: `${directory}/tablet-cinematic.png` });
   await page.clock.fastForward(2500);
   await page.getByRole("dialog", { name: "Developer tablet", exact: true }).waitFor({ timeout: 20_000 });

@@ -1328,14 +1328,19 @@ small {
   margin-top: 30px;
 }
 .studio-workspace {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  min-height: 0;
   height: 100%;
 }
 .studio-code-grid {
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr);
-  height: 100%;
+  flex: 1;
+  min-height: 80px;
   padding: 18px 0;
+  overflow: hidden;
 }
 .studio-lines,
 .studio-code {
@@ -1368,6 +1373,7 @@ small {
 }
 .studio-toolbar {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 16px;
   padding: 12px 16px;
@@ -1379,6 +1385,7 @@ small {
   color: #89a9c0;
 }
 .studio-feedback {
+  flex-shrink: 0;
   min-height: 20px;
   padding: 0 16px;
   margin: 8px 0;
@@ -1458,6 +1465,28 @@ small {
     monospace;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+.studio-inline-console {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 clamp(100px, 23vh, 210px);
+  min-height: 0;
+  border-top: 1px solid #2c4154;
+  background: #091723;
+}
+.studio-output-title {
+  flex-shrink: 0;
+  padding: 9px 16px;
+  color: #8ddbf3;
+  font: 10px monospace;
+  letter-spacing: 1px;
+}
+.studio-inline-console .studio-output {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0 16px 12px;
+  overflow: auto;
 }
 .tablet-overlay {
   padding: 0;

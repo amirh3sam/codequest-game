@@ -144,6 +144,8 @@ export function openTablet(host: TabletHost): () => void {
   });
   const output = el("pre", "studio-output", "Run a program to see its output here.");
   output.setAttribute("aria-label", "Practice output");
+  const consoleOutput = el("pre", "studio-output", output.textContent ?? "");
+  consoleOutput.setAttribute("aria-label", "Console output");
   const feedback = el("p", "studio-feedback");
   feedback.setAttribute("role", "status");
   let running = false;
@@ -165,10 +167,11 @@ export function openTablet(host: TabletHost): () => void {
       if (!panel.isConnected) return;
       const error = executionError(result);
       output.textContent = [result.stdout || "(No output)", result.stderr, error?.message].filter(Boolean).join("\n");
+      consoleOutput.textContent = output.textContent;
       feedback.textContent = error
         ? "Check the console and try again. Practice never costs hearts."
         : "Run complete · No hearts or gems spent";
-      select(2);
+      select(0);
     } catch {
       if (panel.isConnected) feedback.textContent = "Couldn't run this program. Try again; no progress changed.";
     } finally {
@@ -182,7 +185,10 @@ export function openTablet(host: TabletHost): () => void {
   const toolbar = el("div", "studio-toolbar");
   toolbar.append(run, el("span", "", "Ctrl / ⌘ + Enter to run"));
   codeGrid.append(lines, code);
-  workspace.append(codeGrid);
+  const inlineConsole = el("section", "studio-inline-console");
+  inlineConsole.setAttribute("aria-label", "Run results");
+  inlineConsole.append(el("div", "studio-output-title", "OUTPUT"), output);
+  workspace.append(codeGrid, toolbar, inlineConsole, feedback);
   editorPane.append(fileTree, workspace);
   examplesPane.append(
     el("h3", "", "Start with something small"),
@@ -208,7 +214,7 @@ export function openTablet(host: TabletHost): () => void {
   }
   consolePane.append(
     el("span", "eyebrow", "BROWSER CONSOLE"),
-    output,
+    consoleOutput,
     button("Back to editor", () => {
       select(0);
       code.focus();
@@ -251,7 +257,7 @@ export function openTablet(host: TabletHost): () => void {
   body.append(...panes);
   const bottom = el("div", "studio-status");
   bottom.append(status, el("span", "", "FREE PRACTICE · AUTO SAVE"));
-  studio.append(title, tabs, body, toolbar, feedback, bottom);
+  studio.append(title, tabs, body, bottom);
   panel.append(studio);
   select(0);
   return presentTabletOpening(panel, host.kind, host.name, host.focusCamera, host.animate);
