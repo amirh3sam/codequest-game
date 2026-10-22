@@ -64,8 +64,18 @@ try {
       'const project = "My next adventure";\nconst ideas = 3;\nconsole.log(project);\nconsole.log("Ready to build", ideas, "new ideas!");',
     );
   await capture("developer-tablet");
+  await page.keyboard.press("Escape");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.clock.install({ time: new Date("2026-10-22T12:00:00Z") });
+  await page.clock.pauseAt(new Date("2026-10-22T12:00:01Z"));
+  await page.keyboard.press("t");
+  await page.locator(".tablet-cinematic-canvas").waitFor({ timeout: 15_000 });
+  await page.clock.fastForward(2450);
+  await page.screenshot({ path: `${directory}/tablet-cinematic.png` });
+  await page.clock.fastForward(2500);
+  await page.getByRole("dialog", { name: "Developer tablet", exact: true }).waitFor({ timeout: 20_000 });
   if (errors.length) throw new Error(errors.join("\n"));
-  console.log("Captured four screenshots from the real game; no page errors.");
+  console.log("Captured five screenshots from the real game; no page errors.");
 } finally {
   await browser.close();
 }

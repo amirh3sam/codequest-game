@@ -66,20 +66,41 @@ test("closing a running tablet program cancels it and permits another run", asyn
   await expect(page.getByLabel("Practice code", { exact: true })).toHaveValue("t");
 });
 
-test("the tablet reveal animates for either developer and tabs support keyboard navigation", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/");
-  await page.getByRole("button", { name: "Boy hero", exact: true }).click();
-  await page.getByRole("button", { name: "Start adventure", exact: true }).click();
-  await page.getByRole("button", { name: "Tablet", exact: true }).click();
-  await expect(page.locator(".tablet-hero")).toHaveCount(1);
-  await expect.poll(() => page.locator(".tablet-studio").evaluate((node) => getComputedStyle(node).opacity)).toBe("1");
-  await expect(page.locator(".tablet-reveal")).toHaveCSS("visibility", "hidden");
-  await page.getByRole("tab", { name: "practice.js", exact: true }).focus();
-  await page.keyboard.press("ArrowRight");
-  await expect(page.getByRole("tab", { name: "Examples", exact: true })).toBeFocused();
-  await expect(page.getByRole("tab", { name: "Examples", exact: true })).toHaveAttribute("aria-selected", "true");
-});
+for (const kind of ["boy", "girl"] as const) {
+  test(`${kind}: a real 3D raise and camera move enter the full-screen tablet, then restore walking`, async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/");
+    await page.getByRole("button", { name: kind === "boy" ? "Boy hero" : "Girl hero", exact: true }).click();
+    await page.getByRole("button", { name: "Start adventure", exact: true }).click();
+    await page.getByRole("button", { name: "Tablet", exact: true }).click();
+    await expect(page.locator(".tablet-cinematic-canvas")).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator(".tablet-cinematic")).toHaveAttribute("data-character", kind);
+    await expect
+      .poll(() =>
+        page.evaluate(() => (window as unknown as Harness).__codequest.game.scene.getScene("boot").cameras.main.zoom),
+      )
+      .toBeGreaterThan(1.2);
+    await expect(page.getByRole("dialog", { name: "Developer tablet", exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator(".tablet-cinematic-canvas")).toHaveCount(0);
+    const panel = await page.getByRole("dialog", { name: "Developer tablet", exact: true }).boundingBox();
+    expect(panel?.width).toBe(page.viewportSize()?.width);
+    expect(panel?.height).toBe(page.viewportSize()?.height);
+    await page.getByRole("tab", { name: "practice.js", exact: true }).focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.getByRole("tab", { name: "Examples", exact: true })).toBeFocused();
+    await page.keyboard.press("Escape");
+    expect(
+      await page.evaluate(
+        () => (window as unknown as Harness).__codequest.game.scene.getScene("boot").cameras.main.zoom,
+      ),
+    ).toBe(1);
+    expect(errors).toEqual([]);
+  });
+}
 
 test("tablet and HUD fit a narrow viewport with reduced motion", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -88,6 +109,60 @@ test("tablet and HUD fit a narrow viewport with reduced motion", async ({ page }
   const panel = await page.getByRole("dialog", { name: "Developer tablet", exact: true }).boundingBox();
   expect(panel?.x).toBeGreaterThanOrEqual(0);
   expect((panel?.x ?? 0) + (panel?.width ?? 0)).toBeLessThanOrEqual(390);
-  await expect(page.locator(".tablet-reveal")).toBeHidden();
+  await expect(page.locator(".tablet-cinematic-canvas")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Run practice code", exact: true })).toBeVisible();
+});
+
+test("tablet animation can be skipped or closed before its module arrives without a stale reopen", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.route("**/assets/tablet-cinematic-*.js", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    await route.continue();
+  });
+  await start(page);
+  await page.keyboard.press("t");
+  await page.getByRole("button", { name: "Skip animation", exact: true }).click();
+  await expect(page.getByLabel("Practice code", { exact: true })).toBeVisible();
+  await expect(page.locator(".tablet-cinematic-canvas")).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("t");
+  await expect(page.getByRole("button", { name: "Skip animation", exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(1100);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  expect(
+    await page.evaluate(() => (window as unknown as Harness).__codequest.game.scene.getScene("boot").cameras.main.zoom),
+  ).toBe(1);
+});
+
+test("the workspace remains usable when a 3D context is unavailable", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, ...args: Parameters<typeof original>) {
+      if (this.classList.contains("tablet-cinematic-canvas")) return null;
+      return Reflect.apply(original, this, args);
+    } as typeof original;
+  });
+  await start(page);
+  await page.keyboard.press("t");
+  await expect(page.getByLabel("Practice code", { exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator(".tablet-cinematic")).toHaveCount(0);
+});
+
+test("missions and guides are usable inside the device and graded tasks retain its frame", async ({ page }) => {
+  await start(page);
+  await page.keyboard.press("t");
+  await page.getByRole("tab", { name: "Guide", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Variables are named containers", exact: true })).toBeVisible();
+  await page.getByRole("tab", { name: "Missions", exact: true }).click();
+  await page.getByRole("button", { name: "Work on Set your display name", exact: true }).click();
+  await expect(page.locator(".tablet-task-view")).toBeVisible();
+  await page.getByLabel("Your code", { exact: true }).fill('const heroName = "Ada";\nconsole.log(heroName);');
+  await page.getByRole("button", { name: "Submit answer", exact: true }).click();
+  await expect(page.locator(".feedback")).toContainText("Correct!");
+  await page.getByRole("button", { name: "Tablet home", exact: true }).click();
+  await page.getByRole("tab", { name: "Missions", exact: true }).click();
+  await expect(page.locator(".studio-missions")).toContainText("1/8 complete");
+  await expect(page.locator(".studio-missions")).toContainText("1 gems");
 });

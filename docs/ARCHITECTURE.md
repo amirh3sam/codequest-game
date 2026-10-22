@@ -1,13 +1,14 @@
 # CodeQuest — Architecture
 
-_Last updated: 2026-10-04 · Versions checked on npm 2026-10-04_
+_Last updated: 2026-10-22 · Three.js and Vite versions checked on npm 2026-10-22_
 
 ## 1. Stack
 | Area | Pick (version) | Why |
 |---|---|---|
 | Language | TypeScript 7.0.2 | Types catch bugs early; TS 7 (Go compiler) is the fast, current stable. |
-| Build / dev server | Vite 8.3.2 | Standard, very fast dev server for browser games; easy Web Worker + WASM support. |
+| Build / dev server | Vite 8.3.5 | Standard dev server and browser-game build, with worker/WASM support and current fixes for the 8.3 development-server advisories. |
 | Game engine | Phaser 4.2.1 (MIT) | Most-used free 2D web game engine; built-in Tiled tilemaps, arcade physics, sprite animation. |
+| Tablet cinematic | Three.js 0.186.1 (MIT), loaded only when its animation is requested | Original procedural 3D developer/device rig, articulated arm and head motion, and a perspective camera that enters the tablet screen. Phaser continues to own the city and movement. |
 | Maps | Tiled editor (free) → `.tmj` JSON | Industry-standard free map editor that Phaser loads natively. |
 | UI panels (menus, scroll, task editor, HUD) | Plain TypeScript + HTML/CSS over the canvas | Text-heavy UI is easier and more accessible in DOM than in canvas; no extra framework needed. |
 | Code editor | CodeMirror 6 (`codemirror` 6.0.2, `@codemirror/lang-java` 6.0.2, `lang-javascript` 6.2.5, `lang-python` 6.2.1) | Light, accessible, syntax highlighting for all 4 languages. |

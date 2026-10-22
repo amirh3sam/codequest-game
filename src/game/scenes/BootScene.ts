@@ -271,6 +271,25 @@ export class BootScene extends Phaser.Scene {
   getPosition(): Position {
     return { ...this.position };
   }
+  focusTablet(): () => void {
+    const camera = this.cameras.main,
+      bounded = camera.useBounds;
+    camera.stopFollow();
+    camera.useBounds = false;
+    camera.zoomTo(2.5, 550, "Sine.easeInOut", true);
+    camera.pan(this.hero.x, this.hero.y - 25, 550, "Sine.easeInOut", true);
+    let restored = false;
+    return () => {
+      if (restored) return;
+      restored = true;
+      camera.zoomEffect.reset();
+      camera.panEffect.reset();
+      camera.setZoom(1);
+      camera.useBounds = bounded;
+      camera.centerOn(this.hero.x, this.hero.y);
+      camera.startFollow(this.hero, true, 0.14, 0.14);
+    };
+  }
   previewDrone(value?: number): void {
     this.droneQuest.preview(value);
   }

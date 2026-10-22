@@ -133,7 +133,7 @@ test("opening the tablet during a delivery restores the camera and permits walki
   await expect(page.locator(".feedback")).toContainText("Correct!");
   await page.getByRole("button", { name: "Watch the delivery", exact: true }).click();
   await page.keyboard.press("t");
-  await expect(page.getByRole("dialog", { name: "Developer tablet", exact: true })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Developer tablet", exact: true })).toBeVisible({ timeout: 15_000 });
   expect(await routeOpen(page)).toBe(true);
   await page.keyboard.press("Escape");
   const before = await position(page);

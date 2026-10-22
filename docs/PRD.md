@@ -6,11 +6,20 @@ Current direction: the public release includes Variable District and Logic
 Junction in all four languages. The user's latest priority is deeper education
 and enjoyable gameplay, with code visibly repairing the city. The stranded-drone
 pilot in [GAME-DESIGN.md](GAME-DESIGN.md) now connects guided practice to a world
-repair. A keyboard-operated developer tablet adds independent coding practice.
+repair. The developer tablet now opens through a short original 3D sequence:
+camera approach, articulated hands raising the screen, a head turn toward it,
+then a move into the full-screen workspace. Its tabs hold practice code, examples,
+console output, mission status and the district guide. Missions use the existing
+grader and heart policy; practice remains free. Reduced motion skips the shot.
 Beginner playtesting precedes further district expansion. Older fantasy names and localhost
 scope below describe the original requirements and will be revised as that
 redesign is implemented. Existing heart, reward and save rules remain the pilot's
 baseline.
+
+Personal saves belong to the browser profile used to play, separated by language.
+The shared Vercel URL serves the game assets; it does not serve a shared player
+character or save. Separate players' browser profiles keep independent heroes,
+missions and tablet drafts. Progress is not synchronized across devices.
 
 Current game screenshots: [tech city](screenshots/tech-city.png), [guided drone lesson](screenshots/drone-lesson.png), [repair editor](screenshots/code-repair.png) and [developer tablet](screenshots/developer-tablet.png). Superseded planning pictures have been removed.
 

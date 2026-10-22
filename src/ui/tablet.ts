@@ -2,13 +2,22 @@ import { batteryExample } from "../content/drone-pilot";
 import { executionError } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
 import { button, el } from "./dom";
+import { presentTabletOpening } from "./tablet-opening";
 
 type TabletHost = {
   lang: Lang;
   name: string;
-  hero: HTMLCanvasElement;
+  kind: "boy" | "girl";
+  animate: boolean;
+  focusCamera(): () => void;
   panel(title: string, subtitle: string, wide: boolean): HTMLElement;
   run(code: string): Promise<RunResult>;
+  district: string;
+  gems: number;
+  hearts: number;
+  missions: { title: string; prompt: string; status: "complete" | "available" | "locked"; open(): void }[];
+  guide: { heading: string; body: string; code?: string }[];
+  story?: () => void;
 };
 const FILES: Record<Lang, string> = {
   javascript: "practice.js",
@@ -23,15 +32,10 @@ const HELLO: Record<Lang, string> = {
   java: 'public class Main {\n    public static void main(String[] args) {\n        String message = "Hello, CodeQuest!";\n        System.out.println(message);\n    }\n}',
 };
 
-/** A personal, ungraded workspace. No mission or reward APIs are available here. */
-export function openTablet(host: TabletHost): void {
+/** Practice stays ungraded; mission buttons enter the game's existing task flow. */
+export function openTablet(host: TabletHost): () => void {
   const panel = host.panel("Developer tablet", "Your own coding space · T to open · Esc to put away", true);
   panel.classList.add("tablet-shell");
-  const scene = el("div", "tablet-reveal");
-  scene.setAttribute("aria-hidden", "true");
-  host.hero.classList.add("tablet-hero");
-  scene.append(host.hero, el("span", "tablet-in-hand"));
-  panel.append(scene);
   const studio = el("div", "tablet-studio");
   const title = el("div", "studio-title");
   title.append(
@@ -45,8 +49,10 @@ export function openTablet(host: TabletHost): void {
   const body = el("div", "studio-body");
   const editorPane = el("div", "studio-editor-pane"),
     examplesPane = el("div", "studio-examples"),
-    consolePane = el("div", "studio-console");
-  const panes = [editorPane, examplesPane, consolePane],
+    consolePane = el("div", "studio-console"),
+    missionsPane = el("div", "studio-missions"),
+    guidePane = el("div", "studio-guide");
+  const panes = [editorPane, examplesPane, consolePane, missionsPane, guidePane],
     tabButtons: HTMLButtonElement[] = [];
   const select = (index: number, focus = false) => {
     for (const [i, pane] of panes.entries()) {
@@ -57,7 +63,7 @@ export function openTablet(host: TabletHost): void {
     }
     if (focus) tabButtons[index]?.focus();
   };
-  for (const [i, label] of [FILES[host.lang], "Examples", "Console"].entries()) {
+  for (const [i, label] of [FILES[host.lang], "Examples", "Console", "Missions", "Guide"].entries()) {
     const tab = button(label, () => select(i), "studio-tab");
     tab.id = `tablet-tab-${i}`;
     tab.setAttribute("role", "tab");
@@ -65,13 +71,13 @@ export function openTablet(host: TabletHost): void {
     tab.addEventListener("keydown", (event) => {
       const next =
         event.key === "ArrowRight"
-          ? (i + 1) % 3
+          ? (i + 1) % panes.length
           : event.key === "ArrowLeft"
-            ? (i + 2) % 3
+            ? (i + panes.length - 1) % panes.length
             : event.key === "Home"
               ? 0
               : event.key === "End"
-                ? 2
+                ? panes.length - 1
                 : undefined;
       if (next !== undefined) {
         event.preventDefault();
@@ -208,10 +214,45 @@ export function openTablet(host: TabletHost): void {
       code.focus();
     }),
   );
+  missionsPane.append(
+    el("span", "eyebrow", host.district.toUpperCase()),
+    el("h3", "", `${host.name}'s mission log`),
+    el(
+      "p",
+      "",
+      `${host.hearts} hearts · ${host.gems} gems · ${host.missions.filter((mission) => mission.status === "complete").length}/8 complete`,
+    ),
+  );
+  if (host.story) missionsPane.append(button("Courier story · Help Kai", host.story, "button primary"));
+  for (const [i, mission] of host.missions.entries()) {
+    const card = el("article", "studio-mission");
+    card.append(
+      el(
+        "span",
+        `mission-status ${mission.status}`,
+        mission.status === "complete" ? "COMPLETE" : mission.status === "available" ? "READY TO REPAIR" : "LOCKED",
+      ),
+      el("h4", "", `${i + 1}. ${mission.title}`),
+      el("p", "", mission.prompt),
+    );
+    if (mission.status === "available") card.append(button(`Work on ${mission.title}`, mission.open));
+    missionsPane.append(card);
+  }
+  guidePane.append(
+    el("span", "eyebrow", `${host.district.toUpperCase()} / GUIDE`),
+    el("h3", "", "Understand the idea, then try it"),
+  );
+  for (const lesson of host.guide) {
+    const card = el("article", "studio-lesson");
+    card.append(el("h4", "", lesson.heading), el("p", "", lesson.body));
+    if (lesson.code) card.append(el("pre", "code-example", lesson.code));
+    guidePane.append(card);
+  }
   body.append(...panes);
   const bottom = el("div", "studio-status");
   bottom.append(status, el("span", "", "FREE PRACTICE · AUTO SAVE"));
   studio.append(title, tabs, body, toolbar, feedback, bottom);
   panel.append(studio);
   select(0);
+  return presentTabletOpening(panel, host.kind, host.name, host.focusCamera, host.animate);
 }

@@ -52,6 +52,8 @@ export class GameApp {
   private busy = false;
   private runToken = 0;
   private toastTimer = 0;
+  private tabletCleanup: (() => void) | null = null;
+  private tabletNavigation = false;
   private callbacks: VillageCallbacks = {
     interact: (id) => this.interact(id),
     position: (position) => this.storePosition(position),
@@ -105,7 +107,10 @@ export class GameApp {
         }
       }
     });
-    window.addEventListener("pagehide", () => this.capturePosition());
+    window.addEventListener("pagehide", () => {
+      this.tabletCleanup?.();
+      this.capturePosition();
+    });
     const latest = LANGUAGES.map(({ id }) => loadGame(id))
       .filter((result) => result.status === "loaded")
       .sort((a, b) => Date.parse(b.state.updatedAt) - Date.parse(a.state.updatedAt))[0];
@@ -142,6 +147,8 @@ export class GameApp {
     return canvas;
   }
   private panel(title: string, subtitle = "", wide = false): HTMLElement {
+    this.tabletCleanup?.();
+    this.tabletCleanup = null;
     if (this.busy) {
       this.runToken++;
       this.runner?.kill();
@@ -149,7 +156,7 @@ export class GameApp {
     }
     this.scene.previewDrone();
     this.scene.setBlocked(true);
-    this.overlay.classList.remove("title-overlay");
+    this.overlay.classList.remove("title-overlay", "tablet-overlay");
     this.overlay.hidden = false;
     const panel = el("section", `panel${wide ? " panel-wide" : ""}`);
     panel.setAttribute("role", "dialog");
@@ -159,6 +166,11 @@ export class GameApp {
     panel.setAttribute("aria-labelledby", heading.id);
     const head = el("div", "panel-heading");
     head.append(heading);
+    if (this.tabletNavigation) {
+      panel.classList.add("tablet-shell", "tablet-task-view");
+      this.overlay.classList.add("tablet-overlay");
+      head.append(button("Tablet home", () => this.tablet(false)));
+    }
     if (this.state) {
       const close = button("×", () => this.close(), "close-button");
       close.setAttribute("aria-label", "Close panel");
@@ -173,6 +185,7 @@ export class GameApp {
     return panel;
   }
   private intro(): void {
+    this.tabletNavigation = false;
     this.runToken++;
     this.runner?.kill();
     this.state = null;
@@ -306,7 +319,7 @@ export class GameApp {
       this.savingAllowed = existing.status !== "storage-error";
       this.begin(createGame(this.lang, { kind: this.heroKind, name: this.heroName.trim() }, now()));
     });
-    panel.append(form, el("p", "intro-footer", "Free to play · Runs on your device · Saves as you explore"));
+    panel.append(form, el("p", "intro-footer", "Your character and progress save in this browser · No account needed"));
   }
   private begin(state: GameState): void {
     if (!isAreaAvailable(state.currentArea)) state = enterArea(state, "variables", now());
@@ -420,6 +433,10 @@ export class GameApp {
     this.hud.replaceChildren(identity, stats, actions, objective, location, footer);
   }
   private close(): void {
+    this.tabletNavigation = false;
+    this.tabletCleanup?.();
+    this.tabletCleanup = null;
+    this.overlay.classList.remove("tablet-overlay");
     if (this.busy) {
       this.runToken++;
       this.runner?.kill();
@@ -509,15 +526,43 @@ export class GameApp {
       if (token === this.runToken) this.busy = false;
     }
   }
-  private tablet(): void {
+  private tablet(animate = true): void {
     if (!this.state) return;
+    this.tabletNavigation = false;
     this.capturePosition();
-    openTablet({
+    const progress = this.state.areas[this.area.id];
+    this.tabletCleanup = openTablet({
       lang: this.lang,
       name: this.state.hero.name,
-      hero: this.icon(this.state.hero.kind === "girl" ? "heroGirl" : "heroBoy"),
+      kind: this.state.hero.kind,
+      animate,
+      focusCamera: () => this.scene.focusTablet(),
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
       run: (code) => this.practice(code),
+      district: this.area.name,
+      hearts: progress.hearts,
+      gems: progress.gems,
+      guide: this.area.lesson.pages,
+      missions: this.area.tasks.map((task) => ({
+        title: task.title,
+        prompt: task.prompt,
+        status: progress.solved.includes(task.id)
+          ? "complete"
+          : this.state && canSolveTask(this.state, this.area, task.id)
+            ? "available"
+            : "locked",
+        open: () => {
+          this.tabletNavigation = true;
+          this.editor(task);
+        },
+      })),
+      story:
+        this.area.id === "variables"
+          ? () => {
+              this.tabletNavigation = true;
+              this.mission();
+            }
+          : undefined,
     });
   }
   private lesson(page = 0): void {

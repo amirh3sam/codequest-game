@@ -12,13 +12,21 @@ Start with **Mission** to meet Kai. The guided drone lesson lets you predict, ru
 
 ![The actual drone lesson with a working code example, prediction choices and battery meter](docs/screenshots/drone-lesson.png)
 
-Press **T** or click **Tablet** to raise your developer's tablet. Its coding workspace has Editor, Examples and Console tabs, a real Run button and a separate saved practice draft for each language. Free practice never spends hearts or awards gems. Press **Esc** to return to the city.
+Press **T** or click **Tablet**: the city camera moves toward your developer, a 3D character raises a wrist-mounted tablet and looks down, and the view moves into its screen. Press **T** or **Skip animation** to jump ahead. Reduced motion opens it instantly.
+
+![The original 3D developer raising and looking at the wrist tablet](docs/screenshots/tablet-cinematic.png)
+
+[Watch the actual tablet opening](docs/screenshots/tablet-opening.webm).
+
+The full-screen tablet holds Editor, Examples, Console, Missions and Guide tabs. Run real code, keep a separate practice draft for each language, or open your current missions inside the device. Free practice never spends hearts or awards gems; mission submissions keep their normal grading rules. Press **Esc** to return to the city.
 
 ![The in-game developer tablet with its coding workspace and practice tabs](docs/screenshots/developer-tablet.png)
 
 ![Writing and running the drone repair with real output and a full battery](docs/screenshots/code-repair.png)
 
 These are screenshots captured from the running game. [Capture notes](docs/screenshots/README.md).
+
+Every player opening the shared link in their own browser profile has an independent character, mission progress and tablet drafts. Saves stay in that browser; they are not shared with other players or synchronized across devices.
 
 ## Run it locally
 Requires Node.js 24+.

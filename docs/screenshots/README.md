@@ -7,11 +7,14 @@ real game and working code, rather than concept art or interface mockups.
 - `drone-lesson.png`: a real prediction example printing 5 and updating the battery.
 - `code-repair.png`: a learner's repair printing 12 in the actual editor.
 - `developer-tablet.png`: the tablet's practice editor and tabs.
+- `tablet-cinematic.png`: the actual 3D developer, arm-mounted device and downward gaze during its opening sequence.
+- `tablet-opening.webm`: browser video of the camera approach, 3D hand/head motion and full-screen transition.
 
 Regenerate with the local game running at `http://127.0.0.1:5173`:
 
 ```sh
 node scripts/capture-screenshots.mjs
+node scripts/capture-tablet-video.mjs
 ```
 
 The capture uses an isolated browser profile and a valid local save to frame the

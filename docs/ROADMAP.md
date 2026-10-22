@@ -4,6 +4,9 @@ Each task fits in one session. Tags point to PRD requirements.
 
 ## Current priority: learning through adventure (2026-10-22)
 
+- [x] Cinematic tablet: camera approaches the developer, articulated 3D hands lift a wrist tablet, the head follows its screen, and the view moves into the full-screen workspace. Keep instant access for reduced motion, cancellation and the existing code runners. Added Missions and Guide tabs with tasks inside the device.
+- [x] Verify that players opening the same public link in separate browsers retain independent characters and progress; make the local-save scope clear.
+
 The user reviewed the public game and identified that numbered exercises alone
 do not make studying engaging. The next milestone is a short, teachable adventure
 with characters, exploration and a visible result from the player's code.
