@@ -2,6 +2,8 @@
 
 Live game: **https://codequest-game-inky.vercel.app/**.
 
+The checked game release `3f0f671` includes Variable District and Logic Junction in all four languages. Production deployment `dpl_CynDAn9qAixZqwB3M7oYijatS8tm` was verified from an unauthenticated browser: HTTP 200, all eight Logic Junction missions and the Router completed, no page errors, and no development test hooks. Source-only documentation commits after that release do not change its game bundle.
+
 Source: [amirh3sam/codequest-game](https://github.com/amirh3sam/codequest-game), using the local `public` Git remote. The original private `origin` is retained.
 
 The separate Vercel project is `codequest-game`, owned by `amirhesam-tech`. It serves a static Vite build using Node 24, `npm ci`, `npm run build`, and the `dist` output directory. The build copies the local Python and TypeScript runtimes before compiling. All four languages run in browser workers; no game backend or player account is required. Progress stays in each player's browser.
