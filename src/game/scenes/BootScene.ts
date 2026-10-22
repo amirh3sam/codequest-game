@@ -94,6 +94,7 @@ export class BootScene extends Phaser.Scene {
         string,
         Phaser.Input.Keyboard.Key
       >;
+    for (const name of ["E", "SPACE"]) this.keys[name]?.on("down", () => this.interactClosest());
     this.game.events.emit("village-ready");
   }
   private marker(id: string, x: number, y: number, sprite: { texture: string; frame: number }, title: string): void {
@@ -236,6 +237,14 @@ export class BootScene extends Phaser.Scene {
     this.callbacks?.position(this.getPosition());
     this.callbacks?.interact(marker.id);
   }
+  private interactClosest(): void {
+    if (this.blocked || !this.state || !this.area || document.activeElement?.matches("input, textarea, select")) return;
+    const nearest = this.markers.reduce<Marker | null>(
+      (best, marker) => (!best || this.distance(marker) < this.distance(best) ? marker : best),
+      null,
+    );
+    if (nearest && this.distance(nearest) <= 68) this.interact(nearest);
+  }
   update(time: number, delta: number): void {
     if (this.blocked || !this.state || !this.area || document.activeElement?.matches("input, textarea, select")) return;
     const pressed = (key: string) => this.keys[key]?.isDown;
@@ -278,11 +287,5 @@ export class BootScene extends Phaser.Scene {
       this.prompt.setText(
         `E / Space · ${near.id === "lesson" ? "Open the quick guide" : near.id === "boss" ? "Inspect the Firewall" : `Task ${near.id.split("-")[1]}`}`,
       );
-    if (
-      near &&
-      ((this.keys.E && Phaser.Input.Keyboard.JustDown(this.keys.E)) ||
-        (this.keys.SPACE && Phaser.Input.Keyboard.JustDown(this.keys.SPACE)))
-    )
-      this.interact(near);
   }
 }

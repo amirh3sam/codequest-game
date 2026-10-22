@@ -8,6 +8,10 @@ Boy/girl developers wear hoodies, carry laptops and backpacks; quests use coding
 terminals and a Firewall data-hub challenge. Preserve the solid-object physics,
 walking, wider spacing, camera, task IDs, runners and version-1 saves.
 
+- [x] Correct developer walking to remove the extra-leg overlap; validate all 48 frames.
+- [x] Create the public game repository, commit/push the playable city and deploy a separate Vercel project.
+- [ ] Next authorized task: Logic Junction conditions lessons, eight tasks and a boss in all four languages; connect area travel and saves, then validate, commit and deploy.
+
 ## Current priority: playable first area (2026-10-21)
 The user asked to replace the static preview with gameplay. Build a connected
 Variable Village slice: New/Continue, language and hero/name selection, movement,

@@ -1,5 +1,11 @@
 # Progress log (newest on top)
 
+## 2026-10-22 (public verification and interaction timing)
+- **Done:** launched https://codequest-game-inky.vercel.app/ from public commit `8a9fd28`. A fresh, unauthenticated browser successfully submitted real code in JavaScript, TypeScript, Python and Java; each returned a correct answer with HTTP-200 runtime assets and no page errors. Added the live link to the README. Fixed a quick-key interaction race found by Linux CI: E/Space now dispatches on key-down instead of relying on the next render frame.
+- **Checks:** the full physical eight-terminal/Firewall route passed after the input fix. Initial Linux CI passed 68 of 69 tests and exposed the missed short press; its next run will verify the fix there.
+- **Next:** Logic Junction content and area travel; commit and publish it after validation.
+- **Blockers:** GitHub-to-Vercel automatic builds need GitHub app repository access; CLI deployment works and publishes the public game successfully.
+
 ## 2026-10-22 (walking fix and public launch)
 - **Done:** replaced overlapping standing/animated legs with exactly two extracted leg layers per developer pose; retained complete shoes and removed detached edge fragments. The boy and girl keep their laptop, backpack and upper body while their legs walk. Created public `amirh3sam/codequest-game` and separate Vercel `codequest-game` project in `amirhesam-tech`; the original private repository and calculator project remain intact. Added deployment configuration and persistent instructions to commit completed tasks and continue authorized roadmap work.
 - **Checks:** 196 unit tests and nine focused Chromium tests passed, including all 48 walking frames, both avatars/Continue, full physical quest route, rewards, victory, reset, terminal/trunk collision and transparent tree layering. Three final art/avatar/walking checks also passed after removing tiny edge fragments. Lint, type checking and the production build passed.

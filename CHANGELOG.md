@@ -4,6 +4,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ## [Unreleased]
 ### Fixed
+- Very quick E/Space presses now open nearby terminals directly on key-down, so an interaction is retained even when key-up arrives before the next rendered frame.
 - Developer walking no longer draws standing legs under the animated legs. Each pose now separates two complete leg layers, preserves the original shoes, removes detached edge fragments and keeps the laptop/backpack on the body. Added a browser regression covering all 48 boy/girl walking frames.
 ### Added
 - Public GitHub repository and a separate Vercel game project, with reproducible Vite build settings and ignored deployment credentials/state. Completed tasks are committed and pushed; authorized roadmap work continues automatically.
