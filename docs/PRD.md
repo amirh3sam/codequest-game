@@ -1,6 +1,15 @@
 # CodeQuest — Product Requirements (PRD)
 
-_Last updated: 2026-10-04 · Status: draft for approval_
+_Last updated: 2026-10-22 · Status: playable foundation; adventure-learning redesign planned_
+
+Current direction: the public release includes Variable District and Logic
+Junction in all four languages. The user's latest priority is deeper education
+and enjoyable gameplay, with code visibly repairing the city. The next milestone
+is the stranded-drone mission in [GAME-DESIGN.md](GAME-DESIGN.md); its prototype
+and playtest precede further district expansion. Older fantasy names and localhost
+scope below describe the original requirements and will be revised as that
+redesign is implemented. Existing heart, reward and save rules remain the pilot's
+baseline.
 
 Reference art: [`reference/game-flow.png`](reference/game-flow.png) (whole game flow), [`reference/map-style-1.png`](reference/map-style-1.png) (target map style), `map-style-2/3.png` (more examples).
 

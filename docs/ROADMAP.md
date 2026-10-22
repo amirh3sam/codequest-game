@@ -2,6 +2,23 @@
 
 Each task fits in one session. Tags point to PRD requirements.
 
+## Current priority: learning through adventure (2026-10-22)
+
+The user reviewed the public game and identified that numbered exercises alone
+do not make studying engaging. The next milestone is a short, teachable adventure
+with characters, exploration and a visible result from the player's code.
+See [GAME-DESIGN.md](GAME-DESIGN.md) for the story, teaching sequence, drone-mission
+pilot, build order and beginner playtest criteria. Later-district expansion and
+editor polish follow this pilot.
+
+- [x] Review the current learning/game loop and record a concrete redesign plan.
+- [ ] Prototype the stranded-drone mission: quest giver, clear objective, short
+      contextual lesson, safe code preview and persistent world repair.
+- [ ] Add targeted explanations, fading starter code and a transfer exercise.
+- [ ] Add a route opening, an optional discovery and character reactions.
+- [ ] Validate the pilot in all four languages, preserve old saves and rewards,
+      then playtest comprehension and enjoyment with beginners.
+
 ## Current art direction: modern tech city (2026-10-22)
 Delivered: replaced the fantasy setting with Variable District, a modern coding campus.
 Boy/girl developers wear hoodies, carry laptops and backpacks; quests use coding

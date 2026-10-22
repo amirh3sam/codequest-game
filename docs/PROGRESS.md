@@ -1,5 +1,11 @@
 # Progress log (newest on top)
 
+## 2026-10-22 (education and game-design review)
+- **Done:** reviewed the live feature set, lessons and progression against the user's concern that the game feels like completing exercises. Added `docs/GAME-DESIGN.md`: city-restoration story, discover/learn/experiment/repair loop, PRIMM-inspired teaching sequence, a stranded-drone pilot, concept-to-gameplay mapping, build order and beginner playtest criteria. Moved this pilot ahead of adding more districts or editor polish in the roadmap and recorded the current direction in the PRD.
+- **Checks:** documentation and links reviewed; `git diff --check` passed. No runtime changes, so no additional game tests or Vercel release are needed. Existing public release and GitHub CI are green.
+- **Next:** implement the small drone mission with contextual teaching and visible world consequences; retain four-language execution, saves and current reward rules.
+- **Blockers:** none. The gameplay ideas in the design are planned, not yet implemented.
+
 ## 2026-10-22 (Logic Junction)
 - **Done:** added four lesson pages, eight conditions missions and the Router boss with three hints in JavaScript, TypeScript, Python and Java. Generalized the loader, HUD, journal, drafts, penalties, victory and world markers to use the active district. The world map now opens Logic Junction after the Firewall; travel and Continue retain independent district progress. Logic Junction uses a violet campus tint and decision-network signage, reusing the existing solid map. No save migration or new dependencies.
 - **Checks:** 201 unit tests and all 71 Chromium cases passed across the complete UI run and a 58-case worker recheck. The first full run passed 69 cases and exposed two Java checks competing with title-screen rendering; worker-only fixtures now sleep the renderer, retain the real workers and pass unchanged runtime assertions. The Java recovery test allows two compile caps plus the run timeout. All 72 reference programs passed. District travel, Continue, reset isolation, hints/victory and all 48 walking frames were verified; a Logic Junction screenshot was inspected. Lint, type checking and the production build passed; production test hooks are absent.
