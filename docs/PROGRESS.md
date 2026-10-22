@@ -1,5 +1,12 @@
 # Progress log (newest on top)
 
+## 2026-10-22 (verified public 3D tablet release)
+- **Release:** commit `ae867b9` is deployed by Vercel as `dpl_FZdk1sWYSQgrtoPCYx3SumwqwzrG`, READY at https://codequest-game-inky.vercel.app/. GitHub CI run `39861733403` passed lint, types, 211 unit tests and all 90 Chromium tests, without retries reported.
+- **Public verification:** a fresh unauthenticated browser received HTTP 200, watched the real 3D boy/tablet sequence, entered the full-screen workspace, completed a graded mission inside its frame and ran free practice successfully. The temporary 3D canvas was removed afterward; production test hooks were absent and no page errors occurred.
+- **Independent players:** two fresh public browser profiles used the same URL. Nova retained a boy character, one solved mission, one gem and Nova's own practice draft. Luna retained a girl character, zero solved missions, zero gems and Luna's own draft. Both reloaded successfully without sharing progress or characters. Saves remain local to the browser profile rather than following an account across devices.
+- **Next:** beginner playtesting of the courier learning loop and the tablet interaction; optional discoveries and later story missions remain on the roadmap.
+- **Blockers:** none for the public game.
+
 ## 2026-10-22 (3D wrist tablet and independent players)
 - **Done:** replaced the flat tablet reveal with an original procedural 3D boy/girl developer, hoodie/backpack, articulated shoulders/elbows/hands and a wrist-mounted display. The city camera approaches the player, the arms lift the device, the head and eyes follow its screen, then a perspective camera moves into the full-screen tablet. T / Skip bypasses the shot; Esc cancels it. Closing, late imports and unavailable 3D contexts leave the workspace/city usable. Geometry, textures and renderer are disposed after the shot.
 - **Done:** added Missions and Guide tabs alongside practice, examples and console. Mission tasks stay inside the device frame and use the existing grader; Tablet home returns without replaying the opening. No save schema or reward changes. The title and README now explain that characters, progress and drafts belong to the player's browser profile. Two isolated players using the same URL retain different names, heroes, mission progress and drafts through reload; cross-device account synchronization is not part of the current save model.
