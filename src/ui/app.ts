@@ -1,6 +1,8 @@
+import { dronePilot } from "../content/drone-pilot";
 import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
 import type { AreaContent, Boss, Task } from "../content/schema";
 import village from "../content/village.json" with { type: "json" };
+import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone-mission";
 import { GEM_REWARD, isValidHeroName } from "../core/rules";
 import { loadGame, saveGame } from "../core/save";
 import {
@@ -20,21 +22,12 @@ import {
 import { SPRITES } from "../game/assets";
 import type { BootScene, VillageCallbacks } from "../game/scenes/BootScene";
 import { executionError, grade } from "../grader/grade";
-import type { Lang } from "../runners/types";
+import type { Lang, RunResult } from "../runners/types";
 import { WorkerHost } from "../runners/worker-host";
+import { button, el } from "./dom";
+import { batteryCard, openDroneLesson } from "./drone-lesson";
+import { openTablet } from "./tablet";
 
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className = "", text = ""): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  node.textContent = text;
-  return node;
-}
-function button(text: string, action: () => void, className = "button"): HTMLButtonElement {
-  const node = el("button", className, text);
-  node.type = "button";
-  node.addEventListener("click", action);
-  return node;
-}
 const now = () => new Date().toISOString();
 const LANGUAGES: { id: Lang; name: string; badge: string; description: string }[] = [
   { id: "javascript", name: "JavaScript", badge: "JS", description: "The language of the web" },
@@ -70,6 +63,19 @@ export class GameApp {
     this.notice.setAttribute("aria-live", "polite");
     root.replaceChildren(this.hud, this.overlay, this.notice);
     window.addEventListener("keydown", (event) => {
+      if (
+        event.code === "KeyT" &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        !event.repeat &&
+        this.state &&
+        this.overlay.hidden &&
+        !document.activeElement?.matches("input,textarea,select")
+      ) {
+        event.preventDefault();
+        this.tablet();
+      }
       if (event.key === "Escape" && this.state) {
         event.preventDefault();
         if (this.overlay.hidden) this.pause();
@@ -86,7 +92,7 @@ export class GameApp {
           ...this.overlay.querySelectorAll<HTMLElement>(
             'button:not(:disabled), input, textarea:not(:disabled), select, [tabindex="0"]',
           ),
-        ];
+        ].filter((node) => node.getClientRects().length > 0 && node.tabIndex >= 0);
         const first = nodes[0],
           last = nodes[nodes.length - 1];
         if (
@@ -136,6 +142,12 @@ export class GameApp {
     return canvas;
   }
   private panel(title: string, subtitle = "", wide = false): HTMLElement {
+    if (this.busy) {
+      this.runToken++;
+      this.runner?.kill();
+      this.busy = false;
+    }
+    this.scene.previewDrone();
     this.scene.setBlocked(true);
     this.overlay.classList.remove("title-overlay");
     this.overlay.hidden = false;
@@ -364,6 +376,8 @@ export class GameApp {
     gems.dataset.testid = "gems";
     stats.append(hearts, gems, el("span", "task-count", `${progress.solved.length}/8 tasks`));
     const actions = el("nav", "hud-actions");
+    actions.append(button("Tablet", () => this.tablet()));
+    if (this.area.id === "variables") actions.append(button("Mission", () => this.mission()));
     actions.append(
       button("Lesson", () => this.lesson()),
       button("Tasks", () => this.journal()),
@@ -379,7 +393,9 @@ export class GameApp {
           ? "The district is online. Well played!"
           : progress.solved.length === 8
             ? `${this.area.boss.name} is ready. Visit the data hub!`
-            : `Next: ${this.area.tasks[progress.solved.length]?.title ?? "Explore the district"}`,
+            : this.area.id === "variables" && !isDroneRepaired(state)
+              ? "Help Kai launch the delivery drone · Mission"
+              : `Next: ${this.area.tasks[progress.solved.length]?.title ?? "Explore the district"}`,
       ),
     );
     const meter = el("div", "quest-meter");
@@ -397,7 +413,10 @@ export class GameApp {
     );
     const footer = el("div", "game-footer");
     this.saved = el("span", "save-state");
-    footer.append(el("span", "", "WASD / Arrows · Move     E / Space · Interact     Esc · Menu"), this.saved);
+    footer.append(
+      el("span", "", "WASD / Arrows · Move     E / Space · Interact     T · Tablet     Esc · Menu"),
+      this.saved,
+    );
     this.hud.replaceChildren(identity, stats, actions, objective, location, footer);
   }
   private close(): void {
@@ -408,6 +427,7 @@ export class GameApp {
     }
     this.overlay.hidden = true;
     this.overlay.replaceChildren();
+    this.scene.previewDrone();
     this.scene.setBlocked(false);
     this.capturePosition();
   }
@@ -419,7 +439,8 @@ export class GameApp {
   }
   private interact(id: string): void {
     if (!this.state) return;
-    if (id === "lesson") this.lesson();
+    if (id === "courier") this.mission();
+    else if (id === "lesson") this.lesson();
     else if (id === "boss") {
       if (canFightBoss(this.state, this.area)) this.editor(this.area.boss);
       else
@@ -438,6 +459,66 @@ export class GameApp {
             : "Solve the earlier tasks to unlock this one.",
         );
     }
+  }
+  private mission(): void {
+    if (!this.state || this.area.id !== "variables") return;
+    this.capturePosition();
+    if (!this.state.areas.variables.solved.includes("variables-1")) {
+      const panel = this.panel(
+        "Kai · A delivery worth debugging",
+        "A stranded drone. A city lane waiting for your code.",
+      );
+      panel.classList.add("drone-lesson");
+      const portrait = el("div", "courier-intro");
+      portrait.append(this.icon("heroBoy", true), el("p", "lesson-body", dronePilot.intro));
+      panel.append(
+        portrait,
+        el("p", "lesson-body", dronePilot.goal),
+        el("p", "lesson-feedback explained", dronePilot.badge),
+      );
+      const badge = this.area.tasks[0];
+      if (badge) panel.append(button("Create the training badge", () => this.editor(badge), "button primary"));
+      panel.append(button("Look around the city", () => this.close()));
+      return;
+    }
+    openDroneLesson({
+      lang: this.lang,
+      panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
+      run: (code) => this.practice(code),
+      preview: (value) => this.scene.previewDrone(value),
+      build: () => {
+        const repair = this.area.tasks.find((task) => task.id === DRONE_TASK_ID);
+        if (repair) this.editor(repair, true);
+      },
+      close: () => this.close(),
+      delivered: isDroneRepaired(this.state),
+      canLaunch: this.scene.canLaunchDrone(),
+      launch: () => {
+        this.close();
+        this.scene.launchDrone();
+      },
+    });
+  }
+  private async practice(code: string): Promise<RunResult> {
+    if (!this.runner || this.busy) throw new Error("A program is already running.");
+    this.busy = true;
+    const token = ++this.runToken;
+    try {
+      return await this.runner.run(code);
+    } finally {
+      if (token === this.runToken) this.busy = false;
+    }
+  }
+  private tablet(): void {
+    if (!this.state) return;
+    this.capturePosition();
+    openTablet({
+      lang: this.lang,
+      name: this.state.hero.name,
+      hero: this.icon(this.state.hero.kind === "girl" ? "heroGirl" : "heroBoy"),
+      panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
+      run: (code) => this.practice(code),
+    });
   }
   private lesson(page = 0): void {
     if (!this.state) return;
@@ -461,6 +542,8 @@ export class GameApp {
     if (!this.state) return;
     this.capturePosition();
     const panel = this.panel("District missions", "Solve them in order. Each correct answer earns gems.");
+    if (this.area.id === "variables")
+      panel.append(button("Courier mission · Launch the drone", () => this.mission(), "button mission-link"));
     for (const [index, task] of this.area.tasks.entries()) {
       const solved = this.state.areas[this.area.id].solved.includes(task.id),
         available = canSolveTask(this.state, this.area, task.id);
@@ -530,7 +613,7 @@ export class GameApp {
     };
     this.persist();
   }
-  private editor(task: Task | Boss): void {
+  private editor(task: Task | Boss, droneTraining = false): void {
     if (!this.state || !this.runner) return;
     this.capturePosition();
     const boss = task.id === this.area.boss.id,
@@ -549,6 +632,15 @@ export class GameApp {
       el("p", "task-prompt", task.prompt),
       el("small", "", "Run is free. A wrong submission costs one heart; code errors don't."),
     );
+    const drone = task.id === DRONE_TASK_ID ? batteryCard() : null;
+    if (drone) {
+      if (droneTraining) instructions.prepend(el("span", "lesson-step", "3 / 3 · BUILD THE REPAIR"));
+      instructions.append(
+        el("p", "drone-context", dronePilot.make),
+        drone.node,
+        button("Get a guided explanation", () => this.mission()),
+      );
+    }
     const hints = el("div", "hints");
     const renderHints = () => {
       if (!this.state || !boss) return;
@@ -586,6 +678,16 @@ export class GameApp {
         this.draft(task, code.value);
       }
     });
+    if (drone)
+      instructions.append(
+        button("Use mission starter", () => {
+          code.value = task.starter;
+          this.draft(task, code.value);
+          drone.setValue(3);
+          this.scene.previewDrone(3);
+          code.focus();
+        }),
+      );
     const output = el("pre", "output", "Your output will appear here."),
       feedback = el("div", "feedback");
     feedback.setAttribute("role", "status");
@@ -618,6 +720,12 @@ export class GameApp {
           const error = executionError(result);
           output.textContent = result.stdout || "(No output)";
           feedback.textContent = error?.message ?? "Run complete. Submit when you're ready.";
+          const charge = readBatteryOutput(result.stdout);
+          if (drone && !error && charge !== undefined) {
+            drone.setValue(charge);
+            this.scene.previewDrone(charge);
+            feedback.textContent = `Run complete. Battery: ${charge}/12 cells. ${charge === 12 ? "Ready to submit the repair." : `How can you add the missing ${12 - charge} cells?`}`;
+          }
         } else {
           const result = await grade(task, code.value, this.runner);
           if (token !== this.runToken || !this.state) return;
@@ -633,6 +741,7 @@ export class GameApp {
             }
             feedback.className = "feedback success";
             feedback.textContent = `Correct! +${GEM_REWARD[(task as Task).difficulty]} gem${GEM_REWARD[(task as Task).difficulty] > 1 ? "s" : ""}. Your progress is saved.`;
+            if (drone) drone.setValue(12, true);
             const next = this.area.tasks[this.state.areas[this.area.id].solved.length];
             actions.replaceChildren(
               button(
@@ -645,6 +754,19 @@ export class GameApp {
               ),
               button("Back to district", () => this.close()),
             );
+            if (drone)
+              actions.prepend(
+                button(
+                  "Watch the delivery",
+                  () => {
+                    this.close();
+                    this.scene.launchDrone();
+                  },
+                  "button primary",
+                ),
+              );
+            else if (task.id === "variables-1")
+              actions.prepend(button("Continue with Kai", () => this.mission(), "button primary"));
           } else {
             const transition = applySubmissionFailure(
               this.state,
@@ -664,6 +786,12 @@ export class GameApp {
             }
             feedback.className = "feedback error";
             feedback.textContent = `${result.message}${["wrong-output", "rule-failed", "run-timeout"].includes(result.failure ?? "") ? " −1 heart." : " No heart lost."}`;
+            const charge = readBatteryOutput(result.output);
+            if (drone && result.failure === "wrong-output" && charge !== undefined) {
+              drone.setValue(charge);
+              this.scene.previewDrone(charge);
+              feedback.textContent += ` The battery needs 12; your code printed ${charge}. Starting from 3, what amount fills the gap?`;
+            }
           }
         }
       } catch (error) {

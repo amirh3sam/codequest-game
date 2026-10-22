@@ -1,0 +1,26 @@
+{
+  "title": "A delivery worth debugging",
+  "courier": "Kai",
+  "intro": "I'm Kai, the district courier. Our network went down, and this drone is carrying the part that powers the courier lane. Its battery is almost empty. Can you help me get it airborne?",
+  "badge": "First, make a training badge so the charging station can recognize a developer. Store the text Ada in a variable and print it. Then come back to Mission or talk to me beside the entrance.",
+  "goal": "Charge the drone from 3 to 12 cells. Your code will send the part to the receiver and open the service lane between the studios.",
+  "predict": "A variable is a name for a stored value. This battery starts at 3. The += operator adds to the value already stored. Predict the number this program will print, then run it.",
+  "investigate": "battery = 3 stores the starting charge. battery += 2 reads that 3, adds 2, and stores 5 back under the same name. Printing battery lets you inspect its new value.",
+  "modify": "Try a different charge amount. You need 12 cells to launch. The starting value is 3, so think about the gap between 3 and 12. Each preview runs a real program, but the drone stays safely on its pad.",
+  "make": "Now build the repair yourself. Keep the starting battery at 3, add the missing charge, and print battery. Run your code to inspect the battery before submitting the repair.",
+  "delivered": "It made it! The receiver has the replacement part, and the courier lane is open. You used a changing value to repair something in the city. The next missions will help bring the rest of the district online.",
+  "transfer": "One last check: another drone starts with 4 cells and receives 3 more. What will battery contain now? Predict, then run the program to check your reasoning. This practice does not spend hearts or award gems.",
+  "code": {
+    "javascript": "let battery = __START__;\nbattery += __CHARGE__;\nconsole.log(battery);",
+    "typescript": "let battery: number = __START__;\nbattery += __CHARGE__;\nconsole.log(battery);",
+    "python": "battery = __START__\nbattery += __CHARGE__\nprint(battery)",
+    "java": "public class Main {\n    public static void main(String[] args) {\n        int battery = __START__;\n        battery += __CHARGE__;\n        System.out.println(battery);\n    }\n}"
+  },
+  "world": {
+    "courier": { "x": 226, "y": 680 },
+    "pad": { "x": 660, "y": 324 },
+    "dock": { "x": 768, "y": 294 },
+    "gate": { "x": 768, "y": 340 },
+    "northGate": { "x": 768, "y": 256 }
+  }
+}

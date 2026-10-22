@@ -12,12 +12,14 @@ pilot, build order and beginner playtest criteria. Later-district expansion and
 editor polish follow this pilot.
 
 - [x] Review the current learning/game loop and record a concrete redesign plan.
-- [ ] Prototype the stranded-drone mission: quest giver, clear objective, short
+- [x] Prototype the stranded-drone mission: quest giver, clear objective, short
       contextual lesson, safe code preview and persistent world repair.
-- [ ] Add targeted explanations, fading starter code and a transfer exercise.
-- [ ] Add a route opening, an optional discovery and character reactions.
-- [ ] Validate the pilot in all four languages, preserve old saves and rewards,
-      then playtest comprehension and enjoyment with beginners.
+- [x] Add targeted explanations, an independent repair after guided edits, and a transfer exercise.
+- [x] Open a solid courier lane and let Kai react to the repair.
+- [ ] Add optional discoveries and story choices beyond the courier mission.
+- [x] Validate the pilot in all four languages; preserve old saves and one-time rewards.
+- [ ] Playtest comprehension and enjoyment with beginners.
+- [x] Add a T-key developer tablet with an animated opening, editor/example/console tabs, real free practice and saved per-language drafts.
 
 ## Current art direction: modern tech city (2026-10-22)
 Delivered: replaced the fantasy setting with Variable District, a modern coding campus.

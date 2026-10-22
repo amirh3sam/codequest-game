@@ -45,11 +45,11 @@
     },
     {
       "id": "variables-2",
-      "title": "A pocket of coins",
+      "title": "Charge the delivery drone",
       "difficulty": "easy",
-      "prompt": "Create a number variable named coins with the value 12, then print it.",
-      "starter": "coins = 0\nprint(coins)",
-      "solution": "coins = 12\nprint(coins)",
+      "prompt": "Kai's delivery drone starts with 3 battery cells and needs 12 to launch. Create battery with the value 3, add the missing charge using += or battery = battery + ..., then print battery. The output should be 12. A correct repair opens the courier lane.",
+      "starter": "battery = 3\n# Add the missing charge, then print battery.",
+      "solution": "battery = 3\nbattery += 9\nprint(battery)",
       "tests": [
         {
           "expectedStdout": "12\n"
@@ -58,8 +58,18 @@
       "rules": [
         {
           "kind": "mustMatch",
-          "pattern": "(?:^|\\n)\\s*coins\\s*=",
-          "message": "Create and use the coins variable requested in the task."
+          "pattern": "(?:^|\\n)\\s*battery\\s*=\\s*3\\b",
+          "message": "Start with a variable named battery containing 3 cells."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bbattery\\s*(?:\\+=|=\\s*battery\\s*\\+)",
+          "message": "Add charge to battery using += or battery = battery + ... ."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bprint\\s*\\(\\s*battery\\s*\\)",
+          "message": "Print the battery variable so the charger can read its new value."
         }
       ]
     },

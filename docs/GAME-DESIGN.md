@@ -1,10 +1,13 @@
 # CodeQuest: learning through a city adventure
 
-Design direction recorded on 2026-10-22 after the user's review. This is the plan
-for the next gameplay milestone; the missions described below are not implemented
-yet. Variable District and Logic Junction remain the current public release.
+Design direction recorded on 2026-10-22 after the user's review. The first drone
+pilot is implemented in Variable District: Kai, prediction, real-code previews,
+an independent repair, a delivery animation, a solid lane that opens and free
+transfer practice in all four languages. A T-key tablet adds independent practice.
+The broader mission ideas below remain the direction for later work; beginner
+playtests have not yet established learning gains or enjoyment.
 
-## The problem with the current game
+## The problem identified before the pilot
 
 The browser runners, saves, movement and progression work. The main activity is
 still opening a numbered terminal, matching its output and unlocking the next
@@ -129,14 +132,17 @@ should not define the pacing of an entire district.
 
 ## Build order
 
-1. **Next: drone mission pilot.** Add a quest giver, clear objective, contextual
-   learning card, interactive preview and one persistent repair animation in the
-   existing first district. Adapt it for the four supported languages. Validate
-   old saves and rewards before releasing it.
-2. **Teach through feedback.** Add value displays, focused explanations,
-   progressively reduced scaffolding and a transfer exercise.
-3. **Add exploration and choice.** Introduce a route opening, a short optional
-   activity, character reactions and a small earned reward.
+1. **Delivered: drone mission pilot.** Kai gives a city-repair objective. The
+   second task keeps its stable ID and reward while becoming a battery repair.
+   Accepted code opens both lane gates; Watch the delivery runs the flight.
+   Old completed saves restore the repaired world without another reward.
+2. **Delivered in the pilot: teach through feedback.** The learner predicts
+   3 + 2, changes the charge in free real-code previews, writes the repair from
+   starter code, and can try a 4 + 3 variation afterward. A live meter and focused
+   feedback connect code values to the result. Extend this to later missions.
+3. **Partly delivered: exploration and choice.** The courier lane is a physical
+   shortcut, and Kai responds to the repair. Further discoveries, optional story
+   branches and earned cosmetics remain future work.
 4. **Rework the district finale.** Combine learned ideas in a staged repair with
    clear world effects, then apply the proven pattern to Logic Junction.
 5. **Expand the curriculum.** Build later districts and improve the editor after

@@ -5,6 +5,7 @@ import { canFightBoss, canSolveTask, type GameState, type Position } from "../..
 import { buildAdventureWorld } from "../adventure-world";
 import { SPRITES, TILESETS } from "../assets";
 import { canStandAt, moveWithCollisions, type Solid } from "../collision";
+import { DroneQuest } from "../drone-quest";
 import { createHeroTextures, type Facing, heroFrame } from "../hero-sprites";
 import { createQuestProps } from "../quest-props";
 
@@ -33,6 +34,8 @@ export class BootScene extends Phaser.Scene {
   private keys: Record<string, Phaser.Input.Keyboard.Key> = {};
   private markers: Marker[] = [];
   private districtLabel!: Phaser.GameObjects.Text;
+  private droneQuest!: DroneQuest;
+  private delivering = false;
   private solids: Solid[] = [];
   private state: GameState | null = null;
   private area: AreaContent | null = null;
@@ -71,7 +74,7 @@ export class BootScene extends Phaser.Scene {
       this.marker(`variables-${index + 1}`, spot.x, spot.y, { texture: "tech-props", frame: 0 }, `${index + 1}`);
     this.marker("boss", village.boss.x, village.boss.y, SPRITES.boss, "Firewall");
     this.districtLabel = this.add
-      .text(768, 294, "VALUES / DATA HUB", { fontFamily: "Consolas", fontSize: "15px", color: "#9ae9ff" })
+      .text(768, 382, "VALUES / DATA HUB", { fontFamily: "Consolas", fontSize: "15px", color: "#9ae9ff" })
       .setOrigin(0.5)
       .setDepth(2)
       .setAlpha(0.7);
@@ -83,6 +86,14 @@ export class BootScene extends Phaser.Scene {
       .setDepth(420)
       .setVisible(false);
     this.shadow.setVisible(false);
+    this.droneQuest = new DroneQuest(this, this.reducedMotion, (point) => {
+      if (this.blocked) return;
+      if (this.distance(point) <= 68) {
+        this.callbacks?.position(this.getPosition());
+        this.callbacks?.interact("courier");
+      } else this.callbacks?.message("Walk closer to Kai or the receiver, then press E.");
+    });
+    this.droneQuest.sync(null);
     this.prompt = this.add
       .text(480, 512, "", {
         fontFamily: "monospace",
@@ -171,6 +182,8 @@ export class BootScene extends Phaser.Scene {
     this.state = state;
     this.area = area;
     this.callbacks = callbacks;
+    if (previous?.currentArea !== state?.currentArea) this.cancelDelivery();
+    this.droneQuest.sync(state);
     this.hero.setVisible(Boolean(state));
     this.shadow.setVisible(Boolean(state));
     if (!state || !area) {
@@ -250,6 +263,7 @@ export class BootScene extends Phaser.Scene {
     }
   }
   setBlocked(blocked: boolean): void {
+    if (blocked) this.cancelDelivery();
     this.blocked = blocked;
     this.input.keyboard?.resetKeys();
     this.prompt.setVisible(false);
@@ -257,10 +271,40 @@ export class BootScene extends Phaser.Scene {
   getPosition(): Position {
     return { ...this.position };
   }
-  private canStand(x: number, y: number): boolean {
-    return canStandAt({ x, y }, { bounds: village.walkBounds, solids: this.solids });
+  previewDrone(value?: number): void {
+    this.droneQuest.preview(value);
   }
-  private distance(marker: Marker): number {
+  canLaunchDrone(): boolean {
+    return this.droneQuest.canLaunch;
+  }
+  launchDrone(): void {
+    if (!this.droneQuest.canLaunch || !this.state) return;
+    this.delivering = true;
+    this.blocked = true;
+    this.input.keyboard?.resetKeys();
+    this.prompt.setVisible(false);
+    const sprite = this.state.hero.kind === "girl" ? SPRITES.heroGirl : SPRITES.heroBoy;
+    this.hero.setTexture(sprite.texture, heroFrame(this.facing));
+    this.cameras.main.stopFollow();
+    if (!this.reducedMotion) this.cameras.main.pan(720, 324, 550, "Sine.easeInOut");
+    this.droneQuest.launch(() => {
+      this.delivering = false;
+      this.blocked = false;
+      this.cameras.main.startFollow(this.hero, true, 0.14, 0.14);
+      this.callbacks?.message("Delivery complete! Your code opened the courier lane between the studios.");
+    });
+  }
+  private cancelDelivery(): void {
+    if (!this.delivering) return;
+    this.delivering = false;
+    this.droneQuest.cancel();
+    this.cameras.main.panEffect.reset();
+    this.cameras.main.startFollow(this.hero, true, 0.14, 0.14);
+  }
+  private canStand(x: number, y: number): boolean {
+    return canStandAt({ x, y }, { bounds: village.walkBounds, solids: [...this.solids, ...this.droneQuest.solids] });
+  }
+  private distance(marker: Position): number {
     return Math.hypot(marker.x - this.position.x, marker.y - this.position.y);
   }
   private interact(marker: Marker): void {
@@ -273,7 +317,11 @@ export class BootScene extends Phaser.Scene {
       (best, marker) => (!best || this.distance(marker) < this.distance(best) ? marker : best),
       null,
     );
-    if (nearest && this.distance(nearest) <= 68) this.interact(nearest);
+    const courier = this.droneQuest.nearby(this.position);
+    if (courier && this.distance(courier) <= 68 && (!nearest || this.distance(courier) < this.distance(nearest))) {
+      this.callbacks?.position(this.getPosition());
+      this.callbacks?.interact("courier");
+    } else if (nearest && this.distance(nearest) <= 68) this.interact(nearest);
   }
   update(time: number, delta: number): void {
     if (this.blocked || !this.state || !this.area || document.activeElement?.matches("input, textarea, select")) return;
@@ -285,7 +333,10 @@ export class BootScene extends Phaser.Scene {
     dx *= step / length;
     dy *= step / length;
     const before = this.position;
-    this.position = moveWithCollisions(before, dx, dy, { bounds: village.walkBounds, solids: this.solids });
+    this.position = moveWithCollisions(before, dx, dy, {
+      bounds: village.walkBounds,
+      solids: [...this.solids, ...this.droneQuest.solids],
+    });
     const distance = Math.hypot(this.position.x - before.x, this.position.y - before.y);
     const moving = distance > 0.01;
     if (moving) this.dirtyPosition = true;
@@ -312,6 +363,11 @@ export class BootScene extends Phaser.Scene {
       null,
     );
     const near = nearest && this.distance(nearest) <= 68 ? nearest : null;
+    const courier = this.droneQuest.nearby(this.position);
+    if (courier && this.distance(courier) <= 68 && (!near || this.distance(courier) < this.distance(near))) {
+      this.prompt.setVisible(true).setText("E / Space · Talk to Kai about the delivery");
+      return;
+    }
     this.prompt.setVisible(Boolean(near));
     if (near)
       this.prompt.setText(

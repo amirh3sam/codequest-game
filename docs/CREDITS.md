@@ -21,6 +21,7 @@ _Planned (added when installed): CodeMirror 6 (MIT)._
 ## Art & audio
 | Pack | License | Use | Source |
 |---|---|---|---|
+| CodeQuest native objects and interface | Project source | Delivery drone, courier parcel, solid lane/gates, battery lesson and animated tablet workspace | Phaser Graphics and HTML/CSS in `src/game/drone-quest.ts`, `src/ui/drone-lesson.ts`, `src/ui/tablet.ts` and `src/style.css` |
 | CodeQuest tech city artwork | Generated project artwork | Hoodie developers with laptops/backpacks, city ground, street trees, utility cabinets, rails, coding terminals, digital guide and Firewall core | Built-in image-generation tool; [assets and prompts](../public/assets/tech-city/ARTWORK.md) |
 | CodeQuest adventure artwork | Generated project artwork | Armored warriors, painted outpost, treasure chests, scroll and Gatekeeper | Built-in image-generation tool; [assets and prompts](../public/assets/adventure/ARTWORK.md) |
 | Kenney Tiny Town 1.1 | CC0 1.0 | Village tiles and scenery | https://kenney.nl/assets/tiny-town |
