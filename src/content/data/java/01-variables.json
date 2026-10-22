@@ -1,0 +1,231 @@
+{
+  "id": "variables",
+  "order": 1,
+  "name": "Variable District",
+  "lesson": {
+    "title": "A place to keep a value",
+    "pages": [
+      {
+        "heading": "Variables are named containers",
+        "body": "A variable gives a value a name. You can use that name later instead of writing the value again. Strings hold text; keep them inside quotation marks.",
+        "code": "public class Main {\n    public static void main(String[] args) {\n        String heroName = \"Ada\";\n        System.out.println(heroName);\n    }\n}"
+      },
+      {
+        "heading": "Numbers can do work",
+        "body": "Store numbers without quotation marks. Use + to add, - to subtract, and * to multiply. An expression can use other variables.",
+        "code": "public class Main {\n    public static void main(String[] args) {\n        int apples = 4;\n        int pears = 3;\n        int total = apples + pears;\n        System.out.println(total);\n    }\n}"
+      },
+      {
+        "heading": "Values can change",
+        "body": "A boolean is true or false. To update a number, add to its old value with +=. Read the task, try Run, and Submit when your result is ready. Run is always free.",
+        "code": "public class Main {\n    public static void main(String[] args) {\n        int energy = 5;\n        energy += 3;\n        System.out.println(energy);\n    }\n}"
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "variables-1",
+      "title": "Set your display name",
+      "difficulty": "easy",
+      "prompt": "Create a string variable named heroName with the value \"Ada\", then print it. The output should be Ada.",
+      "starter": "public class Main {\n    public static void main(String[] args) {\n        String heroName = \"\";\n        System.out.println(heroName);\n    }\n}",
+      "solution": "public class Main {\n    public static void main(String[] args) {\n        String heroName = \"Ada\";\n        System.out.println(heroName);\n    }\n}",
+      "tests": [
+        {
+          "expectedStdout": "Ada\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bString\\s+heroName\\b",
+          "message": "Create and use the heroName variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-2",
+      "title": "A pocket of coins",
+      "difficulty": "easy",
+      "prompt": "Create a number variable named coins with the value 12, then print it.",
+      "starter": "public class Main {\n    public static void main(String[] args) {\n        int coins = 0;\n        System.out.println(coins);\n    }\n}",
+      "solution": "public class Main {\n    public static void main(String[] args) {\n        int coins = 12;\n        System.out.println(coins);\n    }\n}",
+      "tests": [
+        {
+          "expectedStdout": "12\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bint\\s+coins\\b",
+          "message": "Create and use the coins variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-3",
+      "title": "The fruit stall",
+      "difficulty": "easy",
+      "prompt": "There are 4 apples and 3 pears. Add apples and pears into a variable named total, then print total.",
+      "starter": "public class Main {\n    public static void main(String[] args) {\n        int apples = 4;\n        int pears = 3;\n        int total = 0;\n        System.out.println(total);\n    }\n}",
+      "solution": "public class Main {\n    public static void main(String[] args) {\n        int apples = 4;\n        int pears = 3;\n        int total = apples + pears;\n        System.out.println(total);\n    }\n}",
+      "tests": [
+        {
+          "expectedStdout": "7\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bint\\s+total\\b",
+          "message": "Create and use the total variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-4",
+      "title": "A little more energy",
+      "difficulty": "normal",
+      "prompt": "Start energy at 5. Increase it by 3, then print energy. The output should be 8.",
+      "starter": "public class Main {\n    public static void main(String[] args) {\n        int energy = 5;\n        // Increase energy here\n        System.out.println(energy);\n    }\n}",
+      "solution": "public class Main {\n    public static void main(String[] args) {\n        int energy = 5;\n        energy += 3;\n        System.out.println(energy);\n    }\n}",
+      "tests": [
+        {
+          "expectedStdout": "8\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bint\\s+energy\\b",
+          "message": "Create and use the energy variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-5",
+      "title": "The key is yours",
+      "difficulty": "normal",
+      "prompt": "Create a boolean variable named hasKey set to true, then print it.",
+      "starter": "public class Main {\n    public static void main(String[] args) {\n        boolean hasKey = false;\n        System.out.println(hasKey);\n    }\n}",
+      "solution": "public class Main {\n    public static void main(String[] args) {\n        boolean hasKey = true;\n        System.out.println(hasKey);\n    }\n}",
+      "tests": [
+        {
+          "expectedStdout": "true\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bboolean\\s+hasKey\\b",
+          "message": "Create and use the hasKey variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-6",
+      "title": "Market maths",
+      "difficulty": "normal",
+      "prompt": "One potion costs 6 coins. You need 4. Store price and quantity in variables, calculate total = price * quantity, then print total.",
+      "starter": "public class Main {\n    public static void main(String[] args) {\n        int price = 6;\n        int quantity = 4;\n        int total = 0;\n        System.out.println(total);\n    }\n}",
+      "solution": "public class Main {\n    public static void main(String[] args) {\n        int price = 6;\n        int quantity = 4;\n        int total = price * quantity;\n        System.out.println(total);\n    }\n}",
+      "tests": [
+        {
+          "expectedStdout": "24\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bint\\s+total\\b",
+          "message": "Create and use the total variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-7",
+      "title": "What's left?",
+      "difficulty": "hard",
+      "prompt": "You have 17 gems and spend 5. Store gems and spent, calculate remaining by subtracting, and print remaining.",
+      "starter": "public class Main {\n    public static void main(String[] args) {\n        int gems = 17;\n        int spent = 5;\n        int remaining = 0;\n        System.out.println(remaining);\n    }\n}",
+      "solution": "public class Main {\n    public static void main(String[] args) {\n        int gems = 17;\n        int spent = 5;\n        int remaining = gems - spent;\n        System.out.println(remaining);\n    }\n}",
+      "tests": [
+        {
+          "expectedStdout": "12\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bint\\s+remaining\\b",
+          "message": "Create and use the remaining variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-8",
+      "title": "A village greeting",
+      "difficulty": "hard",
+      "prompt": "Set heroName to \"Ada\". Build a string variable named greeting using heroName so that it prints exactly Hello, Ada!",
+      "starter": "public class Main {\n    public static void main(String[] args) {\n        String heroName = \"Ada\";\n        String greeting = \"\";\n        System.out.println(greeting);\n    }\n}",
+      "solution": "public class Main {\n    public static void main(String[] args) {\n        String heroName = \"Ada\";\n        String greeting = \"Hello, \" + heroName + \"!\";\n        System.out.println(greeting);\n    }\n}",
+      "tests": [
+        {
+          "expectedStdout": "Hello, Ada!\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bString\\s+greeting\\b",
+          "message": "Create and use the greeting variable requested in the task."
+        }
+      ]
+    }
+  ],
+  "boss": {
+    "id": "variables-boss",
+    "title": "Bring the data hub online",
+    "name": "The Firewall",
+    "prompt": "The Firewall needs two lines of output. Create heroName = \"Ada\" and coins = 10. Earn 7 coins, spend 4, then print the final coins. On the next line print Welcome, Ada! using heroName.",
+    "starter": "public class Main {\n    public static void main(String[] args) {\n        String heroName = \"\";\n        int coins = 10;\n        // Earn 7 and spend 4, then print both results\n    }\n}",
+    "solution": "public class Main {\n    public static void main(String[] args) {\n        String heroName = \"Ada\";\n        int coins = 10;\n        coins += 7;\n        coins -= 4;\n        System.out.println(coins);\n        System.out.println(\"Welcome, \" + heroName + \"!\");\n    }\n}",
+    "tests": [
+      {
+        "expectedStdout": "13\nWelcome, Ada!\n"
+      }
+    ],
+    "rules": [
+      {
+        "kind": "mustMatch",
+        "pattern": "\\bint\\s+coins\\b",
+        "message": "Create and use the coins variable requested in the task."
+      },
+      {
+        "kind": "mustMatch",
+        "pattern": "\\bString\\s+heroName\\b",
+        "message": "Create and use the heroName variable requested in the task."
+      },
+      {
+        "kind": "mustMatch",
+        "pattern": "coins\\s*[+\\-]=|coins\\s*=\\s*coins\\s*[+\\-]",
+        "message": "Update the coins variable using addition or subtraction."
+      }
+    ],
+    "hints": [
+      {
+        "cost": 1,
+        "text": "Start with 10, add 7, subtract 4. Print the new number first, then the greeting."
+      },
+      {
+        "cost": 2,
+        "text": "Use a print statement for coins. Join the greeting with \"Welcome, \" + heroName + \"!\"."
+      },
+      {
+        "cost": 3,
+        "text": "One update line is: coins += 7;"
+      }
+    ]
+  }
+}

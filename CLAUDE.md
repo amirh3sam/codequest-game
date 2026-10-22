@@ -13,6 +13,7 @@ TypeScript 7 · Vite 8 · Phaser 4 + Tiled maps · plain DOM UI panels · CodeMi
 - Test: `npm test` (Vitest unit) · `npm run test:e2e` (Playwright; builds + previews on :4317)
 - Lint: `npm run lint` (Biome) · auto-fix `npm run lint:fix` · types `npm run typecheck`
 - Build: `npm run build` → `dist/` · preview `npm run preview` · `npm run build:e2e` (adds `window.__codequest` test hooks; used by Playwright)
+- Ruflo: `npm run ruflo -- <command>` (pinned CLI, local memory; setup and health in `docs/RUFLO.md`)
 
 ## Folder map
 - `src/game/` Phaser scenes + entities · `src/ui/` DOM screens/panels · `src/core/` state, rules, save (pure, unit-tested)
@@ -32,7 +33,7 @@ TypeScript 7 · Vite 8 · Phaser 4 + Tiled maps · plain DOM UI panels · CodeMi
 
 ## Workflow
 - Start every session with /start-day. End it with /end-day.
-- Work on ONE roadmap task per session. After finishing it: update the roadmap, commit, summarize what was done, then STOP. Never start the next task without the user asking.
+- Complete one roadmap task at a time. The user has authorized continuing to the next applicable step without another confirmation. Validate, document, commit and push each completed task to the public game repository, and publish the checked game to its separate Vercel project. See `AGENTS.md` and `docs/DEPLOYMENT.md`.
 - One task at a time: plan → build → test → review → document → commit → push.
 - `main` always works. New work goes on `feat/…` or `fix/…` branches and reaches main through /ship.
 - Hand research, test runs and reviews to subagents so the main chat stays clean.

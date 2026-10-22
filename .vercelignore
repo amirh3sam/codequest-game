@@ -1,0 +1,15 @@
+.git
+.claude
+.claude-flow
+.swarm
+.env*
+!.env.example
+node_modules
+dist
+build
+test-results
+playwright-report
+coverage
+docs/reference
+public/assets/adventure
+public/assets/tiny-town/sample.png

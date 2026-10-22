@@ -120,6 +120,69 @@ type Save = {
 ```
 Gems are stored per area: an area reset removes only that area's gems, and gems can only be spent on that area's boss.
 
+### Implemented core API
+
+`src/core/state.ts` implements this version-1 shape as `GameState`, with typed
+area IDs and read-only fields. New games initialize independent state for all
+seven areas. Every state-changing function accepts an explicit `updatedAt`
+timestamp; it does not read the clock, access storage or call Phaser.
+
+| Function | Contract |
+|---|---|
+| `createGame(lang, hero, at)` | Create a fresh language slot, starting in Variables with three hearts per area. |
+| `isAreaUnlocked` / `enterArea` | Require all earlier bosses to be defeated; changing maps clears position but preserves each area's progress. |
+| `discoverLesson` | Mark the current area's lesson as found permanently through retries. |
+| `canSolveTask` / `solveTask` | Require the current area's eight distinct tasks in order; award each task's content-defined difficulty reward once, after the grader accepts it. |
+| `canFightBoss` / `defeatBoss` | Require all eight tasks; the caller reports boss victory only after all checks pass. Victory unlocks the next area without entering it automatically. |
+| `buyNextHint` | Spend only the current area's gems after the boss gate opens, using ordered hint costs from content; unavailable or unaffordable purchases do nothing. |
+| `applySubmissionFailure(state, submittedAreaId, reason, at)` | Charge one heart for wrong output, failed code rules or run timeout. Compile/runtime/runner errors and compile timeouts are free. Results from another area are ignored. Returns `{ state, areaReset }`. Run never calls this reducer. |
+| `resetArea` | Reset only the current unfinished area's tasks, gems, hints, drafts and position; restore three hearts and retain found lessons. Completed areas remain completed. |
+
+Rejected actions return the original state, including its timestamp. On the
+last heart, `applySubmissionFailure` performs the reset atomically and reports
+`areaReset: true` so the UI can show the out-of-hearts panel and respawn at the
+map entrance. The grader and gameplay screens remain separate roadmap tasks.
+
+### Implemented browser-save API
+
+`src/core/save.ts` persists the same version-1 structure in
+`localStorage["codequest:v1:<lang>"]`. It resolves browser storage only when a
+function is called, and accepts an injected `SaveStorage` for tests or other
+adapters. Importing it requires no browser globals.
+
+| Function | Result |
+|---|---|
+| `saveKey(lang)` | The versioned key for one of the four language slots. |
+| `isGameState(value)` | Check shape, valid hero/name, timestamp, finite coordinates, integer counters, unique solved IDs, gem/hint bounds and area unlock consistency. Does not check task IDs against lesson content yet. |
+| `loadGame(lang, storage?)` | `{ status: "loaded", state }`, `empty`, `corrupt`, `unsupported-version` (with its version), or `storage-error` (with `quota`/`unavailable` reason). A language mismatch is corrupt. |
+| `saveGame(state, storage?)` | `saved`, `invalid`, or `storage-error`. Validates state and serialized output before a single `setItem` call. Invalid writes and browser quota failures preserve the previous successful save. |
+
+Loads never modify storage. No automatic migration or deletion is attempted;
+old/future version metadata in the current namespace is reported to the UI.
+Other namespaces and language slots remain untouched. The future New/Continue
+screens must obtain confirmation before replacing an existing game, and the
+gameplay controller must call `saveGame` after persistent state changes and
+handle failure results. The playable controller in `src/ui/app.ts` now saves
+task, heart, hint and draft changes immediately, and position during walking or
+when leaving a panel/page. Storage failures are shown in the HUD. Playwright
+verifies reload persistence; test-only hooks are excluded from production builds.
+
+### Playable first area
+
+`src/ui/app.ts` connects the DOM menus and panels to the core reducers, saves,
+content loader and worker host. `BootScene` renders the village and handles
+keyboard movement, obstacle checks and nearby interactions. Keyboard movement
+is paused while menus or the code editor are open. Closing a running editor
+terminates its worker and invalidates its pending result.
+
+The four `src/content/data/<lang>/01-variables.json` files contain the paged
+lesson, eight tasks, boss, hints and reference programs. `src/grader/grade.ts`
+normalizes line endings, checks output and code rules, and classifies failures
+for the heart reducer. All player programs execute in workers, including the
+new plain JavaScript worker. The first editor is a plain text area, and village
+layout is `src/content/village.json`; CodeMirror, Tiled, advanced animations and
+the remaining areas remain follow-up work.
+
 ## 5. Screens (no URL routes — single page)
 Title (New / Continue) → Language → Hero → Name → World Map ↔ Area (HUD + panels: Scroll, Task, Boss, Pause, Out of hearts, Victory).
 

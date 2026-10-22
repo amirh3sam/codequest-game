@@ -1,0 +1,231 @@
+{
+  "id": "variables",
+  "order": 1,
+  "name": "Variable District",
+  "lesson": {
+    "title": "A place to keep a value",
+    "pages": [
+      {
+        "heading": "Variables are named containers",
+        "body": "A variable gives a value a name. You can use that name later instead of writing the value again. Strings hold text; keep them inside quotation marks.",
+        "code": "hero_name = \"Ada\"\nprint(hero_name)"
+      },
+      {
+        "heading": "Numbers can do work",
+        "body": "Store numbers without quotation marks. Use + to add, - to subtract, and * to multiply. An expression can use other variables.",
+        "code": "apples = 4\npears = 3\ntotal = apples + pears\nprint(total)"
+      },
+      {
+        "heading": "Values can change",
+        "body": "A boolean is True or False. To update a number, add to its old value with +=. Read the task, try Run, and Submit when your result is ready. Run is always free.",
+        "code": "energy = 5\nenergy += 3\nprint(energy)"
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "variables-1",
+      "title": "Set your display name",
+      "difficulty": "easy",
+      "prompt": "Create a string variable named hero_name with the value \"Ada\", then print it. The output should be Ada.",
+      "starter": "hero_name = \"\"\nprint(hero_name)",
+      "solution": "hero_name = \"Ada\"\nprint(hero_name)",
+      "tests": [
+        {
+          "expectedStdout": "Ada\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "(?:^|\\n)\\s*hero_name\\s*=",
+          "message": "Create and use the hero_name variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-2",
+      "title": "A pocket of coins",
+      "difficulty": "easy",
+      "prompt": "Create a number variable named coins with the value 12, then print it.",
+      "starter": "coins = 0\nprint(coins)",
+      "solution": "coins = 12\nprint(coins)",
+      "tests": [
+        {
+          "expectedStdout": "12\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "(?:^|\\n)\\s*coins\\s*=",
+          "message": "Create and use the coins variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-3",
+      "title": "The fruit stall",
+      "difficulty": "easy",
+      "prompt": "There are 4 apples and 3 pears. Add apples and pears into a variable named total, then print total.",
+      "starter": "apples = 4\npears = 3\ntotal = 0\nprint(total)",
+      "solution": "apples = 4\npears = 3\ntotal = apples + pears\nprint(total)",
+      "tests": [
+        {
+          "expectedStdout": "7\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "(?:^|\\n)\\s*total\\s*=",
+          "message": "Create and use the total variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-4",
+      "title": "A little more energy",
+      "difficulty": "normal",
+      "prompt": "Start energy at 5. Increase it by 3, then print energy. The output should be 8.",
+      "starter": "energy = 5\n# Increase energy here\nprint(energy)",
+      "solution": "energy = 5\nenergy += 3\nprint(energy)",
+      "tests": [
+        {
+          "expectedStdout": "8\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "(?:^|\\n)\\s*energy\\s*=",
+          "message": "Create and use the energy variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-5",
+      "title": "The key is yours",
+      "difficulty": "normal",
+      "prompt": "Create a boolean variable named has_key set to True, then print it.",
+      "starter": "has_key = False\nprint(has_key)",
+      "solution": "has_key = True\nprint(has_key)",
+      "tests": [
+        {
+          "expectedStdout": "True\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "(?:^|\\n)\\s*has_key\\s*=",
+          "message": "Create and use the has_key variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-6",
+      "title": "Market maths",
+      "difficulty": "normal",
+      "prompt": "One potion costs 6 coins. You need 4. Store price and quantity in variables, calculate total = price * quantity, then print total.",
+      "starter": "price = 6\nquantity = 4\ntotal = 0\nprint(total)",
+      "solution": "price = 6\nquantity = 4\ntotal = price * quantity\nprint(total)",
+      "tests": [
+        {
+          "expectedStdout": "24\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "(?:^|\\n)\\s*total\\s*=",
+          "message": "Create and use the total variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-7",
+      "title": "What's left?",
+      "difficulty": "hard",
+      "prompt": "You have 17 gems and spend 5. Store gems and spent, calculate remaining by subtracting, and print remaining.",
+      "starter": "gems = 17\nspent = 5\nremaining = 0\nprint(remaining)",
+      "solution": "gems = 17\nspent = 5\nremaining = gems - spent\nprint(remaining)",
+      "tests": [
+        {
+          "expectedStdout": "12\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "(?:^|\\n)\\s*remaining\\s*=",
+          "message": "Create and use the remaining variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-8",
+      "title": "A village greeting",
+      "difficulty": "hard",
+      "prompt": "Set hero_name to \"Ada\". Build a string variable named greeting using hero_name so that it prints exactly Hello, Ada!",
+      "starter": "hero_name = \"Ada\"\ngreeting = \"\"\nprint(greeting)",
+      "solution": "hero_name = \"Ada\"\ngreeting = \"Hello, \" + hero_name + \"!\"\nprint(greeting)",
+      "tests": [
+        {
+          "expectedStdout": "Hello, Ada!\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "(?:^|\\n)\\s*greeting\\s*=",
+          "message": "Create and use the greeting variable requested in the task."
+        }
+      ]
+    }
+  ],
+  "boss": {
+    "id": "variables-boss",
+    "title": "Bring the data hub online",
+    "name": "The Firewall",
+    "prompt": "The Firewall needs two lines of output. Create hero_name = \"Ada\" and coins = 10. Earn 7 coins, spend 4, then print the final coins. On the next line print Welcome, Ada! using hero_name.",
+    "starter": "hero_name = \"\"\ncoins = 10\n# Earn 7 and spend 4, then print both results",
+    "solution": "hero_name = \"Ada\"\ncoins = 10\ncoins += 7\ncoins -= 4\nprint(coins)\nprint(\"Welcome, \" + hero_name + \"!\")",
+    "tests": [
+      {
+        "expectedStdout": "13\nWelcome, Ada!\n"
+      }
+    ],
+    "rules": [
+      {
+        "kind": "mustMatch",
+        "pattern": "(?:^|\\n)\\s*coins\\s*=",
+        "message": "Create and use the coins variable requested in the task."
+      },
+      {
+        "kind": "mustMatch",
+        "pattern": "(?:^|\\n)\\s*hero_name\\s*=",
+        "message": "Create and use the hero_name variable requested in the task."
+      },
+      {
+        "kind": "mustMatch",
+        "pattern": "coins\\s*[+\\-]=|coins\\s*=\\s*coins\\s*[+\\-]",
+        "message": "Update the coins variable using addition or subtraction."
+      }
+    ],
+    "hints": [
+      {
+        "cost": 1,
+        "text": "Start with 10, add 7, subtract 4. Print the new number first, then the greeting."
+      },
+      {
+        "cost": 2,
+        "text": "Use print(coins). Join the greeting with \"Welcome, \" + hero_name + \"!\"."
+      },
+      {
+        "cost": 3,
+        "text": "One update line is: coins += 7"
+      }
+    ]
+  }
+}

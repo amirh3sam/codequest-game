@@ -1,0 +1,302 @@
+{
+  "spawn": {
+    "x": 154,
+    "y": 622
+  },
+  "walkBounds": {
+    "left": 77,
+    "right": 1459,
+    "top": 179,
+    "bottom": 691
+  },
+  "worldAreas": [
+    {
+      "id": "variables",
+      "name": "Variable District",
+      "concept": "Variables and values"
+    },
+    {
+      "id": "conditions",
+      "name": "Logic Junction",
+      "concept": "Choices and conditions"
+    },
+    {
+      "id": "loops",
+      "name": "Loop Transit",
+      "concept": "Repetition"
+    },
+    {
+      "id": "arrays",
+      "name": "Array Towers",
+      "concept": "Collections"
+    },
+    {
+      "id": "functions",
+      "name": "Function Labs",
+      "concept": "Reusable code"
+    },
+    {
+      "id": "objects",
+      "name": "Object Campus",
+      "concept": "Classes and objects"
+    },
+    {
+      "id": "abstraction",
+      "name": "Abstraction Cloud",
+      "concept": "Interfaces and ideas"
+    }
+  ],
+  "heroNames": ["Ada", "Ari", "Nova", "Milo", "Nora", "Linus"],
+  "trees": [
+    {
+      "x": 154,
+      "y": 248,
+      "kind": "fir"
+    },
+    {
+      "x": 269,
+      "y": 230,
+      "kind": "oak"
+    },
+    {
+      "x": 717,
+      "y": 232,
+      "kind": "fir"
+    },
+    {
+      "x": 1280,
+      "y": 205,
+      "kind": "oak"
+    },
+    {
+      "x": 1405,
+      "y": 432,
+      "kind": "oak"
+    },
+    {
+      "x": 563,
+      "y": 491,
+      "kind": "fir"
+    },
+    {
+      "x": 358,
+      "y": 491,
+      "kind": "fir"
+    },
+    {
+      "x": 912,
+      "y": 677,
+      "kind": "oak"
+    }
+  ],
+  "houses": [
+    {
+      "x": 426,
+      "y": 160,
+      "width": 192
+    },
+    {
+      "x": 1043,
+      "y": 160,
+      "width": 192
+    }
+  ],
+  "water": {
+    "x": 1090,
+    "y": 535,
+    "width": 372,
+    "height": 200
+  },
+  "lesson": {
+    "x": 205,
+    "y": 464
+  },
+  "tasks": [
+    {
+      "x": 307,
+      "y": 598
+    },
+    {
+      "x": 461,
+      "y": 598
+    },
+    {
+      "x": 614,
+      "y": 598
+    },
+    {
+      "x": 768,
+      "y": 598
+    },
+    {
+      "x": 768,
+      "y": 451
+    },
+    {
+      "x": 922,
+      "y": 451
+    },
+    {
+      "x": 1075,
+      "y": 451
+    },
+    {
+      "x": 1229,
+      "y": 451
+    }
+  ],
+  "boss": {
+    "x": 1331,
+    "y": 282
+  },
+  "world": {
+    "width": 1536,
+    "height": 864
+  },
+  "props": [
+    {
+      "x": 480,
+      "y": 544,
+      "kind": "rock"
+    },
+    {
+      "x": 920,
+      "y": 531,
+      "kind": "rock"
+    },
+    {
+      "x": 1120,
+      "y": 368,
+      "kind": "rock"
+    },
+    {
+      "x": 96,
+      "y": 557,
+      "kind": "rock"
+    },
+    {
+      "x": 688,
+      "y": 395,
+      "kind": "rock"
+    },
+    {
+      "x": 336,
+      "y": 342,
+      "kind": "fence"
+    },
+    {
+      "x": 499,
+      "y": 342,
+      "kind": "fence"
+    },
+    {
+      "x": 954,
+      "y": 342,
+      "kind": "fence"
+    },
+    {
+      "x": 1117,
+      "y": 342,
+      "kind": "fence"
+    }
+  ],
+  "solidObjects": [
+    {
+      "id": "coworking-studio",
+      "x": 274,
+      "y": 53,
+      "width": 270,
+      "height": 205
+    },
+    {
+      "id": "innovation-lab",
+      "x": 920,
+      "y": 53,
+      "width": 270,
+      "height": 205
+    },
+    {
+      "id": "hub-west-column",
+      "x": 1278,
+      "y": 191,
+      "width": 22,
+      "height": 65
+    },
+    {
+      "id": "hub-east-column",
+      "x": 1396,
+      "y": 191,
+      "width": 22,
+      "height": 65
+    },
+    {
+      "id": "plaza-planter-west",
+      "x": 500,
+      "y": 369,
+      "width": 193,
+      "height": 41
+    },
+    {
+      "id": "plaza-planter-east",
+      "x": 932,
+      "y": 367,
+      "width": 308,
+      "height": 46
+    },
+    {
+      "id": "plaza-planter-southwest",
+      "x": 357,
+      "y": 530,
+      "width": 266,
+      "height": 36
+    },
+    {
+      "id": "plaza-planter-southeast",
+      "x": 887,
+      "y": 533,
+      "width": 229,
+      "height": 39
+    },
+    {
+      "id": "plaza-planter-left",
+      "x": 260,
+      "y": 487,
+      "width": 64,
+      "height": 58
+    }
+  ],
+  "pondShore": [
+    {
+      "x": 1190,
+      "y": 535
+    },
+    {
+      "x": 1350,
+      "y": 534
+    },
+    {
+      "x": 1445,
+      "y": 574
+    },
+    {
+      "x": 1462,
+      "y": 657
+    },
+    {
+      "x": 1402,
+      "y": 727
+    },
+    {
+      "x": 1210,
+      "y": 735
+    },
+    {
+      "x": 1100,
+      "y": 688
+    },
+    {
+      "x": 1090,
+      "y": 608
+    }
+  ]
+}

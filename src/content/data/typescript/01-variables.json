@@ -1,0 +1,231 @@
+{
+  "id": "variables",
+  "order": 1,
+  "name": "Variable District",
+  "lesson": {
+    "title": "A place to keep a value",
+    "pages": [
+      {
+        "heading": "Variables are named containers",
+        "body": "A variable gives a value a name. You can use that name later instead of writing the value again. Strings hold text; keep them inside quotation marks.",
+        "code": "const heroName: string = \"Ada\";\nconsole.log(heroName);"
+      },
+      {
+        "heading": "Numbers can do work",
+        "body": "Store numbers without quotation marks. Use + to add, - to subtract, and * to multiply. An expression can use other variables.",
+        "code": "const apples: number = 4;\nconst pears: number = 3;\nconst total: number = apples + pears;\nconsole.log(total);"
+      },
+      {
+        "heading": "Values can change",
+        "body": "A boolean is true or false. To update a number, add to its old value with +=. Read the task, try Run, and Submit when your result is ready. Run is always free.",
+        "code": "let energy: number = 5;\nenergy += 3;\nconsole.log(energy);"
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "variables-1",
+      "title": "Set your display name",
+      "difficulty": "easy",
+      "prompt": "Create a string variable named heroName with the value \"Ada\", then print it. The output should be Ada.",
+      "starter": "const heroName: string = \"\";\nconsole.log(heroName);",
+      "solution": "const heroName: string = \"Ada\";\nconsole.log(heroName);",
+      "tests": [
+        {
+          "expectedStdout": "Ada\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\b(?:let|const|var)\\s+heroName\\b",
+          "message": "Create and use the heroName variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-2",
+      "title": "A pocket of coins",
+      "difficulty": "easy",
+      "prompt": "Create a number variable named coins with the value 12, then print it.",
+      "starter": "const coins: number = 0;\nconsole.log(coins);",
+      "solution": "const coins: number = 12;\nconsole.log(coins);",
+      "tests": [
+        {
+          "expectedStdout": "12\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\b(?:let|const|var)\\s+coins\\b",
+          "message": "Create and use the coins variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-3",
+      "title": "The fruit stall",
+      "difficulty": "easy",
+      "prompt": "There are 4 apples and 3 pears. Add apples and pears into a variable named total, then print total.",
+      "starter": "const apples: number = 4;\nconst pears: number = 3;\nconst total: number = 0;\nconsole.log(total);",
+      "solution": "const apples: number = 4;\nconst pears: number = 3;\nconst total: number = apples + pears;\nconsole.log(total);",
+      "tests": [
+        {
+          "expectedStdout": "7\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\b(?:let|const|var)\\s+total\\b",
+          "message": "Create and use the total variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-4",
+      "title": "A little more energy",
+      "difficulty": "normal",
+      "prompt": "Start energy at 5. Increase it by 3, then print energy. The output should be 8.",
+      "starter": "let energy: number = 5;\n// Increase energy here\nconsole.log(energy);",
+      "solution": "let energy: number = 5;\nenergy += 3;\nconsole.log(energy);",
+      "tests": [
+        {
+          "expectedStdout": "8\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\b(?:let|const|var)\\s+energy\\b",
+          "message": "Create and use the energy variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-5",
+      "title": "The key is yours",
+      "difficulty": "normal",
+      "prompt": "Create a boolean variable named hasKey set to true, then print it.",
+      "starter": "const hasKey: boolean = false;\nconsole.log(hasKey);",
+      "solution": "const hasKey: boolean = true;\nconsole.log(hasKey);",
+      "tests": [
+        {
+          "expectedStdout": "true\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\b(?:let|const|var)\\s+hasKey\\b",
+          "message": "Create and use the hasKey variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-6",
+      "title": "Market maths",
+      "difficulty": "normal",
+      "prompt": "One potion costs 6 coins. You need 4. Store price and quantity in variables, calculate total = price * quantity, then print total.",
+      "starter": "const price: number = 6;\nconst quantity: number = 4;\nconst total: number = 0;\nconsole.log(total);",
+      "solution": "const price: number = 6;\nconst quantity: number = 4;\nconst total: number = price * quantity;\nconsole.log(total);",
+      "tests": [
+        {
+          "expectedStdout": "24\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\b(?:let|const|var)\\s+total\\b",
+          "message": "Create and use the total variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-7",
+      "title": "What's left?",
+      "difficulty": "hard",
+      "prompt": "You have 17 gems and spend 5. Store gems and spent, calculate remaining by subtracting, and print remaining.",
+      "starter": "const gems: number = 17;\nconst spent: number = 5;\nconst remaining: number = 0;\nconsole.log(remaining);",
+      "solution": "const gems: number = 17;\nconst spent: number = 5;\nconst remaining: number = gems - spent;\nconsole.log(remaining);",
+      "tests": [
+        {
+          "expectedStdout": "12\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\b(?:let|const|var)\\s+remaining\\b",
+          "message": "Create and use the remaining variable requested in the task."
+        }
+      ]
+    },
+    {
+      "id": "variables-8",
+      "title": "A village greeting",
+      "difficulty": "hard",
+      "prompt": "Set heroName to \"Ada\". Build a string variable named greeting using heroName so that it prints exactly Hello, Ada!",
+      "starter": "const heroName: string = \"Ada\";\nconst greeting: string = \"\";\nconsole.log(greeting);",
+      "solution": "const heroName: string = \"Ada\";\nconst greeting: string = \"Hello, \" + heroName + \"!\";\nconsole.log(greeting);",
+      "tests": [
+        {
+          "expectedStdout": "Hello, Ada!\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\b(?:let|const|var)\\s+greeting\\b",
+          "message": "Create and use the greeting variable requested in the task."
+        }
+      ]
+    }
+  ],
+  "boss": {
+    "id": "variables-boss",
+    "title": "Bring the data hub online",
+    "name": "The Firewall",
+    "prompt": "The Firewall needs two lines of output. Create heroName = \"Ada\" and coins = 10. Earn 7 coins, spend 4, then print the final coins. On the next line print Welcome, Ada! using heroName.",
+    "starter": "const heroName: string = \"\";\nlet coins: number = 10;\n// Earn 7 and spend 4, then print both results",
+    "solution": "const heroName: string = \"Ada\";\nlet coins: number = 10;\ncoins += 7;\ncoins -= 4;\nconsole.log(coins);\nconsole.log(\"Welcome, \" + heroName + \"!\");",
+    "tests": [
+      {
+        "expectedStdout": "13\nWelcome, Ada!\n"
+      }
+    ],
+    "rules": [
+      {
+        "kind": "mustMatch",
+        "pattern": "\\b(?:let|const|var)\\s+coins\\b",
+        "message": "Create and use the coins variable requested in the task."
+      },
+      {
+        "kind": "mustMatch",
+        "pattern": "\\b(?:let|const|var)\\s+heroName\\b",
+        "message": "Create and use the heroName variable requested in the task."
+      },
+      {
+        "kind": "mustMatch",
+        "pattern": "coins\\s*[+\\-]=|coins\\s*=\\s*coins\\s*[+\\-]",
+        "message": "Update the coins variable using addition or subtraction."
+      }
+    ],
+    "hints": [
+      {
+        "cost": 1,
+        "text": "Start with 10, add 7, subtract 4. Print the new number first, then the greeting."
+      },
+      {
+        "cost": 2,
+        "text": "Use a print statement for coins. Join the greeting with \"Welcome, \" + heroName + \"!\"."
+      },
+      {
+        "cost": 3,
+        "text": "One update line is: coins += 7;"
+      }
+    ]
+  }
+}

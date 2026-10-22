@@ -1,0 +1,680 @@
+import { loadVariables } from "../content/loader";
+import type { AreaContent, Boss, Task } from "../content/schema";
+import village from "../content/village.json" with { type: "json" };
+import { GEM_REWARD, isValidHeroName } from "../core/rules";
+import { loadGame, saveGame } from "../core/save";
+import {
+  applySubmissionFailure,
+  buyNextHint,
+  canFightBoss,
+  canSolveTask,
+  createGame,
+  defeatBoss,
+  discoverLesson,
+  enterArea,
+  type GameState,
+  isAreaUnlocked,
+  type Position,
+  solveTask,
+} from "../core/state";
+import { SPRITES } from "../game/assets";
+import type { BootScene, VillageCallbacks } from "../game/scenes/BootScene";
+import { executionError, grade } from "../grader/grade";
+import type { Lang } from "../runners/types";
+import { WorkerHost } from "../runners/worker-host";
+
+function el<K extends keyof HTMLElementTagNameMap>(tag: K, className = "", text = ""): HTMLElementTagNameMap[K] {
+  const node = document.createElement(tag);
+  node.className = className;
+  node.textContent = text;
+  return node;
+}
+function button(text: string, action: () => void, className = "button"): HTMLButtonElement {
+  const node = el("button", className, text);
+  node.type = "button";
+  node.addEventListener("click", action);
+  return node;
+}
+const now = () => new Date().toISOString();
+const LANGUAGES: { id: Lang; name: string; badge: string; description: string }[] = [
+  { id: "javascript", name: "JavaScript", badge: "JS", description: "The language of the web" },
+  { id: "python", name: "Python", badge: "Py", description: "Readable, friendly first steps" },
+  { id: "typescript", name: "TypeScript", badge: "TS", description: "JavaScript with helpful types" },
+  { id: "java", name: "Java", badge: "Jv", description: "Build with types and classes" },
+];
+
+export class GameApp {
+  private scene: BootScene;
+  private state: GameState | null = null;
+  private area: AreaContent = loadVariables("javascript");
+  private runner: WorkerHost | null = null;
+  private lang: Lang = "javascript";
+  private heroKind: "boy" | "girl" = "girl";
+  private heroName = "Ada";
+  private hud = el("header", "hud");
+  private overlay = el("div", "overlay");
+  private notice = el("div", "toast");
+  private saved = el("span", "save-state");
+  private savingAllowed = true;
+  private busy = false;
+  private runToken = 0;
+  private toastTimer = 0;
+  private callbacks: VillageCallbacks = {
+    interact: (id) => this.interact(id),
+    position: (position) => this.storePosition(position),
+    message: (text) => this.toast(text),
+  };
+  constructor(root: HTMLElement, scene: BootScene) {
+    this.scene = scene;
+    this.notice.setAttribute("role", "status");
+    this.notice.setAttribute("aria-live", "polite");
+    root.replaceChildren(this.hud, this.overlay, this.notice);
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && this.state) {
+        event.preventDefault();
+        if (this.overlay.hidden) this.pause();
+        else this.close();
+      }
+      if (
+        this.overlay.hidden &&
+        !document.activeElement?.matches("textarea,input") &&
+        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(event.key)
+      )
+        event.preventDefault();
+      if (!this.overlay.hidden && event.key === "Tab") {
+        const nodes = [
+          ...this.overlay.querySelectorAll<HTMLElement>(
+            'button:not(:disabled), input, textarea:not(:disabled), select, [tabindex="0"]',
+          ),
+        ];
+        const first = nodes[0],
+          last = nodes[nodes.length - 1];
+        if (
+          first &&
+          last &&
+          ((event.shiftKey && document.activeElement === first) || (!event.shiftKey && document.activeElement === last))
+        ) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus();
+        }
+      }
+    });
+    window.addEventListener("pagehide", () => this.capturePosition());
+    const latest = LANGUAGES.map(({ id }) => loadGame(id))
+      .filter((result) => result.status === "loaded")
+      .sort((a, b) => Date.parse(b.state.updatedAt) - Date.parse(a.state.updatedAt))[0];
+    if (latest?.status === "loaded") this.lang = latest.state.lang;
+    this.intro();
+  }
+  getState(): GameState | null {
+    return this.state;
+  }
+  private icon(name: keyof typeof SPRITES, portrait = false): HTMLCanvasElement {
+    const canvas = el("canvas", "sprite");
+    if (name === "heroBoy" || name === "heroGirl") canvas.classList.add("developer-sprite");
+    const sprite = SPRITES[name],
+      frame = this.scene.textures.getFrame(sprite.texture, sprite.frame);
+    const crop = portrait
+      ? { x: 18, y: 3, width: 60, height: 66 }
+      : { x: 0, y: 0, width: frame.cutWidth, height: frame.cutHeight };
+    canvas.width = crop.width;
+    canvas.height = crop.height;
+    canvas
+      .getContext("2d")
+      ?.drawImage(
+        frame.source.image as CanvasImageSource,
+        frame.cutX + crop.x,
+        frame.cutY + crop.y,
+        crop.width,
+        crop.height,
+        0,
+        0,
+        crop.width,
+        crop.height,
+      );
+    canvas.setAttribute("aria-hidden", "true");
+    return canvas;
+  }
+  private panel(title: string, subtitle = "", wide = false): HTMLElement {
+    this.scene.setBlocked(true);
+    this.overlay.classList.remove("title-overlay");
+    this.overlay.hidden = false;
+    const panel = el("section", `panel${wide ? " panel-wide" : ""}`);
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    const heading = el("h2", "", title);
+    heading.id = "dialog-title";
+    panel.setAttribute("aria-labelledby", heading.id);
+    const head = el("div", "panel-heading");
+    head.append(heading);
+    if (this.state) {
+      const close = button("×", () => this.close(), "close-button");
+      close.setAttribute("aria-label", "Close panel");
+      head.append(close);
+    }
+    panel.append(head);
+    if (subtitle) panel.append(el("p", "subtitle", subtitle));
+    this.overlay.replaceChildren(panel);
+    queueMicrotask(() => {
+      if (panel.isConnected) panel.querySelector<HTMLElement>("button,input,textarea")?.focus();
+    });
+    return panel;
+  }
+  private intro(): void {
+    this.runToken++;
+    this.runner?.kill();
+    this.state = null;
+    this.hud.hidden = true;
+    this.scene.setSession(null, null, this.callbacks);
+    const panel = this.panel(
+      "Your next build starts here",
+      "Grab your laptop. Master your code. Bring the city network online.",
+      true,
+    );
+    panel.classList.add("intro");
+    this.overlay.classList.add("title-overlay");
+    const artwork = el("div", "intro-art");
+    artwork.setAttribute("aria-hidden", "true");
+    artwork.append(el("span", "art-orbit orbit-one"), el("span", "art-orbit orbit-two"), el("span", "art-code", "{ }"));
+    const hero = this.icon(this.heroKind === "girl" ? "heroGirl" : "heroBoy");
+    hero.classList.add("art-hero");
+    const gem = this.icon("gem");
+    gem.classList.add("art-gem");
+    const scroll = this.icon("scroll");
+    scroll.classList.add("art-scroll");
+    artwork.append(
+      el("span", "art-platform"),
+      hero,
+      gem,
+      scroll,
+      el("span", "art-spark spark-one", "✦"),
+      el("span", "art-spark spark-two", "✧"),
+    );
+    const wordmark = el("div", "wordmark");
+    wordmark.append(el("span", "brand-rune", "</>"), el("span", "", "Code"), el("span", "wordmark-accent", "Quest"));
+    panel.prepend(wordmark, el("span", "eyebrow", "BUILD SKILLS. EXPLORE THE CITY."), artwork);
+    panel.append(el("h3", "section-label", "1 · Choose your language"));
+    const choices = el("div", "language-grid");
+    for (const language of LANGUAGES) {
+      const card = button(
+        "",
+        () => {
+          this.lang = language.id;
+          this.intro();
+        },
+        `choice${this.lang === language.id ? " selected" : ""}`,
+      );
+      card.setAttribute("aria-pressed", String(this.lang === language.id));
+      card.dataset.language = language.id;
+      const badge = el("span", "language-badge", language.badge);
+      badge.setAttribute("aria-hidden", "true");
+      card.append(badge, el("strong", "", language.name), el("span", "language-description", language.description));
+      choices.append(card);
+    }
+    panel.append(choices);
+    const existing = loadGame(this.lang);
+    if (existing.status === "loaded") {
+      const saved = el("div", "saved-adventure");
+      saved.append(
+        el(
+          "div",
+          "",
+          `${existing.state.hero.name}'s adventure · ${existing.state.areas.variables.solved.length}/8 tasks`,
+        ),
+        button("Continue adventure", () => this.begin(existing.state), "button primary"),
+      );
+      panel.append(saved);
+    } else if (existing.status === "corrupt" || existing.status === "unsupported-version")
+      panel.append(
+        el("p", "warning", "This saved adventure couldn't be read. Starting new will replace it after confirmation."),
+      );
+    else if (existing.status === "storage-error")
+      panel.append(el("p", "warning", "Browser saving is unavailable. You can still play this session."));
+    panel.append(el("h3", "section-label", "2 · Make it your adventure"));
+    const form = el("form", "hero-form"),
+      heroes = el("div", "hero-choices");
+    for (const kind of ["girl", "boy"] as const) {
+      const choice = button(
+        "",
+        () => {
+          this.heroKind = kind;
+          this.intro();
+        },
+        `hero-choice${this.heroKind === kind ? " selected" : ""}`,
+      );
+      choice.setAttribute("aria-label", `${kind === "girl" ? "Girl" : "Boy"} hero`);
+      choice.setAttribute("aria-pressed", String(this.heroKind === kind));
+      choice.append(this.icon(kind === "girl" ? "heroGirl" : "heroBoy"));
+      choice.append(el("span", "hero-label", kind === "girl" ? "Girl" : "Boy"));
+      heroes.append(choice);
+    }
+    const naming = el("div", "naming"),
+      label = el("label", "", "Developer name"),
+      input = el("input");
+    input.id = "hero-name";
+    label.htmlFor = input.id;
+    input.value = this.heroName;
+    input.maxLength = 32;
+    input.autocomplete = "off";
+    const start = button(
+      existing.status === "loaded" ? "Start a new adventure" : "Start adventure",
+      () => {},
+      "button primary start-button",
+    );
+    start.type = "submit";
+    start.disabled = !isValidHeroName(input.value);
+    input.addEventListener("input", () => {
+      this.heroName = input.value;
+      start.disabled = !isValidHeroName(input.value);
+    });
+    const field = el("div", "name-field");
+    field.append(
+      input,
+      button(
+        "⚄",
+        () => {
+          this.heroName = village.heroNames[Math.floor(Math.random() * village.heroNames.length)] ?? "Ada";
+          input.value = this.heroName;
+          start.disabled = false;
+        },
+        "dice-button",
+      ),
+    );
+    field.lastElementChild?.setAttribute("aria-label", "Random hero name");
+    naming.append(label, field, el("small", "", "1–16 letters, numbers or spaces"));
+    form.append(heroes, naming, start);
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!isValidHeroName(this.heroName)) return;
+      if (
+        ["loaded", "corrupt", "unsupported-version"].includes(existing.status) &&
+        !window.confirm("Start a new adventure? This will replace the saved game for this language.")
+      )
+        return;
+      this.savingAllowed = existing.status !== "storage-error";
+      this.begin(createGame(this.lang, { kind: this.heroKind, name: this.heroName.trim() }, now()));
+    });
+    panel.append(form, el("p", "intro-footer", "Free to play · Runs on your device · Saves as you explore"));
+  }
+  private begin(state: GameState): void {
+    const area = loadVariables(state.lang);
+    if (!state.areas.variables.solved.every((id, index) => area.tasks[index]?.id === id)) {
+      this.toast("This save doesn't match the district tasks. Choose Start new to replace it.");
+      return;
+    }
+    this.runner?.kill();
+    this.runner = new WorkerHost(state.lang);
+    this.lang = state.lang;
+    this.area = area;
+    this.hud.hidden = false;
+    this.commit(state);
+    this.close();
+    this.runner.warmup().catch(() => this.toast("The language runtime couldn't load. Run your code to retry."));
+    if (state.currentArea !== "variables") this.worldMap();
+    else this.toast("Welcome! Use WASD or arrows to walk. Press E near the guide or a terminal.");
+  }
+  private persist(): void {
+    if (!this.state) return;
+    const result = this.savingAllowed ? saveGame(this.state) : { status: "storage-error" };
+    this.saved.textContent =
+      result.status === "saved" ? "✓ Saved on this device" : "Saving unavailable · progress stays in this session";
+  }
+  private commit(state: GameState): void {
+    this.state = state;
+    this.scene.setSession(state, this.area, this.callbacks);
+    this.renderHud();
+    this.persist();
+  }
+  private storePosition(position: Position): void {
+    if (this.state?.currentArea !== "variables") return;
+    this.state = { ...this.state, position, updatedAt: now() };
+    this.persist();
+  }
+  private capturePosition(): void {
+    if (this.state) this.storePosition(this.scene.getPosition());
+  }
+  private renderHud(): void {
+    if (!this.state) return;
+    const state = this.state,
+      progress = state.areas.variables;
+    const identity = el("div", "identity");
+    const portrait = el("div", "hero-portrait");
+    portrait.append(this.icon(state.hero.kind === "girl" ? "heroGirl" : "heroBoy", true));
+    identity.append(portrait);
+    const name = el("div");
+    name.append(
+      el("strong", "hero-name", state.hero.name),
+      el("span", "language-name", LANGUAGES.find((lang) => lang.id === state.lang)?.name),
+    );
+    identity.append(name);
+    const stats = el("div", "stats"),
+      hearts = el("span", "hearts", "♥".repeat(progress.hearts) + "♡".repeat(3 - progress.hearts));
+    hearts.setAttribute("aria-label", `${progress.hearts} hearts`);
+    hearts.dataset.testid = "hearts";
+    const gems = el("span", "gems", `◆ ${progress.gems}`);
+    gems.dataset.testid = "gems";
+    stats.append(hearts, gems, el("span", "task-count", `${progress.solved.length}/8 tasks`));
+    const actions = el("nav", "hud-actions");
+    actions.append(
+      button("Lesson", () => this.lesson()),
+      button("Tasks", () => this.journal()),
+      button("Menu", () => this.pause()),
+    );
+    const objective = el("div", "objective");
+    objective.append(
+      el("span", "eyebrow", "✦  YOUR NEXT QUEST"),
+      el(
+        "strong",
+        "",
+        progress.bossDefeated
+          ? "The district is online. Well played!"
+          : progress.solved.length === 8
+            ? "The Firewall is ready. Visit the data hub!"
+            : `Next: ${this.area.tasks[progress.solved.length]?.title ?? "Explore the district"}`,
+      ),
+    );
+    const meter = el("div", "quest-meter");
+    meter.setAttribute("role", "progressbar");
+    meter.setAttribute("aria-label", "District tasks completed");
+    meter.setAttribute("aria-valuemin", "0");
+    meter.setAttribute("aria-valuemax", "8");
+    meter.setAttribute("aria-valuenow", String(progress.solved.length));
+    for (let i = 0; i < 8; i++) meter.append(el("span", i < progress.solved.length ? "complete" : ""));
+    objective.append(meter);
+    const location = el("div", "location-banner");
+    location.append(el("span", "eyebrow", "DISTRICT 01"), el("span", "location-name", this.area.name));
+    const footer = el("div", "game-footer");
+    this.saved = el("span", "save-state");
+    footer.append(el("span", "", "WASD / Arrows · Move     E / Space · Interact     Esc · Menu"), this.saved);
+    this.hud.replaceChildren(identity, stats, actions, objective, location, footer);
+  }
+  private close(): void {
+    if (this.busy) {
+      this.runToken++;
+      this.runner?.kill();
+      this.busy = false;
+    }
+    this.overlay.hidden = true;
+    this.overlay.replaceChildren();
+    this.scene.setBlocked(false);
+    this.capturePosition();
+  }
+  private toast(text: string): void {
+    clearTimeout(this.toastTimer);
+    this.notice.textContent = text;
+    this.notice.classList.add("visible");
+    this.toastTimer = window.setTimeout(() => this.notice.classList.remove("visible"), 4400);
+  }
+  private interact(id: string): void {
+    if (!this.state) return;
+    if (id === "lesson") this.lesson();
+    else if (id === "boss") {
+      if (canFightBoss(this.state, this.area)) this.editor(this.area.boss);
+      else
+        this.toast(
+          this.state.areas.variables.bossDefeated
+            ? "You already cleared the Firewall!"
+            : "Complete all eight terminals to challenge the Firewall.",
+        );
+    } else {
+      const task = this.area.tasks.find((entry) => entry.id === id);
+      if (task && canSolveTask(this.state, this.area, id)) this.editor(task);
+      else
+        this.toast(
+          this.state.areas.variables.solved.includes(id)
+            ? "Already solved! Find the next numbered task."
+            : "Solve the earlier tasks to unlock this one.",
+        );
+    }
+  }
+  private lesson(page = 0): void {
+    if (!this.state) return;
+    this.capturePosition();
+    this.commit(discoverLesson(this.state, now()));
+    const panel = this.panel(this.area.lesson.title, `Lesson ${page + 1} of ${this.area.lesson.pages.length}`),
+      content = this.area.lesson.pages[page];
+    if (!content) return;
+    panel.append(el("h3", "", content.heading), el("p", "lesson-body", content.body));
+    if (content.code) panel.append(el("pre", "code-example", content.code));
+    const actions = el("div", "panel-actions");
+    if (page > 0) actions.append(button("Previous", () => this.lesson(page - 1)));
+    actions.append(
+      page + 1 < this.area.lesson.pages.length
+        ? button("Next page", () => this.lesson(page + 1), "button primary")
+        : button("Back to the district", () => this.close(), "button primary"),
+    );
+    panel.append(actions);
+  }
+  private journal(): void {
+    if (!this.state) return;
+    this.capturePosition();
+    const panel = this.panel("District missions", "Solve them in order. Each correct answer earns gems.");
+    for (const [index, task] of this.area.tasks.entries()) {
+      const solved = this.state.areas.variables.solved.includes(task.id),
+        available = canSolveTask(this.state, this.area, task.id);
+      const row = button(
+        `${solved ? "✓" : available ? "→" : "🔒"} ${index + 1}. ${task.title}`,
+        () => this.editor(task),
+        `task-row${solved ? " solved" : ""}`,
+      );
+      row.disabled = !available;
+      panel.append(row);
+    }
+    if (canFightBoss(this.state, this.area))
+      panel.append(button("Challenge the Firewall", () => this.editor(this.area.boss), "button primary"));
+  }
+  private pause(): void {
+    if (!this.state) return;
+    this.capturePosition();
+    const panel = this.panel("Take a breath", "Your adventure is saved on this device.");
+    const actions = el("div", "menu-actions");
+    actions.append(
+      button("Resume adventure", () => this.close(), "button primary"),
+      button("World map", () => this.worldMap()),
+      button("Read the lesson", () => this.lesson()),
+      button("Title screen", () => this.intro()),
+    );
+    panel.append(actions);
+  }
+  private worldMap(): void {
+    if (!this.state) return;
+    const panel = this.panel("Your journey", "Bring Variable District online to open the network ahead.", true),
+      nodes = el("div", "world-nodes");
+    for (const [index, area] of village.worldAreas.entries()) {
+      const id = area.id as GameState["currentArea"],
+        unlocked = isAreaUnlocked(this.state, id),
+        completed = this.state.areas[id].bossDefeated;
+      const node = button(
+        "",
+        () => {
+          if (this.state) {
+            this.commit(enterArea(this.state, id, now()));
+            this.close();
+          }
+        },
+        `world-node${unlocked ? " unlocked" : ""}`,
+      );
+      node.disabled = id !== "variables" || !unlocked;
+      node.append(
+        el("span", "world-number", completed ? "✓" : unlocked ? String(index + 1) : "🔒"),
+        el("strong", "", area.name),
+        el(
+          "small",
+          "",
+          id === "variables" ? "Explore district" : unlocked ? "Unlocked · coming next" : "Defeat the previous boss",
+        ),
+      );
+      nodes.append(node);
+    }
+    panel.append(nodes);
+  }
+  private draft(task: Task | Boss, code: string): void {
+    if (!this.state) return;
+    const progress = this.state.areas.variables;
+    this.state = {
+      ...this.state,
+      updatedAt: now(),
+      areas: { ...this.state.areas, variables: { ...progress, drafts: { ...progress.drafts, [task.id]: code } } },
+    };
+    this.persist();
+  }
+  private editor(task: Task | Boss): void {
+    if (!this.state || !this.runner) return;
+    this.capturePosition();
+    const boss = task.id === this.area.boss.id,
+      panel = this.panel(
+        boss ? this.area.boss.name : task.title,
+        boss
+          ? "Use everything you've learned to bring the data hub online."
+          : `${"difficulty" in task ? task.difficulty.toUpperCase() : "BOSS"} · +${"difficulty" in task ? GEM_REWARD[task.difficulty] : 0} gems`,
+        true,
+      );
+    const columns = el("div", "editor-columns"),
+      instructions = el("div", "instructions"),
+      work = el("div", "code-workspace");
+    instructions.append(
+      el("span", "eyebrow", boss ? "BOSS CHALLENGE" : "YOUR MISSION"),
+      el("p", "task-prompt", task.prompt),
+      el("small", "", "Run is free. A wrong submission costs one heart; code errors don't."),
+    );
+    const hints = el("div", "hints");
+    const renderHints = () => {
+      if (!this.state || !boss) return;
+      hints.replaceChildren();
+      const progress = this.state.areas.variables;
+      for (const hint of this.area.boss.hints.slice(0, progress.hintsBought)) hints.append(el("p", "hint", hint.text));
+      const next = this.area.boss.hints[progress.hintsBought];
+      if (next) {
+        const buy = button(`Get next hint · ${next.cost} gem${next.cost > 1 ? "s" : ""}`, () => {
+          if (this.state) {
+            this.commit(buyNextHint(this.state, this.area, now()));
+            renderHints();
+          }
+        });
+        buy.disabled = progress.gems < next.cost || this.busy;
+        hints.append(buy);
+      }
+    };
+    if (boss) {
+      instructions.append(hints);
+      renderHints();
+    }
+    const label = el("label", "editor-label", "Your code"),
+      code = el("textarea", "code-editor");
+    code.id = "code-editor";
+    label.htmlFor = code.id;
+    code.spellcheck = false;
+    code.value = this.state.areas.variables.drafts[task.id] ?? task.starter;
+    code.setAttribute("autocapitalize", "off");
+    code.addEventListener("input", () => this.draft(task, code.value));
+    code.addEventListener("keydown", (event) => {
+      if (event.key === "Tab" && !event.shiftKey) {
+        event.preventDefault();
+        code.setRangeText("  ", code.selectionStart, code.selectionEnd, "end");
+        this.draft(task, code.value);
+      }
+    });
+    const output = el("pre", "output", "Your output will appear here."),
+      feedback = el("div", "feedback");
+    feedback.setAttribute("role", "status");
+    const actions = el("div", "editor-actions"),
+      run = button("Run code", () => {
+        void execute(false);
+      }),
+      submit = button(
+        "Submit answer",
+        () => {
+          void execute(true);
+        },
+        "button primary",
+      );
+    const execute = async (submitting: boolean) => {
+      if (!this.state || !this.runner || this.busy) return;
+      this.draft(task, code.value);
+      this.busy = true;
+      const token = ++this.runToken;
+      run.disabled = true;
+      submit.disabled = true;
+      code.disabled = true;
+      renderHints();
+      feedback.className = "feedback";
+      feedback.textContent = submitting ? "Checking your answer…" : "Running your code…";
+      try {
+        if (!submitting) {
+          const result = await this.runner.run(code.value);
+          if (token !== this.runToken) return;
+          const error = executionError(result);
+          output.textContent = result.stdout || "(No output)";
+          feedback.textContent = error?.message ?? "Run complete. Submit when you're ready.";
+        } else {
+          const result = await grade(task, code.value, this.runner);
+          if (token !== this.runToken || !this.state) return;
+          output.textContent = result.output || "(No output)";
+          if (result.passed) {
+            this.commit(
+              boss ? defeatBoss(this.state, this.area, now()) : solveTask(this.state, this.area, task.id, now()),
+            );
+            if (boss) {
+              this.busy = false;
+              this.victory();
+              return;
+            }
+            feedback.className = "feedback success";
+            feedback.textContent = `Correct! +${GEM_REWARD[(task as Task).difficulty]} gem${GEM_REWARD[(task as Task).difficulty] > 1 ? "s" : ""}. Your progress is saved.`;
+            const next = this.area.tasks[this.state.areas.variables.solved.length];
+            actions.replaceChildren(
+              button(
+                next ? "Next task →" : "Inspect the Firewall →",
+                () => {
+                  if (next) this.editor(next);
+                  else this.editor(this.area.boss);
+                },
+                "button primary",
+              ),
+              button("Back to district", () => this.close()),
+            );
+          } else {
+            const transition = applySubmissionFailure(this.state, "variables", result.failure ?? "wrong-output", now());
+            this.commit(transition.state);
+            if (transition.areaReset) {
+              this.busy = false;
+              const reset = this.panel(
+                "A fresh start",
+                "Out of hearts! This area's tasks and gems reset. Your lesson is still found; earlier areas are safe.",
+              );
+              reset.append(button("Try the district again", () => this.close(), "button primary"));
+              return;
+            }
+            feedback.className = "feedback error";
+            feedback.textContent = `${result.message}${["wrong-output", "rule-failed", "run-timeout"].includes(result.failure ?? "") ? " −1 heart." : " No heart lost."}`;
+          }
+        }
+      } catch (error) {
+        if (token === this.runToken) feedback.textContent = `Couldn't run your code. No heart lost. ${String(error)}`;
+      } finally {
+        if (token === this.runToken) {
+          this.busy = false;
+          run.disabled = false;
+          submit.disabled = false;
+          code.disabled = false;
+          renderHints();
+        }
+      }
+    };
+    actions.append(run, submit);
+    work.append(label, code, actions, el("span", "section-label", "OUTPUT"), output, feedback);
+    columns.append(instructions, work);
+    panel.append(columns);
+    queueMicrotask(() => code.focus());
+  }
+  private victory(): void {
+    const panel = this.panel(`${this.area.name} is online!`, "You used your code to reconnect the city.");
+    panel.classList.add("victory");
+    panel.prepend(this.icon("gem"));
+    panel.append(
+      el("p", "", "Eight missions complete. Firewall cleared. Logic Junction is now unlocked."),
+      button("Continue journey", () => this.worldMap(), "button primary"),
+      button("Explore the district", () => this.close()),
+    );
+  }
+}

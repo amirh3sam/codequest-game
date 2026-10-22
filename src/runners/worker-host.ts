@@ -5,6 +5,7 @@ export type WorkerFactory = () => Worker;
 
 // `new URL(..., import.meta.url)` lets Vite bundle each worker as its own file.
 const defaultFactories: Partial<Record<Lang, WorkerFactory>> = {
+  javascript: () => new Worker(new URL("./javascript.worker.ts", import.meta.url), { type: "module" }),
   java: () => new Worker(new URL("./java.worker.ts", import.meta.url), { type: "module" }),
   python: () => new Worker(new URL("./python.worker.ts", import.meta.url), { type: "module" }),
   typescript: () => new Worker(new URL("./typescript.worker.ts", import.meta.url), { type: "module" }),

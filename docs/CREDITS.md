@@ -19,4 +19,14 @@ Only free assets and libraries with licenses that allow our use.
 _Planned (added when installed): CodeMirror 6 (MIT)._
 
 ## Art & audio
-_None yet. Planned: Kenney packs (CC0)._
+| Pack | License | Use | Source |
+|---|---|---|---|
+| CodeQuest tech city artwork | Generated project artwork | Hoodie developers with laptops/backpacks, city ground, street trees, utility cabinets, rails, coding terminals, digital guide and Firewall core | Built-in image-generation tool; [assets and prompts](../public/assets/tech-city/ARTWORK.md) |
+| CodeQuest adventure artwork | Generated project artwork | Armored warriors, painted outpost, treasure chests, scroll and Gatekeeper | Built-in image-generation tool; [assets and prompts](../public/assets/adventure/ARTWORK.md) |
+| Kenney Tiny Town 1.1 | CC0 1.0 | Village tiles and scenery | https://kenney.nl/assets/tiny-town |
+| Kenney Tiny Dungeon 1.0 | CC0 1.0 | Retained original sprites and dungeon tiles | https://kenney.nl/assets/tiny-dungeon |
+| Kenney Roguelike/RPG 1.0 (Kenney Vleugels, with Lynn Evers) | CC0 1.0 | Lesson scroll and props | https://kenney.nl/assets/roguelike-rpg-pack |
+| Kenney Pixel Platformer 1.2 | CC0 1.0 | Blue gem | https://kenney.nl/assets/pixel-platformer |
+
+Original license files ship alongside each sheet in `public/assets/`.
+See [ART.md](ART.md) for the exact source files, sprite frames and download URLs.
