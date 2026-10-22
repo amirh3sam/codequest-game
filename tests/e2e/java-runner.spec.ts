@@ -1,40 +1,17 @@
 import { expect, type Page, test } from "@playwright/test";
-
-type Result = {
-  stdout: string;
-  compileErrors?: { line: number; message: string }[];
-  runtimeError?: string;
-  timedOut?: boolean;
-  compileMs?: number;
-  runMs: number;
-};
-
-type Runner = { warmup(): Promise<void>; run(code: string, stdin?: string): Promise<Result> };
-type TestWindow = Window & { __cqJava: Runner; __codequest: { createRunner(lang: string): Runner } };
+import { openRunner, type Result } from "./runner-helpers";
 
 // One page + one warm Java worker shared by all tests in this file.
 test.describe.configure({ mode: "default" });
 let page: Page;
-
-async function runJava(code: string, stdin?: string): Promise<Result> {
-  return page.evaluate(([c, s]) => (window as unknown as TestWindow).__cqJava.run(c, s), [code, stdin] as const);
-}
+let runJava: (code: string, stdin?: string) => Promise<Result>;
 
 const main = (body: string, extra = "") =>
   `public class Main {\n${extra}\n  public static void main(String[] args) {\n${body}\n  }\n}`;
 
 test.beforeAll(async ({ browser }) => {
-  page = await browser.newPage();
-  await page.goto("/");
-  await page.waitForFunction(() => "__codequest" in window);
-  const warmMs = await page.evaluate(async () => {
-    const w = window as unknown as TestWindow;
-    w.__cqJava = w.__codequest.createRunner("java");
-    const t = performance.now();
-    await w.__cqJava.warmup();
-    return performance.now() - t;
-  });
-  console.log(`[java] runtime load: ${Math.round(warmMs)} ms`);
+  test.setTimeout(90_000);
+  ({ page, run: runJava } = await openRunner(browser, "java"));
 });
 
 test.afterAll(async () => page.close());
@@ -119,6 +96,7 @@ test("known limit: %f and %n formatting fail at runtime", async () => {
 });
 
 test("endless loop is stopped by the timeout and the runner recovers", async () => {
+  test.setTimeout(60_000); // Two compiles can each use the 20-second safety cap.
   const r = await runJava(main("    while (true) {}"));
   expect(r.timedOut).toBe("run");
   const again = await runJava(main('    System.out.println("back");'));

@@ -10,7 +10,7 @@ walking, wider spacing, camera, task IDs, runners and version-1 saves.
 
 - [x] Correct developer walking to remove the extra-leg overlap; validate all 48 frames.
 - [x] Create the public game repository, commit/push the playable city and deploy a separate Vercel project.
-- [ ] Next authorized task: Logic Junction conditions lessons, eight tasks and a boss in all four languages; connect area travel and saves, then validate, commit and deploy.
+- [x] Logic Junction conditions lessons, eight tasks and a boss in all four languages; connected area travel and saves. Validated the second-district journey, reset isolation and all 72 reference programs across both districts.
 
 ## Current priority: playable first area (2026-10-21)
 The user asked to replace the static preview with gameplay. Build a connected
@@ -59,7 +59,7 @@ Screens
 
 World
 - [ ] Tiled map: Variable Village (area-01) (FR-5)
-- [ ] Hero movement, animation, collisions, camera (FR-5; basic walking, bob animation and collisions live; directional frames/camera polish pending)
+- [x] Hero movement, directional animation, swept collisions and following camera (FR-5)
 - [x] Interactables + "Press E" prompt + input pause while typing (FR-5)
 - [x] HUD: name, hearts, gems, area, progress (FR-15)
 - [x] Lesson scroll panel (FR-6)
@@ -73,14 +73,14 @@ World
 
 Content (lesson + 8 tasks + boss each)
 - [x] Java: Variables (FR-16)
-- [ ] Java: Conditions (FR-16)
+- [x] Java: Conditions (FR-16)
 - [x] JavaScript: Variables (FR-16)
-- [ ] JavaScript: Conditions (FR-16)
+- [x] JavaScript: Conditions (FR-16)
 - [x] TypeScript: Variables (FR-16)
-- [ ] TypeScript: Conditions (FR-16)
+- [x] TypeScript: Conditions (FR-16)
 - [x] Python: Variables (FR-16)
-- [ ] Python: Conditions (FR-16)
-- [x] E2E: every reference solution passes in its real runner (FR-16; all 36 current village programs)
+- [x] Python: Conditions (FR-16)
+- [x] E2E: every reference solution passes in its real runner (FR-16; all 72 programs across both districts)
 - [ ] E2E: full play-through of area 1 (FR-1…FR-15; JavaScript journey passed; remaining language UI journeys pending)
 
 ## M2 — Full game ("Launch" locally)
@@ -93,7 +93,7 @@ Content (lesson + 8 tasks + boss each)
 
 ## Later
 - [ ] Login with Google / GitHub + cloud save
-- [ ] Free static hosting
+- [x] Public GitHub repository and free static hosting on Vercel
 - [ ] Gold, spells, inventory, XP/levels
 - [ ] AI tutor hint
 - [ ] More languages (C#, C++, Go, Rust)

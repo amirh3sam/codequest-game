@@ -19,6 +19,9 @@
 | 2026-10-04 | Student TypeScript compiled with `typescript` 6.0.3 (alias `typescript-js`); project itself uses TS 7.0.2 | TS 7 has no JS compiler API (expected in 7.1) | Sucrase/esbuild-wasm (strip types only, no type errors) |
 | 2026-10-04 | Phaser 4 + Tiled for the game; plain DOM for panels | Proven free 2D engine; text UI is easier and more accessible in DOM | Kaboom/Kaplay, PixiJS, Godot web export |
 | 2026-10-04 | Biome for lint + format | One tool, fast, simple config | ESLint + Prettier |
+| 2026-10-22 | Public `codequest-game` repository and separate Vercel static project | User requested sharing the playable game; retain the existing private repository and calculator deployment. Use CLI releases until the GitHub app gains repository access. | Replace an existing Vercel project |
+| 2026-10-22 | Extract two connected leg layers for hoodie developers before animating | Removes standing-leg remnants and preserves each original shoe, laptop and backpack. Validate every walking frame. | Reuse the old armor-specific cut rectangles |
+| 2026-10-22 | Logic Junction reuses the solid campus map with a violet theme and dynamic markers | Add four-language conditions content and real area travel while retaining tested collisions, task spacing and saves. Distinct authored maps remain planned. | Duplicate the scene or change the save schema |
 | 2026-10-04 | 3 hearts per area; losing all resets **current area only** | User wants no full restart; area reset keeps the stakes | Full game reset; checkpoint per task |
 | 2026-10-04 | Gems earned only from tasks (easy 1, normal 2, hard 3), spent only on boss hints (1/2/3 gems) | User rule: gems are earned, not bought | Gold shop |
 | 2026-10-04 | Compile/runtime errors on Submit don't cost a heart; wrong output does | Encourages trying; punishes wrong logic, not typos | Every failed submit costs a heart |

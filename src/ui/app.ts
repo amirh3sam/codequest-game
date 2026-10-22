@@ -1,4 +1,4 @@
-import { loadVariables } from "../content/loader";
+import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
 import type { AreaContent, Boss, Task } from "../content/schema";
 import village from "../content/village.json" with { type: "json" };
 import { GEM_REWARD, isValidHeroName } from "../core/rules";
@@ -219,7 +219,7 @@ export class GameApp {
         el(
           "div",
           "",
-          `${existing.state.hero.name}'s adventure · ${existing.state.areas.variables.solved.length}/8 tasks`,
+          `${existing.state.hero.name}'s adventure · ${existing.state.areas[existing.state.currentArea].solved.length}/8 tasks`,
         ),
         button("Continue adventure", () => this.begin(existing.state), "button primary"),
       );
@@ -297,8 +297,17 @@ export class GameApp {
     panel.append(form, el("p", "intro-footer", "Free to play · Runs on your device · Saves as you explore"));
   }
   private begin(state: GameState): void {
-    const area = loadVariables(state.lang);
-    if (!state.areas.variables.solved.every((id, index) => area.tasks[index]?.id === id)) {
+    if (!isAreaAvailable(state.currentArea)) state = enterArea(state, "variables", now());
+    const area = loadArea(state.lang, state.currentArea);
+    if (
+      village.worldAreas.some(
+        ({ id }) =>
+          isAreaAvailable(id as GameState["currentArea"]) &&
+          !state.areas[id as GameState["currentArea"]].solved.every(
+            (taskId, index) => loadArea(state.lang, id as GameState["currentArea"]).tasks[index]?.id === taskId,
+          ),
+      )
+    ) {
       this.toast("This save doesn't match the district tasks. Choose Start new to replace it.");
       return;
     }
@@ -310,8 +319,7 @@ export class GameApp {
     this.commit(state);
     this.close();
     this.runner.warmup().catch(() => this.toast("The language runtime couldn't load. Run your code to retry."));
-    if (state.currentArea !== "variables") this.worldMap();
-    else this.toast("Welcome! Use WASD or arrows to walk. Press E near the guide or a terminal.");
+    this.toast("Welcome! Use WASD or arrows to walk. Press E near the guide or a terminal.");
   }
   private persist(): void {
     if (!this.state) return;
@@ -321,12 +329,13 @@ export class GameApp {
   }
   private commit(state: GameState): void {
     this.state = state;
+    this.area = loadArea(state.lang, state.currentArea);
     this.scene.setSession(state, this.area, this.callbacks);
     this.renderHud();
     this.persist();
   }
   private storePosition(position: Position): void {
-    if (this.state?.currentArea !== "variables") return;
+    if (!this.state) return;
     this.state = { ...this.state, position, updatedAt: now() };
     this.persist();
   }
@@ -336,7 +345,7 @@ export class GameApp {
   private renderHud(): void {
     if (!this.state) return;
     const state = this.state,
-      progress = state.areas.variables;
+      progress = state.areas[this.area.id];
     const identity = el("div", "identity");
     const portrait = el("div", "hero-portrait");
     portrait.append(this.icon(state.hero.kind === "girl" ? "heroGirl" : "heroBoy", true));
@@ -369,7 +378,7 @@ export class GameApp {
         progress.bossDefeated
           ? "The district is online. Well played!"
           : progress.solved.length === 8
-            ? "The Firewall is ready. Visit the data hub!"
+            ? `${this.area.boss.name} is ready. Visit the data hub!`
             : `Next: ${this.area.tasks[progress.solved.length]?.title ?? "Explore the district"}`,
       ),
     );
@@ -382,7 +391,10 @@ export class GameApp {
     for (let i = 0; i < 8; i++) meter.append(el("span", i < progress.solved.length ? "complete" : ""));
     objective.append(meter);
     const location = el("div", "location-banner");
-    location.append(el("span", "eyebrow", "DISTRICT 01"), el("span", "location-name", this.area.name));
+    location.append(
+      el("span", "eyebrow", `DISTRICT ${String(this.area.order).padStart(2, "0")}`),
+      el("span", "location-name", this.area.name),
+    );
     const footer = el("div", "game-footer");
     this.saved = el("span", "save-state");
     footer.append(el("span", "", "WASD / Arrows · Move     E / Space · Interact     Esc · Menu"), this.saved);
@@ -412,16 +424,16 @@ export class GameApp {
       if (canFightBoss(this.state, this.area)) this.editor(this.area.boss);
       else
         this.toast(
-          this.state.areas.variables.bossDefeated
-            ? "You already cleared the Firewall!"
-            : "Complete all eight terminals to challenge the Firewall.",
+          this.state.areas[this.area.id].bossDefeated
+            ? `You already cleared ${this.area.boss.name}!`
+            : `Complete all eight terminals to challenge ${this.area.boss.name}.`,
         );
     } else {
       const task = this.area.tasks.find((entry) => entry.id === id);
       if (task && canSolveTask(this.state, this.area, id)) this.editor(task);
       else
         this.toast(
-          this.state.areas.variables.solved.includes(id)
+          this.state.areas[this.area.id].solved.includes(id)
             ? "Already solved! Find the next numbered task."
             : "Solve the earlier tasks to unlock this one.",
         );
@@ -450,7 +462,7 @@ export class GameApp {
     this.capturePosition();
     const panel = this.panel("District missions", "Solve them in order. Each correct answer earns gems.");
     for (const [index, task] of this.area.tasks.entries()) {
-      const solved = this.state.areas.variables.solved.includes(task.id),
+      const solved = this.state.areas[this.area.id].solved.includes(task.id),
         available = canSolveTask(this.state, this.area, task.id);
       const row = button(
         `${solved ? "✓" : available ? "→" : "🔒"} ${index + 1}. ${task.title}`,
@@ -461,7 +473,7 @@ export class GameApp {
       panel.append(row);
     }
     if (canFightBoss(this.state, this.area))
-      panel.append(button("Challenge the Firewall", () => this.editor(this.area.boss), "button primary"));
+      panel.append(button(`Challenge ${this.area.boss.name}`, () => this.editor(this.area.boss), "button primary"));
   }
   private pause(): void {
     if (!this.state) return;
@@ -494,14 +506,14 @@ export class GameApp {
         },
         `world-node${unlocked ? " unlocked" : ""}`,
       );
-      node.disabled = id !== "variables" || !unlocked;
+      node.disabled = !isAreaAvailable(id) || !unlocked;
       node.append(
         el("span", "world-number", completed ? "✓" : unlocked ? String(index + 1) : "🔒"),
         el("strong", "", area.name),
         el(
           "small",
           "",
-          id === "variables" ? "Explore district" : unlocked ? "Unlocked · coming next" : "Defeat the previous boss",
+          !unlocked ? "Defeat the previous boss" : isAreaAvailable(id) ? "Explore district" : "Unlocked · coming next",
         ),
       );
       nodes.append(node);
@@ -510,11 +522,11 @@ export class GameApp {
   }
   private draft(task: Task | Boss, code: string): void {
     if (!this.state) return;
-    const progress = this.state.areas.variables;
+    const progress = this.state.areas[this.area.id];
     this.state = {
       ...this.state,
       updatedAt: now(),
-      areas: { ...this.state.areas, variables: { ...progress, drafts: { ...progress.drafts, [task.id]: code } } },
+      areas: { ...this.state.areas, [this.area.id]: { ...progress, drafts: { ...progress.drafts, [task.id]: code } } },
     };
     this.persist();
   }
@@ -541,7 +553,7 @@ export class GameApp {
     const renderHints = () => {
       if (!this.state || !boss) return;
       hints.replaceChildren();
-      const progress = this.state.areas.variables;
+      const progress = this.state.areas[this.area.id];
       for (const hint of this.area.boss.hints.slice(0, progress.hintsBought)) hints.append(el("p", "hint", hint.text));
       const next = this.area.boss.hints[progress.hintsBought];
       if (next) {
@@ -564,7 +576,7 @@ export class GameApp {
     code.id = "code-editor";
     label.htmlFor = code.id;
     code.spellcheck = false;
-    code.value = this.state.areas.variables.drafts[task.id] ?? task.starter;
+    code.value = this.state.areas[this.area.id].drafts[task.id] ?? task.starter;
     code.setAttribute("autocapitalize", "off");
     code.addEventListener("input", () => this.draft(task, code.value));
     code.addEventListener("keydown", (event) => {
@@ -621,10 +633,10 @@ export class GameApp {
             }
             feedback.className = "feedback success";
             feedback.textContent = `Correct! +${GEM_REWARD[(task as Task).difficulty]} gem${GEM_REWARD[(task as Task).difficulty] > 1 ? "s" : ""}. Your progress is saved.`;
-            const next = this.area.tasks[this.state.areas.variables.solved.length];
+            const next = this.area.tasks[this.state.areas[this.area.id].solved.length];
             actions.replaceChildren(
               button(
-                next ? "Next task →" : "Inspect the Firewall →",
+                next ? "Next task →" : `Inspect ${this.area.boss.name.replace(/^The /, "the ")} →`,
                 () => {
                   if (next) this.editor(next);
                   else this.editor(this.area.boss);
@@ -634,7 +646,12 @@ export class GameApp {
               button("Back to district", () => this.close()),
             );
           } else {
-            const transition = applySubmissionFailure(this.state, "variables", result.failure ?? "wrong-output", now());
+            const transition = applySubmissionFailure(
+              this.state,
+              this.area.id,
+              result.failure ?? "wrong-output",
+              now(),
+            );
             this.commit(transition.state);
             if (transition.areaReset) {
               this.busy = false;
@@ -668,11 +685,16 @@ export class GameApp {
     queueMicrotask(() => code.focus());
   }
   private victory(): void {
+    const next = village.worldAreas[this.area.order];
     const panel = this.panel(`${this.area.name} is online!`, "You used your code to reconnect the city.");
     panel.classList.add("victory");
     panel.prepend(this.icon("gem"));
     panel.append(
-      el("p", "", "Eight missions complete. Firewall cleared. Logic Junction is now unlocked."),
+      el(
+        "p",
+        "",
+        `Eight missions complete. ${this.area.boss.name} cleared.${next ? ` ${next.name} is now unlocked.` : " The city network is complete!"}`,
+      ),
       button("Continue journey", () => this.worldMap(), "button primary"),
       button("Explore the district", () => this.close()),
     );

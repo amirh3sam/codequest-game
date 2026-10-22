@@ -65,9 +65,8 @@ test("completes all eight tasks, buys a hint and defeats the boss", async ({ pag
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Variable District is online!" })).toBeVisible();
   await page.getByRole("button", { name: "Continue journey", exact: true }).click();
-  await expect(page.locator(".world-node").filter({ hasText: "Logic Junction" })).toContainText(
-    "Unlocked · coming next",
-  );
+  await expect(page.locator(".world-node").filter({ hasText: "Logic Junction" })).toBeEnabled();
+  await expect(page.locator(".world-node").filter({ hasText: "Logic Junction" })).toContainText("Explore district");
 });
 
 test("losing the last heart resets the area and keeps the lesson found", async ({ page }) => {

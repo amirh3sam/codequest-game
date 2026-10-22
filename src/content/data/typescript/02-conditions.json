@@ -1,0 +1,291 @@
+{
+  "id": "conditions",
+  "order": 2,
+  "name": "Logic Junction",
+  "lesson": {
+    "title": "Make decisions with code",
+    "pages": [
+      {
+        "heading": "Run code only when a condition is true",
+        "body": "A condition is a yes-or-no question. An if statement runs its indented or braced block only when that question is true. Compare numbers with >, <, >= and <=. At least means >=; at most means <=.",
+        "code": "const battery: number = 72;\n\nif (battery >= 50) {\n    console.log(\"Ready\");\n}"
+      },
+      {
+        "heading": "Choose one path",
+        "body": "Use else for the alternative. Add else if to check more cases in order. The first true branch runs, so put the highest threshold first when comparing scores or temperatures.",
+        "code": "const temperature: number = 81;\n\nif (temperature >= 80) {\n    console.log(\"Cooling\");\n} else if (temperature >= 60) {\n    console.log(\"Warm\");\n} else {\n    console.log(\"Stable\");\n}"
+      },
+      {
+        "heading": "Combine and invert conditions",
+        "body": "AND (&&) requires both conditions. OR (||) accepts either. NOT (!) reverses true and false. Boolean values use true and false.",
+        "code": "const hasBadge: boolean = true;\nconst hasTicket: boolean = false;\n\nif (hasBadge && hasTicket) {\n    console.log(\"Enter\");\n} else {\n    console.log(\"Denied\");\n}\n\nconst accountLocked: boolean = true;\n\nif (!accountLocked) {\n    console.log(\"Unlocked\");\n} else {\n    console.log(\"Locked\");\n}"
+      },
+      {
+        "heading": "Put a decision inside another",
+        "body": "Nested if statements let one decision lead to another. First decide who the user is, then decide what that user may do. Keep each nested block indented clearly. Run your code freely, and Submit when the exact output matches the mission.",
+        "code": "const isAdmin: boolean = false;\nconst requestCount: number = 120;\n\nif (isAdmin) {\n    console.log(\"Priority\");\n} else {\n    if (requestCount <= 100) {\n        console.log(\"Accepted\");\n    } else {\n        console.log(\"Rate limited\");\n    }\n}"
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "conditions-1",
+      "title": "Check a laptop battery",
+      "difficulty": "easy",
+      "prompt": "The laptop battery is 72. Use an if statement to print \"Ready\" when battery is at least 50.",
+      "starter": "const battery: number = 72;\n\n// Write your conditional decisions here.\nconsole.log(\"TODO\");",
+      "solution": "const battery: number = 72;\n\nif (battery >= 50) {\n    console.log(\"Ready\");\n}",
+      "tests": [
+        {
+          "expectedStdout": "Ready\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bif\\b",
+          "message": "Use an if statement to make this decision."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": ">=",
+          "message": "Use the comparison or alternative branch requested in the mission."
+        }
+      ]
+    },
+    {
+      "id": "conditions-2",
+      "title": "Choose a sign-in screen",
+      "difficulty": "easy",
+      "prompt": "signedIn is false. Use if/else: print \"Welcome\" when signed in, otherwise print \"Sign in\".",
+      "starter": "const signedIn: boolean = false;\n\n// Write your conditional decisions here.\nconsole.log(\"TODO\");",
+      "solution": "const signedIn: boolean = false;\n\nif (signedIn) {\n    console.log(\"Welcome\");\n} else {\n    console.log(\"Sign in\");\n}",
+      "tests": [
+        {
+          "expectedStdout": "Sign in\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bif\\b",
+          "message": "Use an if statement to make this decision."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": "\\belse\\b",
+          "message": "Use the comparison or alternative branch requested in the mission."
+        }
+      ]
+    },
+    {
+      "id": "conditions-3",
+      "title": "Cool the server",
+      "difficulty": "normal",
+      "prompt": "temperature is 81. Use if/else if/else (elif in Python). Print \"Cooling\" for 80 or above, \"Warm\" for 60 or above, otherwise \"Stable\". Check the highest threshold first.",
+      "starter": "const temperature: number = 81;\n\n// Write your conditional decisions here.\nconsole.log(\"TODO\");",
+      "solution": "const temperature: number = 81;\n\nif (temperature >= 80) {\n    console.log(\"Cooling\");\n} else if (temperature >= 60) {\n    console.log(\"Warm\");\n} else {\n    console.log(\"Stable\");\n}",
+      "tests": [
+        {
+          "expectedStdout": "Cooling\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bif\\b",
+          "message": "Use an if statement to make this decision."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": "\\belse\\s+if\\b",
+          "message": "Use an ordered else if chain."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": ">=",
+          "message": "Use the comparison or alternative branch requested in the mission."
+        }
+      ]
+    },
+    {
+      "id": "conditions-4",
+      "title": "Require both credentials",
+      "difficulty": "normal",
+      "prompt": "hasBadge is true and hasTicket is false. Use a logical AND condition. Print \"Enter\" only when both are true; otherwise print \"Denied\".",
+      "starter": "const hasBadge: boolean = true;\nconst hasTicket: boolean = false;\n\n// Write your conditional decisions here.\nconsole.log(\"TODO\");",
+      "solution": "const hasBadge: boolean = true;\nconst hasTicket: boolean = false;\n\nif (hasBadge && hasTicket) {\n    console.log(\"Enter\");\n} else {\n    console.log(\"Denied\");\n}",
+      "tests": [
+        {
+          "expectedStdout": "Denied\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bif\\b",
+          "message": "Use an if statement to make this decision."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": "&&",
+          "message": "Use logical AND so both credentials are required."
+        }
+      ]
+    },
+    {
+      "id": "conditions-5",
+      "title": "Find an available connection",
+      "difficulty": "normal",
+      "prompt": "hasWifi is false and hasEthernet is true. Use a logical OR condition. Print \"Connected\" when either is available; otherwise print \"Offline\".",
+      "starter": "const hasWifi: boolean = false;\nconst hasEthernet: boolean = true;\n\n// Write your conditional decisions here.\nconsole.log(\"TODO\");",
+      "solution": "const hasWifi: boolean = false;\nconst hasEthernet: boolean = true;\n\nif (hasWifi || hasEthernet) {\n    console.log(\"Connected\");\n} else {\n    console.log(\"Offline\");\n}",
+      "tests": [
+        {
+          "expectedStdout": "Connected\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bif\\b",
+          "message": "Use an if statement to make this decision."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": "\\|\\|",
+          "message": "Use logical OR so either connection can work."
+        }
+      ]
+    },
+    {
+      "id": "conditions-6",
+      "title": "Invert an account flag",
+      "difficulty": "normal",
+      "prompt": "accountLocked is true. Use logical NOT in your condition. Print \"Unlocked\" when the account is not locked, otherwise print \"Locked\".",
+      "starter": "const accountLocked: boolean = true;\n\n// Write your conditional decisions here.\nconsole.log(\"TODO\");",
+      "solution": "const accountLocked: boolean = true;\n\nif (!accountLocked) {\n    console.log(\"Unlocked\");\n} else {\n    console.log(\"Locked\");\n}",
+      "tests": [
+        {
+          "expectedStdout": "Locked\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bif\\b",
+          "message": "Use an if statement to make this decision."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": "!(?!=)",
+          "message": "Use logical NOT to invert the account flag."
+        }
+      ]
+    },
+    {
+      "id": "conditions-7",
+      "title": "Protect the request queue",
+      "difficulty": "hard",
+      "prompt": "isAdmin is false and requestCount is 120. Use nested if statements: administrators print \"Priority\". For other users, print \"Accepted\" when requestCount is at most 100, otherwise \"Rate limited\".",
+      "starter": "const isAdmin: boolean = false;\nconst requestCount: number = 120;\n\n// Write your conditional decisions here.\nconsole.log(\"TODO\");",
+      "solution": "const isAdmin: boolean = false;\nconst requestCount: number = 120;\n\nif (isAdmin) {\n    console.log(\"Priority\");\n} else {\n    if (requestCount <= 100) {\n        console.log(\"Accepted\");\n    } else {\n        console.log(\"Rate limited\");\n    }\n}",
+      "tests": [
+        {
+          "expectedStdout": "Rate limited\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bif\\b",
+          "message": "Use an if statement to make this decision."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bif\\b[\\s\\S]*\\bif\\b",
+          "message": "Use a second if statement inside the first decision."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": "<=",
+          "message": "Use the comparison or alternative branch requested in the mission."
+        }
+      ]
+    },
+    {
+      "id": "conditions-8",
+      "title": "Grade the network health",
+      "difficulty": "hard",
+      "prompt": "score is 68. Use an ordered if/else if/else chain (elif in Python). Print \"Excellent\" for 90 or above, \"Good\" for 70 or above, \"Pass\" for 50 or above, otherwise \"Retry\". Only one message should print.",
+      "starter": "const score: number = 68;\n\n// Write your conditional decisions here.\nconsole.log(\"TODO\");",
+      "solution": "const score: number = 68;\n\nif (score >= 90) {\n    console.log(\"Excellent\");\n} else if (score >= 70) {\n    console.log(\"Good\");\n} else if (score >= 50) {\n    console.log(\"Pass\");\n} else {\n    console.log(\"Retry\");\n}",
+      "tests": [
+        {
+          "expectedStdout": "Pass\n"
+        }
+      ],
+      "rules": [
+        {
+          "kind": "mustMatch",
+          "pattern": "\\bif\\b",
+          "message": "Use an if statement to make this decision."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": "\\belse\\s+if\\b",
+          "message": "Use an ordered else if chain."
+        },
+        {
+          "kind": "mustMatch",
+          "pattern": ">=",
+          "message": "Use the comparison or alternative branch requested in the mission."
+        }
+      ]
+    }
+  ],
+  "boss": {
+    "id": "conditions-boss",
+    "title": "Route the district traffic",
+    "name": "The Router",
+    "prompt": "The Router needs a safe route. battery is 80, hasBadge is true and networkOnline is false. First use AND to allow access only when battery is at least 50 and hasBadge is true. If access is denied, print \"Access denied\" only. If access is allowed, print \"Access granted\", then use a nested if/else to print \"Online route\" when networkOnline is true or \"Backup route\" otherwise. Use these variables; print each message on its own line.",
+    "starter": "const battery: number = 80;\nconst hasBadge: boolean = true;\nconst networkOnline: boolean = false;\n\n// Write your conditional decisions here.\nconsole.log(\"TODO\");",
+    "solution": "const battery: number = 80;\nconst hasBadge: boolean = true;\nconst networkOnline: boolean = false;\n\nif (battery >= 50 && hasBadge) {\n    console.log(\"Access granted\");\n    if (networkOnline) {\n        console.log(\"Online route\");\n    } else {\n        console.log(\"Backup route\");\n    }\n} else {\n    console.log(\"Access denied\");\n}",
+    "tests": [
+      {
+        "expectedStdout": "Access granted\nBackup route\n"
+      }
+    ],
+    "rules": [
+      {
+        "kind": "mustMatch",
+        "pattern": "\\bif\\b[\\s\\S]*\\bif\\b",
+        "message": "Use an outer access decision and a nested routing decision."
+      },
+      {
+        "kind": "mustMatch",
+        "pattern": "&&",
+        "message": "Require both a charged battery and a badge using logical AND."
+      },
+      {
+        "kind": "mustMatch",
+        "pattern": "\\belse\\b",
+        "message": "Provide the alternative route with else."
+      }
+    ],
+    "hints": [
+      {
+        "cost": 1,
+        "text": "There are two decisions: grant access, then choose an online or backup route. With the given values, access is allowed and the backup route is needed."
+      },
+      {
+        "cost": 2,
+        "text": "Combine battery >= 50 with hasBadge using &&. Put the networkOnline decision inside that successful branch."
+      },
+      {
+        "cost": 3,
+        "text": "Start with if (battery >= 50 && hasBadge) { and print \"Access granted\". Inside it, use if/else on networkOnline."
+      }
+    ]
+  }
+}

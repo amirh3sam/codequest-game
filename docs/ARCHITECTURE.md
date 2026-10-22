@@ -175,13 +175,17 @@ keyboard movement, obstacle checks and nearby interactions. Keyboard movement
 is paused while menus or the code editor are open. Closing a running editor
 terminates its worker and invalidates its pending result.
 
-The four `src/content/data/<lang>/01-variables.json` files contain the paged
-lesson, eight tasks, boss, hints and reference programs. `src/grader/grade.ts`
+The `src/content/data/<lang>/01-variables.json` and `02-conditions.json` files
+contain each district's paged lesson, eight tasks, boss, hints and reference programs.
+`loadArea` selects validated content by language and area ID; availability gates
+world-map travel. HUD, drafts, penalties, markers and victory use the active area.
+`src/grader/grade.ts`
 normalizes line endings, checks output and code rules, and classifies failures
 for the heart reducer. All player programs execute in workers, including the
 new plain JavaScript worker. The first editor is a plain text area, and village
-layout is `src/content/village.json`; CodeMirror, Tiled, advanced animations and
-the remaining areas remain follow-up work.
+layout is `src/content/village.json`, with separate solid-object footprints,
+directional walking, following camera and per-district tint/signage. CodeMirror,
+Tiled and the remaining five areas remain follow-up work.
 
 ## 5. Screens (no URL routes — single page)
 Title (New / Continue) → Language → Hero → Name → World Map ↔ Area (HUD + panels: Scroll, Task, Boss, Pause, Out of hearts, Victory).
@@ -212,9 +216,9 @@ None needed for MVP. `.env.example` lists placeholders only (e.g. `VITE_JAVA_RUN
 - **Unit (Vitest):** core reducers (hearts, gems, reset, unlocks), save/migrate, grader comparison and rules, content schema validation for every file.
 - **Integration (Vitest):** JS runner in Node, grader + JS runner end to end.
 - **E2E (Playwright, Chromium):** new game flow (language → hero → name → map); walk to a task, solve it, gem +1; wrong submit, heart −1; lose all hearts, area resets; boss with hints; reload keeps progress; **every task's reference solution passes in the real browser runner for all 4 languages**.
-- CI runs lint + unit on every push/PR; e2e runs in CI on PRs to main.
+- CI runs lint, types, unit and Chromium E2E on every push and pull request.
 
 ## 11. Deployment and cost
-- **Now:** localhost only: `npm run dev` (development), `npm run build && npm run preview` (production build).
-- **Later (optional):** free static hosting (Cloudflare Pages / Netlify / GitHub Pages). Everything runs in the browser, so no server is needed.
+- **Public:** https://codequest-game-inky.vercel.app/, a separate Vercel static Vite project. Source: https://github.com/amirh3sam/codequest-game. See `DEPLOYMENT.md` for the release workflow.
+- **Local:** `npm run dev` for development; `npm run build` then `npm run preview` for the production build. All code execution stays in browser workers.
 - **Monthly cost: $0.**

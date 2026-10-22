@@ -1,7 +1,7 @@
 # CodeQuest
 
 ## Overview
-2D top-down pixel-art RPG (web, desktop browser) that teaches programming. Pick a language (Java, JavaScript, TypeScript, Python), pick a boy/girl hero, name them, then walk through 7 areas (Variables → Conditions → Loops → Arrays → Functions → Objects → Abstraction). Each area: lesson scroll(s), 8 coding tasks easy→hard (earn gems; wrong answer = −1 heart), and a boss where gems buy hints. Out of hearts → current area resets only. Player code runs **in the browser** in Web Workers. No server, no login, $0. Localhost only for now.
+2D top-down coding adventure (web, desktop browser) in a modern tech city. Choose Java, JavaScript, TypeScript or Python and a boy/girl developer with a hoodie, laptop and backpack. Variable District and Logic Junction are playable; five later areas remain planned. Each area has a digital guide, eight missions (earn gems; wrong answer = −1 heart), and a boss with purchasable hints. Out of hearts resets the current area only. Player code runs in browser workers; progress uses localStorage, with no game server or login. Public game: https://codequest-game-inky.vercel.app/. Public source and release workflow: `docs/DEPLOYMENT.md`.
 Full spec: `docs/PRD.md`. Design: `docs/ARCHITECTURE.md`.
 
 ## Tech stack

@@ -32,6 +32,7 @@ export class BootScene extends Phaser.Scene {
   private prompt!: Phaser.GameObjects.Text;
   private keys: Record<string, Phaser.Input.Keyboard.Key> = {};
   private markers: Marker[] = [];
+  private districtLabel!: Phaser.GameObjects.Text;
   private solids: Solid[] = [];
   private state: GameState | null = null;
   private area: AreaContent | null = null;
@@ -69,6 +70,11 @@ export class BootScene extends Phaser.Scene {
     for (const [index, spot] of village.tasks.entries())
       this.marker(`variables-${index + 1}`, spot.x, spot.y, { texture: "tech-props", frame: 0 }, `${index + 1}`);
     this.marker("boss", village.boss.x, village.boss.y, SPRITES.boss, "Firewall");
+    this.districtLabel = this.add
+      .text(768, 294, "VALUES / DATA HUB", { fontFamily: "Consolas", fontSize: "15px", color: "#9ae9ff" })
+      .setOrigin(0.5)
+      .setDepth(2)
+      .setAlpha(0.7);
     this.shadow = this.add.ellipse(96, 415, 28, 10, 0x1c3b2d, 0.3).setDepth(3);
     this.hero = this.add
       .image(96, 400, SPRITES.heroBoy.texture, SPRITES.heroBoy.frame)
@@ -98,7 +104,7 @@ export class BootScene extends Phaser.Scene {
     this.game.events.emit("village-ready");
   }
   private marker(id: string, x: number, y: number, sprite: { texture: string; frame: number }, title: string): void {
-    const chest = id.startsWith("variables-");
+    const chest = id !== "lesson" && id !== "boss";
     this.add.ellipse(x + 3, y, 37, 14, 0x233f34, 0.22).setDepth(1);
     const glow = this.add.circle(x, y - 6, 33, 0x55cfff, 0.07).setDepth(1);
     const pad = this.add
@@ -171,6 +177,30 @@ export class BootScene extends Phaser.Scene {
       this.cameras.main.stopFollow().centerOn(village.world.width / 2, village.world.height / 2);
       return;
     }
+    const changedDistrict = previous?.currentArea !== state.currentArea;
+    if (changedDistrict) {
+      let index = 0;
+      for (const marker of this.markers) {
+        if (marker.id === "lesson") continue;
+        if (marker.id === "boss") {
+          marker.label.setText(area.boss.name.replace(/^The /, ""));
+          continue;
+        }
+        const task = area.tasks[index++];
+        if (!task) continue;
+        const solid = this.solids.find((entry) => entry.id === marker.id);
+        if (solid) solid.id = task.id;
+        marker.id = task.id;
+        marker.group.setName(task.id);
+      }
+      const logic = area.id === "conditions";
+      (this.children.getByName("district-ground") as Phaser.GameObjects.Image).setTint(logic ? 0xe4dfff : 0xffffff);
+      this.districtLabel
+        .setText(logic ? "IF / ELSE / DECISION NETWORK" : "VALUES / DATA HUB")
+        .setColor(logic ? "#dfbaff" : "#9ae9ff");
+      this.facing = "south";
+      this.walked = 0;
+    }
     const sprite = state.hero.kind === "girl" ? SPRITES.heroGirl : SPRITES.heroBoy;
     this.hero.setTexture(sprite.texture, heroFrame(this.facing));
     const location = state.position ?? village.spawn;
@@ -178,27 +208,27 @@ export class BootScene extends Phaser.Scene {
     this.hero.setPosition(this.position.x, this.position.y + 4).setDepth(this.position.y);
     this.shadow.setPosition(this.position.x, this.position.y - 1);
     this.cameras.main.startFollow(this.hero, true, 0.14, 0.14);
-    if (!previous) this.cameras.main.centerOn(this.position.x, this.position.y);
+    if (changedDistrict) this.cameras.main.centerOn(this.position.x, this.position.y);
     for (const marker of this.markers) {
       const solved =
-        marker.id === "boss" ? state.areas.variables.bossDefeated : state.areas.variables.solved.includes(marker.id);
+        marker.id === "boss" ? state.areas[area.id].bossDefeated : state.areas[area.id].solved.includes(marker.id);
       const wasSolved =
         marker.id === "boss"
-          ? previous?.areas.variables.bossDefeated
-          : previous?.areas.variables.solved.includes(marker.id);
+          ? previous?.areas[area.id].bossDefeated
+          : previous?.areas[area.id].solved.includes(marker.id);
       const active =
         marker.id === "lesson" ||
         (marker.id === "boss"
-          ? canFightBoss(state, area) || state.areas.variables.bossDefeated
+          ? canFightBoss(state, area) || state.areas[area.id].bossDefeated
           : canSolveTask(state, area, marker.id) || solved);
       marker.icon.setAlpha(active ? 1 : 0.7).setTint(solved ? 0xb1e5b4 : active ? 0xffffff : 0xa1b7ac);
-      if (marker.id.startsWith("variables-")) marker.icon.setFrame(solved ? 1 : 0);
+      if (marker.id !== "lesson" && marker.id !== "boss") marker.icon.setFrame(solved ? 1 : 0);
       marker.pad
         .setFillStyle(solved ? 0x71d2ad : active ? 0x65cfff : 0x273c52, active ? 0.2 : 0.15)
         .setStrokeStyle(1, solved ? 0xa8e9ba : active ? 0x8be6ff : 0x758b71, 0.7);
       marker.glow.setVisible(active && !solved);
       marker.beacon.setVisible(active && !solved && marker.id !== "lesson");
-      if (marker.id.startsWith("variables-"))
+      if (marker.id !== "lesson" && marker.id !== "boss")
         marker.label.setText(marker.id.split("-")[1] ?? "").setColor(solved ? "#a8e9ba" : "#def5ff");
       if (previous && solved && !wasSolved) this.celebrate(marker.x, marker.y);
     }
@@ -285,7 +315,7 @@ export class BootScene extends Phaser.Scene {
     this.prompt.setVisible(Boolean(near));
     if (near)
       this.prompt.setText(
-        `E / Space · ${near.id === "lesson" ? "Open the quick guide" : near.id === "boss" ? "Inspect the Firewall" : `Task ${near.id.split("-")[1]}`}`,
+        `E / Space · ${near.id === "lesson" ? "Open the quick guide" : near.id === "boss" ? `Inspect ${this.area.boss.name}` : `Task ${near.id.split("-")[1]}`}`,
       );
   }
 }

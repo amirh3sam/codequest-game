@@ -6,7 +6,10 @@ import { createEnvironmentFrames, type EnvironmentKind, OBJECT_SIZE } from "./en
 /** Painted backdrop plus live lighting, water and foreground occlusion. */
 export function buildAdventureWorld(scene: Phaser.Scene, reducedMotion: boolean): Solid[] {
   const { width, height } = village.world;
-  scene.add.image(width / 2, height / 2, "adventure-world").setDisplaySize(width, height);
+  scene.add
+    .image(width / 2, height / 2, "adventure-world")
+    .setDisplaySize(width, height)
+    .setName("district-ground");
   createEnvironmentFrames(scene);
   const solids: Solid[] = [...village.solidObjects, { id: "pond", points: village.pondShore }];
   const object = (spot: { x: number; y: number; kind: string }, index: number) => {

@@ -1,8 +1,14 @@
 # Progress log (newest on top)
 
+## 2026-10-22 (Logic Junction)
+- **Done:** added four lesson pages, eight conditions missions and the Router boss with three hints in JavaScript, TypeScript, Python and Java. Generalized the loader, HUD, journal, drafts, penalties, victory and world markers to use the active district. The world map now opens Logic Junction after the Firewall; travel and Continue retain independent district progress. Logic Junction uses a violet campus tint and decision-network signage, reusing the existing solid map. No save migration or new dependencies.
+- **Checks:** 201 unit tests and all 71 Chromium cases passed across the complete UI run and a 58-case worker recheck. The first full run passed 69 cases and exposed two Java checks competing with title-screen rendering; worker-only fixtures now sleep the renderer, retain the real workers and pass unchanged runtime assertions. The Java recovery test allows two compile caps plus the run timeout. All 72 reference programs passed. District travel, Continue, reset isolation, hints/victory and all 48 walking frames were verified; a Logic Junction screenshot was inspected. Lint, type checking and the production build passed; production test hooks are absent.
+- **Next:** release this checked build through the existing Vercel project; CodeMirror and later districts remain roadmap work.
+- **Blockers:** none for the public game; CLI publication remains available while GitHub app repository access is unconnected.
+
 ## 2026-10-22 (public verification and interaction timing)
 - **Done:** launched https://codequest-game-inky.vercel.app/ from public commit `8a9fd28`. A fresh, unauthenticated browser successfully submitted real code in JavaScript, TypeScript, Python and Java; each returned a correct answer with HTTP-200 runtime assets and no page errors. Added the live link to the README. Fixed a quick-key interaction race found by Linux CI: E/Space now dispatches on key-down instead of relying on the next render frame.
-- **Checks:** the full physical eight-terminal/Firewall route passed after the input fix. Initial Linux CI passed 68 of 69 tests and exposed the missed short press; its next run will verify the fix there.
+- **Checks:** the full physical eight-terminal/Firewall route passed after the input fix. Initial Linux CI passed 68 of 69 tests and exposed the missed short press; the following CI run for commit `508f81f` passed all 69 browser tests plus lint, types and unit tests.
 - **Next:** Logic Junction content and area travel; commit and publish it after validation.
 - **Blockers:** GitHub-to-Vercel automatic builds need GitHub app repository access; CLI deployment works and publishes the public game successfully.
 
