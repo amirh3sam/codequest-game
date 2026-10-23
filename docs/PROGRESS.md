@@ -4,7 +4,8 @@
 - Levels 8–24 follow Abstraction Cloud in one continuous map. Level 8 unlocks after the Abstraction Cloud boss; each next category unlocks only after the previous category's eight tasks and boss. Each category has exactly eight tasks plus a separate boss. After each boss, portal doors provide direct travel to every unlocked category, including the newly unlocked next level.
 - **Checks:** Chromium confirmed fresh-save locks, level 8 unlocking, level 9 remaining locked until the first category boss, the complete eight-task-plus-boss flow, and portal travel through all 17 category bosses. All 17 category starters passed in Java, JavaScript, TypeScript and Python. All 249 unit tests, lint, typecheck, and production build passed.
 - **Release:** source commit `0183c46` is public on `main`. Production deployment `dpl_DUEFZD9uubJ6LtgvMsUytwWSVxrh` is READY at https://codequest-game-inky.vercel.app/; the production alias returned the updated game.
-- **Next:** continue building the category-level game missions.
+- **Current dependency:** new saves cannot yet complete Abstraction Cloud because city districts 3–7 are still marked coming next. Until that story route is playable, level 8 stays locked for those saves as designed.
+- **Next:** make the story route through Abstraction Cloud playable, then continue building category-level game missions.
 - **Blockers:** none.
 
 ## 2026-10-23 (Study Path added to the world map)
