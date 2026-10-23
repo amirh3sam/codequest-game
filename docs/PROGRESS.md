@@ -7,7 +7,9 @@
 - **Checks:** 213 unit tests and all 13 focused Chromium cases passed. Coverage includes all four practice languages, both 2D openings, responsive screen-entry geometry, phone layout, worker cancellation, saved drafts, mission navigation, interrupted drone delivery/camera recovery, missing art, delayed loads and canvas fallback. Lint, types and production build passed; production test hooks are absent.
 - **Art/media:** saved the generated RGBA sprite and exact built-in image-tool prompt in [the tablet asset directory](../public/assets/tablet/ARTWORK.md). Inspected the actual animated frame with the live display correctly inside its bezel, and replaced the opening screenshot/video. Capture now advances rendered frames so the city zoom appears in the image.
 - **Dependencies:** removed Three.js, its types and both obsolete rig files. The animation module is now 3.90 kB (1.83 kB gzip); its 1.62 MB illustrated PNG loads on demand. No changes to saves or grading.
-- **Release:** publishing and public verification follow this implementation entry.
+- **Release:** source commit `189c9ba` is public and deployed to the separate CodeQuest project as `dpl_43h1QGRP82SmM1W9joDhLxfQENdB` (READY), aliased at https://codequest-game-inky.vercel.app/.
+- **Public verification:** fresh unauthenticated browsers received HTTP 200 and loaded the actual illustrated PNG in the 2D renderer for both developers. Each completed the opening, ran code printing 42 with code/output visible together, displayed a syntax error and returned to the city. No page errors or production test hooks. Inspected a real public frame to confirm the illustration and display fit the bezel.
+- **CI:** GitHub run `39889170956` passed lint, types, 213 unit tests and all 91 Chromium cases for source commit `189c9ba`.
 
 ## 2026-10-22 (slim wrist-device model)
 
