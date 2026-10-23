@@ -7,7 +7,6 @@ test("Java categories continue after Abstraction Cloud and unlock sequentially",
   await page.goto("/");
   await page.locator('[data-language="javascript"]').first().click();
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
-  await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "World map", exact: true }).click();
 
   await expect(page.locator(".world-skill-node")).toHaveCount(17);
@@ -16,11 +15,11 @@ test("Java categories continue after Abstraction Cloud and unlock sequentially",
   await expect(page.locator(".level-map-nodes > .world-node").nth(6)).toContainText("Abstraction Cloud");
   await expect(page.locator(".level-map-nodes > .world-skill-node").first()).toContainText("Variables & Data Types");
   for (const node of await page.locator(".world-skill-node").all()) await expect(node).toBeDisabled();
+  for (const lock of await page.locator(".world-skill-node .world-number").all()) await expect(lock).toHaveText("🔒");
   await expect(page.locator(".world-skill-node").first()).toContainText("complete Abstraction Cloud to unlock level 8");
   await expect(page.locator(".world-map-hint")).toContainText("eight tasks plus its boss");
 
   await startAfterAbstractionCloud(page, "javascript");
-  await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "World map", exact: true }).click();
   const firstCategory = page.locator(".world-skill-node").first();
   await expect(firstCategory).toBeEnabled();

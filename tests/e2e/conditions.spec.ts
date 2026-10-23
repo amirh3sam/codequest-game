@@ -12,7 +12,6 @@ async function enterLogic(page: Page): Promise<void> {
   await page.evaluate((state) => localStorage.setItem("codequest:v1:javascript", JSON.stringify(state)), state);
   await page.reload();
   await page.locator(".title-adventure-row").first().click();
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
   await page.getByRole("button", { name: "World map", exact: true }).click();
   await page.locator(".world-node").filter({ hasText: "Logic Junction" }).click();
   await expect(page.locator(".location-name")).toHaveText("Logic Junction");
@@ -77,7 +76,6 @@ test("travels to Logic Junction, uses its terminal, reloads and clears the Route
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();
   await expect(page.locator(".feedback")).toContainText("Correct!");
   await page.getByRole("button", { name: "Back to district", exact: true }).click();
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
   await page.getByRole("button", { name: "World map", exact: true }).click();
   await page.locator(".world-node").filter({ hasText: "Variable District" }).click();
   await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "8");
@@ -157,7 +155,6 @@ test("districts have different scenery and routes; every Logic terminal is reach
     outsideSolid: true,
   });
   expect(report.reachable).toEqual(Array(10).fill(true));
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
   await page.getByRole("button", { name: "World map", exact: true }).click();
   await page.locator(".world-node").filter({ hasText: "Variable District" }).click();
   const restored = await page.evaluate(() => {

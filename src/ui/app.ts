@@ -1379,7 +1379,11 @@ export class GameApp {
         );
       skill.disabled = !unlocked;
       skill.append(
-        el("span", "world-number", isComplete ? "✓" : String(village.worldAreas.length + index + 1).padStart(2, "0")),
+        el(
+          "span",
+          "world-number",
+          !unlocked ? "🔒" : isComplete ? "✓" : String(village.worldAreas.length + index + 1).padStart(2, "0"),
+        ),
         el("strong", "", topic.title),
         el(
           "small",
