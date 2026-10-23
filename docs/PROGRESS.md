@@ -6,7 +6,7 @@
 - **Polish:** saved adventures and tablet tabs now use each language's first-screen accent color. The field guide hides while any modal page is open, including the tablet and mini-games, so it cannot cover their content.
 - **Checks:** 239 unit tests passed. All 14 tablet Chromium cases passed serially, including every language runner, Java classes across files, nested file/folder creation, project reload, mobile layout and field-guide dismissal. The new Daily Quest solve/save Chromium flow passed. Lint, TypeScript and production build passed.
 - **Next:** extend module-aware multi-file execution to JavaScript, TypeScript and Python.
-- **Release:** pending public commit and Vercel deployment.
+- **Release:** commit `7b18925` is public on `main`. Deployment `dpl_EWCfSUNXbuBG3X64dibZVh6nu5qc` is READY at https://codequest-game-inky.vercel.app/; `vercel curl` confirmed the production alias serves the new JS and CSS assets.
 
 ## 2026-10-23 (accessibility settings and Signal Stack arcade)
 
