@@ -1,6 +1,6 @@
 # CodeQuest — Architecture
 
-_Last updated: 2026-10-22 · Illustrated 2D wrist-tablet animation_
+_Last updated: 2026-10-22 · Community beacon discovery and sound effects_
 
 ## 1. Stack
 | Area | Pick (version) | Why |
@@ -20,6 +20,7 @@ _Last updated: 2026-10-22 · Illustrated 2D wrist-tablet animation_
 | End-to-end tests | Playwright 1.63.0 | Drives a real browser: needed to test WASM runners and the canvas game. |
 | Lint + format | Biome 2.5.15 | One fast tool for both lint and format instead of ESLint + Prettier. |
 | Save | `localStorage` (versioned JSON) | No server, no login; enough for MVP. |
+| Sound effects | Native Web Audio oscillators and gain envelopes | Original short cues, one context created after a user gesture, bounded voices and cadence, saved mute preference, hidden-tab suspension. Phaser's unused sound manager is disabled. |
 | Art | Generated tech-city and wrist-tablet assets, retained Kenney CC0 sprites and native Phaser/CSS objects | Hoodie developers, transparent city objects, terminals and a 2D illustrated wrist display. The drone and gates use native drawing. See [current screenshots](screenshots/README.md). |
 | CI | GitHub Actions | Free for private repos within monthly minutes. |
 
@@ -112,6 +113,7 @@ type Save = {
   version: 1; lang: "java" | "javascript" | "typescript" | "python";
   hero: { kind: "boy" | "girl"; name: string };
   currentArea: string; position?: { x: number; y: number };
+  discoveries?: { beacon?: "garden" | "arcade" };
   areas: Record<string, {
     solved: string[]; lessonsFound: boolean; gems: number; hearts: number;
     hintsBought: number; bossDefeated: boolean; drafts: Record<string, string>;
@@ -120,6 +122,22 @@ type Save = {
 };
 ```
 Gems are stored per area: an area reset removes only that area's gems, and gems can only be spent on that area's boss.
+
+The optional `discoveries` field is additive: existing version-1 saves remain valid.
+The beacon accepts only `garden` or `arcade`; malformed known discovery fields are
+rejected before overwriting a save. `lightBeacon` requires the repaired drone (or
+an existing discovery), changes no area counters and is idempotent for the same
+choice. Area retries retain discoveries; a new adventure clears them. The UI
+runs code in the existing worker, requires an exact event-name output, and keeps
+a receipt tied to the current code and selection before allowing activation.
+Closing or changing either invalidates that receipt. Output is the acceptance
+criterion; the free activity does not enforce a particular source-code syntax.
+
+Sound preference is separate from progress at `codequest:audio:v1` (`on` or
+`muted`). The audio module creates one native context on a trusted gesture,
+limits concurrent voices, stops active notes when muted or hidden, and resumes
+after another interaction. Unsupported audio and unavailable preference storage
+leave the game playable.
 
 ### Implemented core API
 

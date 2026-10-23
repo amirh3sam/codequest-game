@@ -21,7 +21,8 @@ editor polish follow this pilot.
       contextual lesson, safe code preview and persistent world repair.
 - [x] Add targeted explanations, an independent repair after guided edits, and a transfer exercise.
 - [x] Open a solid courier lane and let Kai react to the repair.
-- [ ] Add optional discoveries and story choices beyond the courier mission.
+- [x] Add the first optional discovery beyond the courier mission: Mina's community beacon, a garden/arcade event choice, real string-variable practice, saved courtyard colors and Signal Maker badge. More branches remain future work.
+- [x] Add original synthesized sound effects for footsteps, interactions, tablet opening, code results, delivery and celebrations, with a saved mute toggle.
 - [x] Validate the pilot in all four languages; preserve old saves and one-time rewards.
 - [ ] Playtest comprehension and enjoyment with beginners.
 - [x] Add a T-key developer tablet with an animated opening, editor/example/console tabs, real free practice and saved per-language drafts.

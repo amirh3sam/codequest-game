@@ -10,6 +10,12 @@ A 2D adventure game that teaches programming in a modern tech city. Pick **Java,
 
 Start with **Mission** to meet Kai. The guided drone lesson lets you predict, run, investigate and change a battery value before writing your own repair. Practice previews are free; accepted repairs earn progress and change the city.
 
+After repairing the drone, find the **community beacon** beside the courier lane, or open **Tasks → Optional discovery**. Help Mina choose **Garden night** or **Arcade night**, use a text variable to announce it, then light the courtyard in your event's colors. Free previews keep your hearts and gems safe. The saved choice earns the **Signal Maker** badge in your tablet mission log; you can change the event later.
+
+![Mina's optional community beacon with a chosen event, working code and live preview](docs/screenshots/community-beacon.png)
+
+Sound effects accompany walking, buttons, tablet opening, code results, deliveries and celebrations. Use **Sound on/off** on the title screen or game toolbar; the preference stays on this device. Audio starts after an interaction and stops when the tab is hidden.
+
 ![The actual drone lesson with a working code example, prediction choices and battery meter](docs/screenshots/drone-lesson.png)
 
 Press **T** or click **Tablet**: the city camera zooms toward your developer, then an illustrated **2D wrist tablet** lifts into view, settles and zooms into its screen. The opening takes three seconds. Press **T** or **Skip animation** to jump ahead. Reduced motion opens it instantly.

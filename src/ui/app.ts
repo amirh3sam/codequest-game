@@ -1,7 +1,9 @@
+import { BEACON_EVENTS } from "../content/community-beacon";
 import { dronePilot } from "../content/drone-pilot";
 import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
 import type { AreaContent, Boss, Task } from "../content/schema";
 import village from "../content/village.json" with { type: "json" };
+import { canLightBeacon, lightBeacon } from "../core/discoveries";
 import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone-mission";
 import { GEM_REWARD, isValidHeroName } from "../core/rules";
 import { loadGame, saveGame } from "../core/save";
@@ -20,10 +22,12 @@ import {
   solveTask,
 } from "../core/state";
 import { SPRITES } from "../game/assets";
+import { gameAudio } from "../game/audio";
 import type { BootScene, VillageCallbacks } from "../game/scenes/BootScene";
 import { executionError, grade } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
 import { WorkerHost } from "../runners/worker-host";
+import { openCommunityBeacon } from "./community-beacon";
 import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
 import { openTablet } from "./tablet";
@@ -60,6 +64,7 @@ export class GameApp {
     message: (text) => this.toast(text),
   };
   constructor(root: HTMLElement, scene: BootScene) {
+    gameAudio.init();
     this.scene = scene;
     this.notice.setAttribute("role", "status");
     this.notice.setAttribute("aria-live", "polite");
@@ -319,7 +324,11 @@ export class GameApp {
       this.savingAllowed = existing.status !== "storage-error";
       this.begin(createGame(this.lang, { kind: this.heroKind, name: this.heroName.trim() }, now()));
     });
-    panel.append(form, el("p", "intro-footer", "Your character and progress save in this browser · No account needed"));
+    panel.append(
+      form,
+      el("p", "intro-footer", "Your character and progress save in this browser · No account needed"),
+      this.soundToggle(),
+    );
   }
   private begin(state: GameState): void {
     if (!isAreaAvailable(state.currentArea)) state = enterArea(state, "variables", now());
@@ -367,6 +376,23 @@ export class GameApp {
   private capturePosition(): void {
     if (this.state) this.storePosition(this.scene.getPosition());
   }
+  private soundToggle(): HTMLButtonElement {
+    const toggle = button(
+      "",
+      () => {
+        gameAudio.setMuted(!gameAudio.muted);
+        for (const control of document.querySelectorAll<HTMLButtonElement>(".sound-toggle")) refresh(control);
+      },
+      "button sound-toggle",
+    );
+    const refresh = (node: HTMLButtonElement) => {
+      node.textContent = gameAudio.muted ? "Sound off" : "Sound on";
+      node.setAttribute("aria-label", gameAudio.muted ? "Enable sound effects" : "Mute sound effects");
+      node.setAttribute("aria-pressed", String(!gameAudio.muted));
+    };
+    refresh(toggle);
+    return toggle;
+  }
   private renderHud(): void {
     if (!this.state) return;
     const state = this.state,
@@ -395,6 +421,7 @@ export class GameApp {
       button("Lesson", () => this.lesson()),
       button("Tasks", () => this.journal()),
       button("Menu", () => this.pause()),
+      this.soundToggle(),
     );
     const objective = el("div", "objective");
     objective.append(
@@ -456,7 +483,9 @@ export class GameApp {
   }
   private interact(id: string): void {
     if (!this.state) return;
+    gameAudio.play("open");
     if (id === "courier") this.mission();
+    else if (id === "discovery-beacon") this.communityBeacon();
     else if (id === "lesson") this.lesson();
     else if (id === "boss") {
       if (canFightBoss(this.state, this.area)) this.editor(this.area.boss);
@@ -516,18 +545,38 @@ export class GameApp {
       },
     });
   }
+  private communityBeacon(): void {
+    if (!this.state || this.area.id !== "variables") return;
+    this.capturePosition();
+    openCommunityBeacon({
+      lang: this.lang,
+      choice: this.state.discoveries?.beacon,
+      available: canLightBeacon(this.state),
+      panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
+      run: (code) => this.practice(code),
+      activate: (choice) => {
+        if (this.state) this.commit(lightBeacon(this.state, choice, now()));
+        gameAudio.play("beacon");
+      },
+      courier: () => this.mission(),
+      close: () => this.close(),
+    });
+  }
   private async practice(code: string): Promise<RunResult> {
     if (!this.runner || this.busy) throw new Error("A program is already running.");
     this.busy = true;
     const token = ++this.runToken;
     try {
-      return await this.runner.run(code);
+      const result = await this.runner.run(code);
+      if (token === this.runToken) gameAudio.play(executionError(result) ? "error" : "success");
+      return result;
     } finally {
       if (token === this.runToken) this.busy = false;
     }
   }
   private tablet(animate = true): void {
     if (!this.state) return;
+    gameAudio.play("open");
     this.tabletNavigation = false;
     this.capturePosition();
     const progress = this.state.areas[this.area.id];
@@ -543,6 +592,21 @@ export class GameApp {
       hearts: progress.hearts,
       gems: progress.gems,
       guide: this.area.lesson.pages,
+      discovery:
+        this.area.id === "variables"
+          ? {
+              title: "Community beacon",
+              status: this.state.discoveries?.beacon
+                ? `Signal Maker · ${BEACON_EVENTS[this.state.discoveries.beacon].title} is on air`
+                : canLightBeacon(this.state)
+                  ? "A message from Mina is waiting beyond the courier lane."
+                  : "Help Kai repair the drone to reconnect the courtyard.",
+              open: () => {
+                this.tabletNavigation = true;
+                this.communityBeacon();
+              },
+            }
+          : undefined,
       missions: this.area.tasks.map((task) => ({
         title: task.title,
         prompt: task.prompt,
@@ -589,6 +653,10 @@ export class GameApp {
     const panel = this.panel("District missions", "Solve them in order. Each correct answer earns gems.");
     if (this.area.id === "variables")
       panel.append(button("Courier mission · Launch the drone", () => this.mission(), "button mission-link"));
+    if (this.area.id === "variables")
+      panel.append(
+        button("Optional discovery · Community beacon", () => this.communityBeacon(), "button mission-link"),
+      );
     for (const [index, task] of this.area.tasks.entries()) {
       const solved = this.state.areas[this.area.id].solved.includes(task.id),
         available = canSolveTask(this.state, this.area, task.id);
@@ -765,6 +833,7 @@ export class GameApp {
           const error = executionError(result);
           output.textContent = result.stdout || "(No output)";
           feedback.textContent = error?.message ?? "Run complete. Submit when you're ready.";
+          gameAudio.play(error ? "error" : "success");
           const charge = readBatteryOutput(result.stdout);
           if (drone && !error && charge !== undefined) {
             drone.setValue(charge);
@@ -776,6 +845,7 @@ export class GameApp {
           if (token !== this.runToken || !this.state) return;
           output.textContent = result.output || "(No output)";
           if (result.passed) {
+            gameAudio.play(boss ? "victory" : "success");
             this.commit(
               boss ? defeatBoss(this.state, this.area, now()) : solveTask(this.state, this.area, task.id, now()),
             );
@@ -813,6 +883,7 @@ export class GameApp {
             else if (task.id === "variables-1")
               actions.prepend(button("Continue with Kai", () => this.mission(), "button primary"));
           } else {
+            gameAudio.play("error");
             const transition = applySubmissionFailure(
               this.state,
               this.area.id,

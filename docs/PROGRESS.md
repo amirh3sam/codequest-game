@@ -1,5 +1,15 @@
 # Progress log (newest on top)
 
+## 2026-10-22 (community beacon and sound effects)
+
+- **Done:** added Mina's optional community beacon beside the courier lane. After the drone repair, choose Garden night or Arcade night, practice printing a string variable in a real worker, and explicitly activate the matching announcement. The solid sign and courtyard lights change mint/violet; Mina reacts and the tablet mission log records the Signal Maker badge. Tasks and Tablet → Missions link to the activity.
+- **Progress:** previews, mistakes and reconfiguration are free. Activation requires a successful preview of the current code and choice; edits, choice changes or closing the panel invalidate it. A bounded optional `discoveries.beacon` field preserves version-1 saves, independent language slots, all mission counters and one-time rewards. The cosmetic survives a district retry; starting a new adventure clears it.
+- **Audio:** added original Web Audio effects for footsteps, buttons, tablet opening, code results, beacon activation, delivery and boss victory. One context unlocks after interaction, voices have a limit, and effects stop when muted or the tab is hidden. Title/HUD sound controls remember the preference separately from progress. Unsupported audio remains playable.
+- **Checks:** 219 unit tests and 33 focused Chromium checks passed, including all four beacon languages, safe previews, stale-result cancellation, save reloads, event changes, collisions, the full first-district journey, the courier mission and the approved 2D tablet. Audio checks verified gesture unlocking, walking effects, immediate mute, preference persistence and unsupported-audio fallback. Lint, types and production build passed; production test hooks are absent.
+- **Visual review:** inspected the running lesson and restored courtyard at 1440 × 900; the capture script also checked the panel at 390 pixels wide. Added actual game screenshots and `scripts/capture-beacon.mjs`. No new dependencies or downloaded audio.
+- **Next:** a staged district finale and beginner playtesting. Comprehension and enjoyment have not yet been measured with beginners.
+- **Release:** pending public deployment verification.
+
 ## 2026-10-22 (illustrated 2D wrist animation)
 
 - **Done:** replaced the 3D hands and wrist model with an original transparent 2D illustration of a hoodie sleeve, natural hand and attached wrist tablet. Canvas 2D raises, settles and rotates the illustrated foreground, draws the player's display inside the bezel and zooms into the full-screen editor. The real city camera still approaches the character. The editor, Run button and output share the existing page.

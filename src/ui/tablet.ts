@@ -18,6 +18,7 @@ type TabletHost = {
   missions: { title: string; prompt: string; status: "complete" | "available" | "locked"; open(): void }[];
   guide: { heading: string; body: string; code?: string }[];
   story?: () => void;
+  discovery?: { title: string; status: string; open(): void };
 };
 const FILES: Record<Lang, string> = {
   javascript: "practice.js",
@@ -230,6 +231,16 @@ export function openTablet(host: TabletHost): () => void {
     ),
   );
   if (host.story) missionsPane.append(button("Courier story · Help Kai", host.story, "button primary"));
+  if (host.discovery) {
+    const discovery = el("article", "studio-mission beacon-log");
+    discovery.append(
+      el("span", "eyebrow", "OPTIONAL DISCOVERY"),
+      el("h4", "", host.discovery.title),
+      el("p", "", host.discovery.status),
+      button("Visit community beacon", host.discovery.open),
+    );
+    missionsPane.append(discovery);
+  }
   for (const [i, mission] of host.missions.entries()) {
     const card = el("article", "studio-mission");
     card.append(

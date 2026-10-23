@@ -21,6 +21,8 @@ _Planned (added when installed): CodeMirror 6 (MIT)._
 ## Art & audio
 | Pack | License | Use | Source |
 |---|---|---|---|
+| CodeQuest sound effects | Project source | Footsteps, interface taps, tablet opening, code success/error, delivery, beacon and boss celebration | Original Web Audio synthesis in `src/game/audio.ts`; no downloaded recordings. |
+| CodeQuest community beacon | Project source | Solid announcement board, garden/arcade glyphs and courtyard lights | Native Phaser Graphics in `src/game/community-beacon.ts`. |
 | CodeQuest native objects and interface | Project source | Delivery drone, courier parcel, solid lane/gates, battery lesson, animated 2D tablet display and full-screen workspace | Phaser Graphics, Canvas 2D and HTML/CSS in `src/game/`, `src/ui/` and `src/style.css`. |
 | CodeQuest wrist-tablet illustration | Generated project artwork | Transparent illustrated forearm, hand, hoodie sleeve and attached wrist device for the 2D opening | Built-in image-generation tool; [asset and exact prompt](../public/assets/tablet/ARTWORK.md). |
 | CodeQuest tech city artwork | Generated project artwork | Hoodie developers with laptops/backpacks, city ground, street trees, utility cabinets, rails, coding terminals, digital guide and Firewall core | Built-in image-generation tool; [assets and prompts](../public/assets/tech-city/ARTWORK.md) |

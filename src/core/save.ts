@@ -1,4 +1,5 @@
 import type { Lang } from "../runners/types";
+import { isBeaconChoice } from "./discoveries";
 import { AREA_IDS, type AreaId, GEM_REWARD, isValidHeroName, MAX_HEARTS, TASKS_PER_AREA } from "./rules";
 import { type AreaState, type GameState, isAreaUnlocked } from "./state";
 
@@ -100,6 +101,14 @@ export function isGameState(value: unknown): value is GameState {
       typeof value.position.y !== "number" ||
       !Number.isFinite(value.position.x) ||
       !Number.isFinite(value.position.y)
+    )
+      return false;
+  }
+
+  if (Object.hasOwn(value, "discoveries") && value.discoveries !== undefined) {
+    if (
+      !isRecord(value.discoveries) ||
+      (Object.hasOwn(value.discoveries, "beacon") && !isBeaconChoice(value.discoveries.beacon))
     )
       return false;
   }

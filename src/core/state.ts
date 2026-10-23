@@ -1,4 +1,5 @@
 import type { Lang } from "../runners/types";
+import type { Discoveries } from "./discoveries";
 import {
   AREA_IDS,
   type AreaId,
@@ -32,6 +33,7 @@ export type GameState = Readonly<{
   hero: Hero;
   currentArea: AreaId;
   position?: Position;
+  discoveries?: Discoveries;
   areas: Readonly<Record<AreaId, AreaState>>;
   updatedAt: string;
 }>;

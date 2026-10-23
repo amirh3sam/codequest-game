@@ -14,6 +14,7 @@ const game = new Phaser.Game({
   height: 540,
   backgroundColor: "#1b1b2f",
   pixelArt: true,
+  audio: { noAudio: true }, // Effects use the single, gesture-unlocked Web Audio context in game/audio.ts.
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene: [BootScene],
 });

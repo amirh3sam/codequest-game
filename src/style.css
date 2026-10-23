@@ -1622,3 +1622,85 @@ small {
     transition: none;
   }
 }
+.beacon-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 16px 0;
+}
+.beacon-choice {
+  text-align: left;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  white-space: normal;
+}
+.beacon-choice small {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #c1d0e1;
+}
+.beacon-choice[aria-pressed="true"] {
+  border-color: #85edc0;
+  background: #183b3d;
+  box-shadow: inset 0 0 0 1px #85edc045;
+}
+.beacon-preview {
+  --beacon-color: #85edc0;
+  display: grid;
+  gap: 12px;
+  padding: 22px;
+  margin: 14px 0;
+  border: 1px solid #42546b;
+  border-radius: 14px;
+  background: radial-gradient(ellipse at top, #243950, #0b1829 75%);
+}
+.beacon-sign {
+  font-family: var(--font-mono, monospace);
+  font-size: clamp(22px, 3vw, 32px);
+  color: #91a5ba;
+  letter-spacing: -1px;
+}
+.beacon-preview small {
+  line-height: 1.5;
+  color: #c1d0e1;
+}
+.beacon-preview.online {
+  border-color: var(--beacon-color);
+}
+.beacon-preview.online .beacon-sign {
+  color: var(--beacon-color);
+  text-shadow: 0 0 20px color-mix(in srgb, var(--beacon-color) 45%, transparent);
+}
+.beacon-badge {
+  color: #ffdc96;
+  font-weight: 700;
+}
+.beacon-example {
+  margin: 16px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.beacon-example summary {
+  cursor: pointer;
+  color: #a9e5ff;
+}
+.beacon-example .code-example {
+  overflow-x: auto;
+}
+.beacon-quest .code-editor {
+  min-height: 220px;
+}
+.beacon-quest .output {
+  max-height: 170px;
+  overflow: auto;
+}
+.beacon-log {
+  border-color: #85edc050;
+}
+@media (max-width: 600px) {
+  .beacon-choices {
+    grid-template-columns: 1fr;
+  }
+}

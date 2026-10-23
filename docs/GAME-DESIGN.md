@@ -140,9 +140,13 @@ should not define the pacing of an entire district.
    3 + 2, changes the charge in free real-code previews, writes the repair from
    starter code, and can try a 4 + 3 variation afterward. A live meter and focused
    feedback connect code values to the result. Extend this to later missions.
-3. **Partly delivered: exploration and choice.** The courier lane is a physical
-   shortcut, and Kai responds to the repair. Further discoveries, optional story
-   branches and earned cosmetics remain future work.
+3. **Delivered first optional discovery: exploration and choice.** Beyond the
+   courier lane, Mina's community beacon lets the player choose Garden night or
+   Arcade night. A free string-variable exercise previews the announcement; an
+   explicit action then lights the courtyard mint or violet. Mina reacts to the
+   chosen evening, and the Signal Maker badge appears in the tablet mission log.
+   Choices persist on this device, survive an area retry and can be changed for
+   free. More optional branches and wearable cosmetics remain future work.
 4. **Rework the district finale.** Combine learned ideas in a staged repair with
    clear world effects, then apply the proven pattern to Logic Junction.
 5. **Expand the curriculum.** Build later districts and improve the editor after

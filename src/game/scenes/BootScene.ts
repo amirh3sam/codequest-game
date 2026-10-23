@@ -4,7 +4,9 @@ import village from "../../content/village.json" with { type: "json" };
 import { canFightBoss, canSolveTask, type GameState, type Position } from "../../core/state";
 import { buildAdventureWorld } from "../adventure-world";
 import { SPRITES, TILESETS } from "../assets";
+import { gameAudio } from "../audio";
 import { canStandAt, moveWithCollisions, type Solid } from "../collision";
+import { CommunityBeacon } from "../community-beacon";
 import { DroneQuest } from "../drone-quest";
 import { createHeroTextures, type Facing, heroFrame } from "../hero-sprites";
 import { createQuestProps } from "../quest-props";
@@ -35,6 +37,7 @@ export class BootScene extends Phaser.Scene {
   private markers: Marker[] = [];
   private districtLabel!: Phaser.GameObjects.Text;
   private droneQuest!: DroneQuest;
+  private communityBeacon!: CommunityBeacon;
   private delivering = false;
   private solids: Solid[] = [];
   private state: GameState | null = null;
@@ -94,6 +97,14 @@ export class BootScene extends Phaser.Scene {
       } else this.callbacks?.message("Walk closer to Kai or the receiver, then press E.");
     });
     this.droneQuest.sync(null);
+    this.communityBeacon = new CommunityBeacon(this, () => {
+      const point = this.communityBeacon.position;
+      if (this.blocked || !point) return;
+      if (this.distance(point) <= 68) {
+        this.callbacks?.position(this.getPosition());
+        this.callbacks?.interact("discovery-beacon");
+      } else this.callbacks?.message("Walk closer to the community beacon, then press E.");
+    });
     this.prompt = this.add
       .text(480, 512, "", {
         fontFamily: "monospace",
@@ -184,6 +195,7 @@ export class BootScene extends Phaser.Scene {
     this.callbacks = callbacks;
     if (previous?.currentArea !== state?.currentArea) this.cancelDelivery();
     this.droneQuest.sync(state);
+    this.communityBeacon.sync(state);
     this.hero.setVisible(Boolean(state));
     this.shadow.setVisible(Boolean(state));
     if (!state || !area) {
@@ -310,7 +322,10 @@ export class BootScene extends Phaser.Scene {
       this.delivering = false;
       this.blocked = false;
       this.cameras.main.startFollow(this.hero, true, 0.14, 0.14);
-      this.callbacks?.message("Delivery complete! Your code opened the courier lane between the studios.");
+      this.callbacks?.message(
+        "Delivery complete! Explore beyond the lane: Mina left a message at the community beacon.",
+      );
+      gameAudio.play("delivery");
     });
   }
   private cancelDelivery(): void {
@@ -321,7 +336,10 @@ export class BootScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.hero, true, 0.14, 0.14);
   }
   private canStand(x: number, y: number): boolean {
-    return canStandAt({ x, y }, { bounds: village.walkBounds, solids: [...this.solids, ...this.droneQuest.solids] });
+    return canStandAt({ x, y }, { bounds: village.walkBounds, solids: this.worldSolids() });
+  }
+  private worldSolids(): Solid[] {
+    return [...this.solids, ...this.droneQuest.solids, ...this.communityBeacon.solids];
   }
   private distance(marker: Position): number {
     return Math.hypot(marker.x - this.position.x, marker.y - this.position.y);
@@ -332,15 +350,32 @@ export class BootScene extends Phaser.Scene {
   }
   private interactClosest(): void {
     if (this.blocked || !this.state || !this.area || document.activeElement?.matches("input, textarea, select")) return;
-    const nearest = this.markers.reduce<Marker | null>(
-      (best, marker) => (!best || this.distance(marker) < this.distance(best) ? marker : best),
-      null,
-    );
-    const courier = this.droneQuest.nearby(this.position);
-    if (courier && this.distance(courier) <= 68 && (!nearest || this.distance(courier) < this.distance(nearest))) {
+    const nearest = this.nearestInteraction();
+    if (nearest) {
       this.callbacks?.position(this.getPosition());
-      this.callbacks?.interact("courier");
-    } else if (nearest && this.distance(nearest) <= 68) this.interact(nearest);
+      this.callbacks?.interact(nearest.id);
+    }
+  }
+  private nearestInteraction(): { id: string; prompt: string } | null {
+    const points = this.markers.map((marker) => ({
+      id: marker.id,
+      x: marker.x,
+      y: marker.y,
+      prompt:
+        marker.id === "lesson"
+          ? "Open the quick guide"
+          : marker.id === "boss"
+            ? `Inspect ${this.area?.boss.name}`
+            : `Task ${marker.id.split("-")[1]}`,
+    }));
+    const courier = this.droneQuest.nearby(this.position),
+      beacon = this.communityBeacon.position;
+    if (courier) points.push({ ...courier, id: "courier", prompt: "Talk to Kai about the delivery" });
+    if (beacon) points.push({ ...beacon, id: "discovery-beacon", prompt: "Read the community beacon" });
+    return (
+      points.filter((point) => this.distance(point) <= 68).sort((a, b) => this.distance(a) - this.distance(b))[0] ??
+      null
+    );
   }
   update(time: number, delta: number): void {
     if (this.blocked || !this.state || !this.area || document.activeElement?.matches("input, textarea, select")) return;
@@ -354,14 +389,16 @@ export class BootScene extends Phaser.Scene {
     const before = this.position;
     this.position = moveWithCollisions(before, dx, dy, {
       bounds: village.walkBounds,
-      solids: [...this.solids, ...this.droneQuest.solids],
+      solids: this.worldSolids(),
     });
     const distance = Math.hypot(this.position.x - before.x, this.position.y - before.y);
     const moving = distance > 0.01;
     if (moving) this.dirtyPosition = true;
     if (dx) this.facing = dx < 0 ? "west" : "east";
     else if (dy) this.facing = dy < 0 ? "north" : "south";
+    const previousStep = Math.floor(this.walked / 24);
     this.walked = moving ? this.walked + distance : 0;
+    if (moving && Math.floor(this.walked / 24) > previousStep) gameAudio.play("step");
     const walking = moving && !this.reducedMotion;
     const sprite = this.state.hero.kind === "girl" ? "girl" : "boy";
     this.hero
@@ -377,20 +414,8 @@ export class BootScene extends Phaser.Scene {
       this.lastSave = time;
       this.callbacks?.position(this.getPosition());
     }
-    const nearest = this.markers.reduce<Marker | null>(
-      (best, marker) => (!best || this.distance(marker) < this.distance(best) ? marker : best),
-      null,
-    );
-    const near = nearest && this.distance(nearest) <= 68 ? nearest : null;
-    const courier = this.droneQuest.nearby(this.position);
-    if (courier && this.distance(courier) <= 68 && (!near || this.distance(courier) < this.distance(near))) {
-      this.prompt.setVisible(true).setText("E / Space · Talk to Kai about the delivery");
-      return;
-    }
+    const near = this.nearestInteraction();
     this.prompt.setVisible(Boolean(near));
-    if (near)
-      this.prompt.setText(
-        `E / Space · ${near.id === "lesson" ? "Open the quick guide" : near.id === "boss" ? `Inspect ${this.area.boss.name}` : `Task ${near.id.split("-")[1]}`}`,
-      );
+    if (near) this.prompt.setText(`E / Space · ${near.prompt}`);
   }
 }
