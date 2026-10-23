@@ -2047,15 +2047,26 @@ small {
   background: #0d1722;
   border-bottom: 1px solid #2c4154;
 }
+.studio-file-tab-group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: stretch;
+  max-width: 250px;
+  background: #111d2a;
+  border-top: 2px solid transparent;
+}
+.studio-file-tab-group.active {
+  border-top-color: var(--language-accent);
+  background: #182838;
+}
 .studio-open-file-tab {
   flex: 0 0 auto;
   max-width: 220px;
   overflow: hidden;
   padding: 9px 14px;
   border: 0;
-  border-top: 2px solid transparent;
   border-radius: 0;
-  background: #111d2a;
+  background: transparent;
   color: #8ca8ba;
   font: 11px monospace;
   text-overflow: ellipsis;
@@ -2063,8 +2074,26 @@ small {
 }
 .studio-open-file-tab.active {
   color: var(--language-accent);
-  border-top-color: var(--language-accent);
-  background: #182838;
+}
+.studio-close-file-tab {
+  flex: 0 0 26px;
+  width: 26px;
+  min-height: 28px;
+  align-self: center;
+  margin-right: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  color: #7f9bae;
+  background: transparent;
+  font: 18px / 1 monospace;
+}
+.studio-close-file-tab:hover,
+.studio-file-tab-group.active .studio-close-file-tab {
+  color: #e5f4fa;
+}
+.studio-close-file-tab:hover {
+  background: #ffffff18;
 }
 .studio-workspace {
   display: flex;

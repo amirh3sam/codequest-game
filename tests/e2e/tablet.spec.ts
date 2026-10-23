@@ -91,6 +91,12 @@ test("Java tablet builds and runs a project split across class files", async ({ 
   await page.getByRole("button", { name: "Create", exact: true }).click();
   await expect(page.getByLabel("Code editor: src/models/Badge.java")).toBeVisible();
   await expect(page.locator(".studio-open-file-tab", { hasText: "Badge.java" })).toBeVisible();
+  await page.getByRole("button", { name: "Close src/models/Badge.java", exact: true }).click();
+  await expect(page.locator(".studio-open-file-tab", { hasText: "Badge.java" })).toHaveCount(0);
+  await expect(page.locator(".studio-file[title='src/models/Badge.java']")).toBeVisible();
+  await expect(page.getByLabel("Code editor: src/Player.java")).toBeVisible();
+  await page.locator(".studio-file[title='src/models/Badge.java']").click();
+  await expect(page.getByLabel("Code editor: src/models/Badge.java")).toBeVisible();
   await page.getByRole("button", { name: "Rename src/models/Badge.java" }).click();
   await page.getByRole("textbox", { name: "Rename src/models/Badge.java" }).fill("Crest.java");
   await page.getByRole("button", { name: "Save name", exact: true }).click();

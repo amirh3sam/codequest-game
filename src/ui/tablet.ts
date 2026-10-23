@@ -255,17 +255,49 @@ export function openTablet(host: TabletHost): () => void {
     renderTree();
     persistProject();
   };
+  const closeFileTab = (path: string) => {
+    const index = openFiles.indexOf(path);
+    if (index < 0) return;
+    if (activePath === path) project.files[path] = code.value;
+    let nextPath = activePath;
+    if (activePath === path) {
+      const remaining = openFiles.filter((candidate) => candidate !== path);
+      nextPath =
+        remaining[Math.min(index, remaining.length - 1)] ??
+        Object.keys(project.files).find((candidate) => candidate !== path) ??
+        "";
+      if (!nextPath) {
+        status.textContent = "Keep one file open. Create another file before closing this tab.";
+        return;
+      }
+    }
+    openFiles.splice(index, 1);
+    if (activePath === path) {
+      if (!openFiles.includes(nextPath)) openFiles.push(nextPath);
+      activePath = nextPath;
+      code.value = project.files[activePath] ?? "";
+      monacoEditor?.setModel(activePath, code.value);
+      code.setAttribute("aria-label", `Code editor: ${activePath}`);
+    }
+    renderEditorTabs();
+    persistProject();
+  };
   const renderEditorTabs = () => {
     editorHeader.replaceChildren(
       ...openFiles.map((path) => {
         const basename = path.split("/").at(-1) ?? path;
+        const group = el("div", `studio-file-tab-group${activePath === path ? " active" : ""}`);
         const tab = button(
           basename,
           () => openFile(path),
           `studio-open-file-tab${activePath === path ? " active" : ""}`,
         );
         tab.title = path;
-        return tab;
+        const close = button("×", () => closeFileTab(path), "studio-close-file-tab");
+        close.setAttribute("aria-label", `Close ${path}`);
+        close.title = `Close ${path}`;
+        group.append(tab, close);
+        return group;
       }),
     );
   };
