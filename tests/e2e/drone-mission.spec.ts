@@ -8,15 +8,25 @@ import type { Lang } from "../../src/runners/types";
 type Harness = { __codequest: { game: Phaser.Game } };
 test.use({ reducedMotion: "reduce" });
 
-async function seed(page: Page, lang: Lang, repaired = false): Promise<void> {
+async function seed(
+  page: Page,
+  lang: Lang,
+  repaired = false,
+  kind: "boy" | "girl" = "girl",
+  intro = false,
+): Promise<void> {
   const area = loadVariables(lang),
     time = new Date().toISOString();
-  let state = solveTask(createGame(lang, { kind: "girl", name: "Nova" }, time), area, "variables-1", time);
+  let state = createGame(lang, { kind, name: "Nova" }, time);
+  if (!intro) state = solveTask(state, area, "variables-1", time);
   if (repaired) state = solveTask(state, area, "variables-2", time);
   state = { ...state, position: { x: 768, y: 370 } };
   await page.goto("/");
   await expect(page.getByRole("textbox", { name: "Developer name", exact: true })).toBeVisible({ timeout: 15_000 });
-  await page.evaluate((state) => localStorage.setItem(`codequest:v1:${state.lang}`, JSON.stringify(state)), state);
+  await page.evaluate((state) => {
+    localStorage.clear();
+    localStorage.setItem(`codequest:v1:${state.lang}`, JSON.stringify(state));
+  }, state);
   await page.reload();
   await page.locator(".title-adventure-row").first().click();
 }
@@ -34,6 +44,29 @@ async function position(page: Page): Promise<{ x: number; y: number }> {
     ((window as unknown as Harness).__codequest.game.scene.getScene("boot") as BootScene).getPosition(),
   );
 }
+
+test("the battery courier and introduction use the opposite hero", async ({ page }) => {
+  for (const choice of [
+    { player: "boy", guide: "Ava", texture: "hero-girl" },
+    { player: "girl", guide: "Kai", texture: "hero-boy" },
+  ] as const) {
+    await seed(page, "javascript", false, choice.player, true);
+    await page.getByRole("button", { name: "Mission", exact: true }).click();
+    await expect(page.getByRole("heading", { name: `${choice.guide} - A delivery worth debugging` })).toBeVisible();
+    await expect(page.locator(".courier-intro")).toContainText(`I'm ${choice.guide}`);
+    const courier = await page.evaluate(() => {
+      const scene = (window as unknown as Harness).__codequest.game.scene.getScene("boot");
+      const group = scene.children.getByName("courier-kai") as Phaser.GameObjects.Container;
+      return group.list.map((child) => ({
+        texture: (child as Phaser.GameObjects.Image).texture?.key,
+        text: (child as Phaser.GameObjects.Text).text,
+      }));
+    });
+    expect(courier.some((child) => child.texture === choice.texture)).toBe(true);
+    expect(courier.some((child) => child.text === `${choice.guide.toUpperCase()} / COURIER`)).toBe(true);
+    await page.getByRole("button", { name: "Look around the city" }).click();
+  }
+});
 
 for (const lang of ["javascript", "typescript", "python", "java"] as const) {
   test(`${lang}: free prediction and preview lead to a persistent drone repair`, async ({ page }) => {

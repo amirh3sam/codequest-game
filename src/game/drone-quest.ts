@@ -19,27 +19,32 @@ export class DroneQuest {
   private pending = false;
   private scene: Phaser.Scene;
   private reducedMotion: boolean;
+  private courierAvatar: Phaser.GameObjects.Image;
+  private courierName: Phaser.GameObjects.Text;
   constructor(scene: Phaser.Scene, reducedMotion: boolean, interact: (point: Position) => void) {
     this.scene = scene;
     this.reducedMotion = reducedMotion;
     const { courier, pad, dock, gate } = dronePilot.world;
     const kai = scene.add.container(courier.x, courier.y).setName("courier-kai").setDepth(courier.y);
     kai.add(scene.add.ellipse(0, 0, 30, 10, 0x102d42, 0.35));
-    kai.add(scene.add.image(0, 4, SPRITES.heroBoy.texture, SPRITES.heroBoy.frame).setOrigin(0.5, 1).setScale(0.6));
+    this.courierAvatar = scene.add
+      .image(0, 4, SPRITES.heroGirl.texture, SPRITES.heroGirl.frame)
+      .setOrigin(0.5, 1)
+      .setScale(0.6);
+    kai.add(this.courierAvatar);
     const parcel = scene.add.graphics().fillStyle(0xffbd6a).fillRoundedRect(12, -27, 15, 18, 3);
     parcel.lineStyle(2, 0xffe5b1).lineBetween(19, -26, 19, -10);
     kai.add(parcel);
-    kai.add(
-      scene.add
-        .text(0, -73, "KAI / COURIER", {
-          fontFamily: "Consolas",
-          fontSize: "10px",
-          color: "#e8fcff",
-          backgroundColor: "#10344d",
-          padding: { x: 6, y: 4 },
-        })
-        .setOrigin(0.5),
-    );
+    this.courierName = scene.add
+      .text(0, -73, "KAI / COURIER", {
+        fontFamily: "Consolas",
+        fontSize: "10px",
+        color: "#e8fcff",
+        backgroundColor: "#10344d",
+        padding: { x: 6, y: 4 },
+      })
+      .setOrigin(0.5);
+    kai.add(this.courierName);
     kai
       .setSize(60, 90)
       .setInteractive({ useHandCursor: true })
@@ -147,6 +152,12 @@ export class DroneQuest {
     if (!sameAdventure || !repaired) this.pending = false;
     else if (!this.open && repaired) this.pending = true;
     this.state = state;
+    const courierIsGirl = state?.hero.kind === "boy";
+    this.courierAvatar.setTexture(
+      courierIsGirl ? SPRITES.heroGirl.texture : SPRITES.heroBoy.texture,
+      courierIsGirl ? SPRITES.heroGirl.frame : SPRITES.heroBoy.frame,
+    );
+    this.courierName.setText(courierIsGirl ? "AVA / COURIER" : "KAI / COURIER");
     this.open = repaired;
     this.visible = state?.currentArea === "variables";
     if (!this.visible) this.cancel();

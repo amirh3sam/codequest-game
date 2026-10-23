@@ -733,12 +733,15 @@ export class GameApp {
     this.capturePosition();
     if (!this.state.areas.variables.solved.includes("variables-1")) {
       const panel = this.panel(
-        "Kai · A delivery worth debugging",
+        `${this.courierName()} - A delivery worth debugging`,
         "A stranded drone. A city lane waiting for your code.",
       );
       panel.classList.add("drone-lesson");
       const portrait = el("div", "courier-intro");
-      portrait.append(this.icon("heroBoy", true), el("p", "lesson-body", dronePilot.intro));
+      portrait.append(
+        this.icon(this.state.hero.kind === "boy" ? "heroGirl" : "heroBoy", true),
+        el("p", "lesson-body", dronePilot.intro.replaceAll("Kai", this.courierName())),
+      );
       panel.append(
         portrait,
         el("p", "lesson-body", dronePilot.goal),
@@ -766,6 +769,9 @@ export class GameApp {
         this.scene.launchDrone();
       },
     });
+  }
+  private courierName(): "Ava" | "Kai" {
+    return this.state?.hero.kind === "boy" ? "Ava" : "Kai";
   }
   private communityBeacon(): void {
     if (!this.state || this.area.id !== "variables") return;
@@ -1005,7 +1011,7 @@ export class GameApp {
       work = el("div", "code-workspace");
     instructions.append(
       el("span", "eyebrow", boss ? "BOSS CHALLENGE" : "YOUR MISSION"),
-      el("p", "task-prompt", task.prompt),
+      el("p", "task-prompt", task.prompt.replaceAll("Kai", this.courierName())),
       el("small", "", "Run is free. A wrong submission costs one heart; code errors don't."),
     );
     const drone = task.id === DRONE_TASK_ID ? batteryCard() : null;

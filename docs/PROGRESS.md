@@ -1,5 +1,12 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (player-specific battery courier)
+
+- **First district guide:** the delivery courier now appears as the opposite hero: selecting the boy shows Ava, and selecting the girl shows Kai. The map character, nameplate, battery mission portrait, introduction and task prompt use the same identity.
+- **Coverage:** added a Chromium regression flow that opens the first mission for both hero choices and checks each guide's avatar and dialogue.
+- **Checks:** 231 unit tests, the focused two-hero browser flow, lint, TypeScript and production build passed.
+- **Release:** pending public push and production deployment.
+
 ## 2026-10-23 (Packet Dash, task consoles and audible footsteps)
 
 - **Free arcade game:** added Packet Dash, an original 2D city runner reachable at a solid arcade cabinet. Players jump glitches, collect data bits and keep a personal high score with each adventure. Arcade shields and points are separate from coding hearts and gems. Keyboard and touch Jump controls are supported.

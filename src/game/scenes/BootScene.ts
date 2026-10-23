@@ -106,7 +106,10 @@ export class BootScene extends Phaser.Scene {
       if (this.distance(point) <= 68) {
         this.callbacks?.position(this.getPosition());
         this.callbacks?.interact("courier");
-      } else this.callbacks?.message("Walk closer to Kai or the receiver, then press E.");
+      } else
+        this.callbacks?.message(
+          `Walk closer to ${this.state?.hero.kind === "boy" ? "Ava" : "Kai"} or the receiver, then press E.`,
+        );
     });
     this.droneQuest.sync(null);
     this.communityBeacon = new CommunityBeacon(this, () => {
