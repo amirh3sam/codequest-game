@@ -16,7 +16,7 @@ describe("Logic Junction", () => {
             rule.kind === "mustMatch",
           );
       expect(isAreaAvailable("conditions")).toBe(true);
-      expect(isAreaAvailable("loops")).toBe(false);
+      expect(isAreaAvailable("loops")).toBe(true);
     },
   );
   it("unlocks after the Firewall and keeps the earlier district safe on reset", () => {

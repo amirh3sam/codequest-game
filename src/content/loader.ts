@@ -8,6 +8,7 @@ import python from "./data/python/01-variables.json" with { type: "json" };
 import pythonConditions from "./data/python/02-conditions.json" with { type: "json" };
 import typescript from "./data/typescript/01-variables.json" with { type: "json" };
 import typescriptConditions from "./data/typescript/02-conditions.json" with { type: "json" };
+import { createStoryDistrict, storyDistrictIds } from "./district-curriculum";
 import { type AreaContent, isAreaContent } from "./schema";
 
 const areas: Record<Lang, unknown> = { java, javascript, python, typescript };
@@ -17,7 +18,18 @@ const conditions: Record<Lang, unknown> = {
   python: pythonConditions,
   typescript: typescriptConditions,
 };
-const districts: Partial<Record<AreaId, Record<Lang, unknown>>> = { variables: areas, conditions };
+const languages = ["java", "javascript", "python", "typescript"] as const;
+const storyDistricts = Object.fromEntries(
+  storyDistrictIds().map((id) => [
+    id,
+    Object.fromEntries(languages.map((lang) => [lang, createStoryDistrict(id, lang)])),
+  ]),
+) as Record<Exclude<AreaId, "variables" | "conditions">, Record<Lang, unknown>>;
+const districts: Partial<Record<AreaId, Record<Lang, unknown>>> = {
+  variables: areas,
+  conditions,
+  ...storyDistricts,
+};
 export function isAreaAvailable(id: AreaId): boolean {
   return districts[id] !== undefined;
 }

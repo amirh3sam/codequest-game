@@ -9,10 +9,7 @@ export async function startAfterAbstractionCloud(page: Page, lang: Lang): Promis
   const base = createGame(lang, { kind: "girl", name: "Nova" }, new Date().toISOString());
   const areas = Object.fromEntries(
     AREA_IDS.map((id) => {
-      const solved =
-        id === "variables" || id === "conditions"
-          ? loadArea(lang, id).tasks.map(({ id: taskId }) => taskId)
-          : Array.from({ length: 8 }, (_, index) => `${id}-task-${index + 1}`);
+      const solved = loadArea(lang, id).tasks.map(({ id: taskId }) => taskId);
       return [id, { ...createAreaState(), solved, bossDefeated: true }];
     }),
   ) as unknown as typeof base.areas;

@@ -907,6 +907,7 @@ small {
 }
 .hud-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   pointer-events: auto;
   justify-content: flex-end;
@@ -1314,10 +1315,6 @@ small {
 .world-map-hint {
   margin: 0 0 12px;
   color: #a9c0dd;
-}
-.world-skill-node {
-  background:
-    radial-gradient(ellipse at 50% 30%, #2d88ad44, transparent 72%), linear-gradient(155deg, #1c4258, #10283a);
 }
 .world-skill-node:disabled,
 .world-node:disabled {

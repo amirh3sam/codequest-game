@@ -310,10 +310,15 @@ export class BootScene extends Phaser.Scene {
         marker.group.setName(task.id);
       }
       const logic = area.id === "conditions";
+      const label = logic
+        ? "IF / ELSE / DECISION NETWORK"
+        : area.id === "variables"
+          ? "VALUES / DATA HUB"
+          : area.name.toUpperCase();
       this.districtLabel
         .setPosition(layout.label.x, layout.label.y)
-        .setText(logic ? "IF / ELSE / DECISION NETWORK" : "VALUES / DATA HUB")
-        .setColor(logic ? "#dfbaff" : "#9ae9ff");
+        .setText(label)
+        .setColor(logic ? "#dfbaff" : area.id === "variables" ? "#9ae9ff" : "#b9edff");
       this.facing = "south";
       this.walked = 0;
     }

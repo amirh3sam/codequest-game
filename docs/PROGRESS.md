@@ -4,8 +4,17 @@
 - Levels 8–24 follow Abstraction Cloud in one continuous map. Level 8 unlocks after the Abstraction Cloud boss; each next category unlocks only after the previous category's eight tasks and boss. Each category has exactly eight tasks plus a separate boss. After each boss, portal doors provide direct travel to every unlocked category, including the newly unlocked next level.
 - **Checks:** Chromium confirmed fresh-save locks, level 8 unlocking, level 9 remaining locked until the first category boss, the complete eight-task-plus-boss flow, and portal travel through all 17 category bosses. All 17 category starters passed in Java, JavaScript, TypeScript and Python. All 249 unit tests, lint, typecheck, and production build passed.
 - **Release:** source commit `0183c46` is public on `main`. Production deployment `dpl_DUEFZD9uubJ6LtgvMsUytwWSVxrh` is READY at https://codequest-game-inky.vercel.app/; the production alias returned the updated game.
-- **Current dependency:** new saves cannot yet complete Abstraction Cloud because city districts 3–7 are still marked coming next. Until that story route is playable, level 8 stays locked for those saves as designed.
-- **Next:** make the story route through Abstraction Cloud playable, then continue building category-level game missions.
+- **Current dependency:** resolved in the next roadmap step; districts 3–7 are now playable, so new saves can reach Abstraction Cloud and unlock level 8.
+- **Next:** continue expanding category-level game missions and activities.
+- **Blockers:** none.
+
+## 2026-10-23 (playable route through Abstraction Cloud)
+- Made Loop Transit, Array Towers, Function Labs, Object Campus and Abstraction Cloud playable in Java, JavaScript, TypeScript and Python. Every district has eight missions and its own boss. Its tasks use the matching language-specific Study Path examples; its Phaser scene has its own themed route, collision layout and landmarks.
+- The world map category cards now use the same card class and layout as story levels 1–7 while preserving category lock and progress states. Completing the seven district bosses makes level 8 available, and category bosses continue unlocking the level portals in order.
+- Added a persistent World Map button to the top-right game HUD for direct map access without opening the pause menu.
+- **Checks:** unit tests verify all 5 × 4 generated district courses, their eight tasks and separate boss, and the full seven-district boss progression. Chromium confirmed the Logic Junction boss unlocks Loop Transit, completed a Loop Transit mission, used the HUD button to visit all five unique district scenes with eight terminals, and checked that category levels remain sequential and use the shared map card design. All 251 unit tests, lint, typecheck and production build passed.
+- **Release:** pending public push and production deployment.
+- **Next:** continue expanding category-level game missions and activities.
 - **Blockers:** none.
 
 ## 2026-10-23 (Study Path added to the world map)

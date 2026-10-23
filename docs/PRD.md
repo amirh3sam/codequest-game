@@ -1,10 +1,13 @@
 # CodeQuest — Product Requirements (PRD)
 
-_Last updated: 2026-10-23 · Status: adventure backups, mobile controls and staged hub finale_
+_Last updated: 2026-10-23 · Status: all seven playable city districts plus gated Java category levels_
 
-Current direction: the public release includes Variable District and Logic
-Junction in all four languages. The user's latest priority is deeper education
-and enjoyable gameplay, with code visibly repairing the city. The stranded-drone
+Current direction: the public release includes all seven story districts in
+Java, JavaScript, TypeScript and Python. Districts 3–7 now have eight playable
+coding missions, a boss, their own themed route and save-safe sequential unlocks.
+Defeating Abstraction Cloud opens category level 8; levels 8–24 then unlock
+one at a time. The user's latest priority is deeper education and enjoyable
+gameplay, with code visibly repairing the city. The stranded-drone
 pilot in [GAME-DESIGN.md](GAME-DESIGN.md) now connects guided practice to a world
 repair. The developer tablet now opens through a short illustrated 2D animation:
 city camera zoom, a wrist tablet lifting into view and settling,
@@ -51,7 +54,9 @@ level grid. Level 8 stays locked until the Abstraction Cloud boss is defeated;
 each later category stays locked until the preceding category boss is defeated.
 Defeating a category boss opens direct teleport doors to every unlocked category,
 including the next level, so players can travel without returning to the menu.
-Choosing an unlocked category opens its matching Study Path lesson. On the map, players can
+The category cards share the same layout and visual design as the seven story
+district cards. Choosing an unlocked category opens its matching Study Path
+lesson. On the map, players can
 click a destination to walk or hold the left mouse button and drag to steer.
 
 ## 1. Problem

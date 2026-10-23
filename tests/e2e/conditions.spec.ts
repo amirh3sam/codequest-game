@@ -19,7 +19,8 @@ async function enterLogic(page: Page): Promise<void> {
 }
 test("travels to Logic Junction, uses its terminal, reloads and clears the Router", async ({ page }, testInfo) => {
   test.setTimeout(90_000);
-  const conditions = loadArea("javascript", "conditions");
+  const conditions = loadArea("javascript", "conditions"),
+    loops = loadArea("javascript", "loops");
   await enterLogic(page);
   await page.keyboard.down("d");
   await page.waitForFunction(() => {
@@ -43,8 +44,10 @@ test("travels to Logic Junction, uses its terminal, reloads and clears the Route
       await page.locator(".title-adventure-row").first().click();
       await expect(page.locator(".location-name")).toHaveText("Logic Junction");
       await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "1");
-      await page.getByRole("button", { name: "Tasks", exact: true }).click();
-      await page.getByRole("button", { name: /2\. Choose a sign-in screen/ }).click();
+      await page.getByRole("button", { name: "Skip guide", exact: true }).click();
+      await page.keyboard.press("t");
+      await page.getByRole("tab", { name: "Missions", exact: true }).click();
+      await page.getByRole("button", { name: "Work on Choose a sign-in screen", exact: true }).click();
     } else
       await page.getByRole("button", { name: index < 7 ? "Next task →" : "Inspect the Router →", exact: true }).click();
   }
@@ -54,7 +57,28 @@ test("travels to Logic Junction, uses its terminal, reloads and clears the Route
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Logic Junction is online!" })).toBeVisible();
   await page.getByRole("button", { name: "Continue journey", exact: true }).click();
-  await expect(page.locator(".world-node").filter({ hasText: "Loop Transit" })).toContainText("Unlocked · coming next");
+  await expect(page.locator(".world-node").filter({ hasText: "Loop Transit" })).toContainText("Explore district");
+  await page.locator(".world-node").filter({ hasText: "Loop Transit" }).click();
+  await expect(page.locator(".location-name")).toHaveText("Loop Transit");
+  await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
+  await page.keyboard.down("d");
+  await page.waitForFunction(() => {
+    const scene = (
+      window as unknown as {
+        __codequest: { game: { scene: { getScene(k: string): { getPosition(): { x: number } } } } };
+      }
+    ).__codequest.game.scene.getScene("boot");
+    return scene.getPosition().x >= 310;
+  });
+  await page.keyboard.up("d");
+  await page.keyboard.press("e");
+  await expect(page.getByRole("heading", { name: "Loops: checkpoint 1", exact: true })).toBeVisible();
+  await page.getByLabel("Your code").fill(loops.tasks[0]?.solution ?? "");
+  await page.getByRole("button", { name: "Submit answer", exact: true }).click();
+  await expect(page.locator(".feedback")).toContainText("Correct!");
+  await page.getByRole("button", { name: "Back to district", exact: true }).click();
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await page.getByRole("button", { name: "World map", exact: true }).click();
   await page.locator(".world-node").filter({ hasText: "Variable District" }).click();
   await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "8");
   await expect(page.locator(".objective")).toContainText("district is online");

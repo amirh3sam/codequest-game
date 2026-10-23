@@ -4,6 +4,7 @@ import type { AreaId } from "../core/rules";
 import type { Solid } from "./collision";
 import { createEnvironmentFrames, type EnvironmentKind, OBJECT_SIZE } from "./environment-objects";
 import { buildLogicWorld } from "./logic-world";
+import { buildStoryWorld } from "./story-worlds";
 
 export type DistrictWorld = { solids: Solid[]; destroy(): void };
 
@@ -14,7 +15,12 @@ export function buildAdventureWorld(
 ): DistrictWorld {
   if (!scene.textures.exists("environment-fir")) createEnvironmentFrames(scene);
   const before = new Set(scene.children.list);
-  const solids = area === "conditions" ? buildLogicWorld(scene, reducedMotion) : buildCampusWorld(scene, reducedMotion);
+  const solids =
+    area === "conditions"
+      ? buildLogicWorld(scene, reducedMotion)
+      : area === "variables"
+        ? buildCampusWorld(scene, reducedMotion)
+        : buildStoryWorld(scene, area);
   const objects = scene.children.list.filter((object) => !before.has(object));
   return {
     solids,

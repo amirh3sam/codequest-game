@@ -688,6 +688,7 @@ export class GameApp {
     actions.append(
       button("Lesson", () => this.lesson()),
       button("Progress", () => this.journal()),
+      button("World map", () => this.worldMap()),
       button("Menu", () => this.pause()),
       this.soundToggle(),
     );
@@ -1374,7 +1375,7 @@ export class GameApp {
         skill = button(
           "",
           () => this.tablet(false, topic.id, village.worldAreas.length),
-          `world-skill-node${!unlocked ? " locked" : isComplete ? " complete" : taskProgress > 0 ? " in-progress" : ""}`,
+          `world-node world-skill-node${unlocked ? " unlocked" : " locked"}${isComplete ? " complete" : taskProgress > 0 ? " in-progress" : ""}`,
         );
       skill.disabled = !unlocked;
       skill.append(

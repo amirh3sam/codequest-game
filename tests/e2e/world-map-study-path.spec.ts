@@ -11,7 +11,7 @@ test("Java categories continue after Abstraction Cloud and unlock sequentially",
   await page.getByRole("button", { name: "World map", exact: true }).click();
 
   await expect(page.locator(".world-skill-node")).toHaveCount(17);
-  await expect(page.locator(".world-node")).toHaveCount(7);
+  await expect(page.locator(".world-node")).toHaveCount(24);
   await expect(page.locator(".level-map-nodes").locator(":scope > *")).toHaveCount(24);
   await expect(page.locator(".level-map-nodes > .world-node").nth(6)).toContainText("Abstraction Cloud");
   await expect(page.locator(".level-map-nodes > .world-skill-node").first()).toContainText("Variables & Data Types");
@@ -24,6 +24,7 @@ test("Java categories continue after Abstraction Cloud and unlock sequentially",
   await page.getByRole("button", { name: "World map", exact: true }).click();
   const firstCategory = page.locator(".world-skill-node").first();
   await expect(firstCategory).toBeEnabled();
+  await expect(firstCategory).toHaveClass(/world-node/);
   await expect(firstCategory.locator(".world-number")).toHaveText("08");
   await expect(page.locator(".world-skill-node").nth(1)).toBeDisabled();
   await expect(page.locator(".world-skill-node").nth(1)).toContainText(
