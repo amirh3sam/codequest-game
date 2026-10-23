@@ -8,7 +8,9 @@
 - **Checks:** 225 unit tests passed. Focused Chromium suites passed for multiple same/different-language adventures, old-save import, separate browser players, all four beacon/practice languages, volume/mute and audio fallback, both 2D tablet openings, district travel, full Logic progression and collisions. A reachability search verified paths to all ten Logic interaction points using the actual scene collision rules. The previous beacon movement test now waits for actual positions instead of a fixed frame-rate assumption. Lint, types and production build passed.
 - **Visual review:** inspected actual desktop library and new-map captures, including the generated hub's alpha and attached live sign. Narrow library and tablet layouts passed. Saved map art and exact prompts in [Logic Junction artwork](../public/assets/logic-junction/ARTWORK.md); updated real game screenshots and capture scripts.
 - **Next (authorized):** staged Variable District finale with visible subsystem repairs, then beginner playtesting before further curriculum expansion.
-- **Release:** pending public deployment verification.
+- **Release:** source commit `424104d` is public and deployed as `dpl_82gnQKGSTuAV8Fnz3i5EKsaP8oQT` (READY) at https://codequest-game-inky.vercel.app/.
+- **Public verification:** all five adventure/audio Chromium cases passed against the real public URL: Java plus two JavaScript adventures, separate progress/drafts, old-save import, audio playback, mute, saved volume and audio fallback. The map and both new art assets returned HTTP 200. Public captures of the library and skyrail map matched the inspected design; the narrow library passed without page errors.
+- **CI:** GitHub run `39943697038` passed lint, types, 225 unit tests and all 104 Chromium cases without retries.
 
 ## 2026-10-22 (community beacon and sound effects)
 
