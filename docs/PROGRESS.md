@@ -6,7 +6,7 @@
 - **First-run guide:** each newly created adventure gets a dismissible three-step field guide. It explains movement on keyboard and mobile, meeting the selected adventure's courier, and safely running the first coding mission. The step is saved per adventure and resumes after reload.
 - **Skill progress:** the Progress panel now summarizes solved missions and restored playable districts, shows an accessible per-district mission meter and next task, and previews the five future skill tracks.
 - **Checks:** added a Chromium flow for all four distinct language colors, guide progression and dismissal, and progress totals/meters. The focused flow, 231 unit tests, lint and type checking passed.
-- **Release:** pending build, public push and production deployment.
+- **Release:** source commit `43a44e8` is public on `main`. Deployment `dpl_8xAbxqwadhR555QjUSjzb7xu67Ar` is READY at https://codequest-game-inky.vercel.app/; the production alias returned the new built assets through `vercel curl`.
 
 ## 2026-10-23 (player-specific battery courier)
 
