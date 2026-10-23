@@ -11,7 +11,7 @@ async function enterLogic(page: Page): Promise<void> {
   await page.goto("/");
   await page.evaluate((state) => localStorage.setItem("codequest:v1:javascript", JSON.stringify(state)), state);
   await page.reload();
-  await page.getByRole("button", { name: "Continue adventure", exact: true }).click();
+  await page.locator(".title-adventure-row").first().click();
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   await page.getByRole("button", { name: "World map", exact: true }).click();
   await page.locator(".world-node").filter({ hasText: "Logic Junction" }).click();
@@ -40,7 +40,7 @@ test("travels to Logic Junction, uses its terminal, reloads and clears the Route
     await expect(page.locator(".feedback")).toContainText("Correct!");
     if (index === 0) {
       await page.reload();
-      await page.getByRole("button", { name: "Continue adventure", exact: true }).click();
+      await page.locator(".title-adventure-row").first().click();
       await expect(page.locator(".location-name")).toHaveText("Logic Junction");
       await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "1");
       await page.getByRole("button", { name: "Tasks", exact: true }).click();

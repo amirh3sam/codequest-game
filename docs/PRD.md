@@ -1,6 +1,6 @@
 # CodeQuest — Product Requirements (PRD)
 
-_Last updated: 2026-10-23 · Status: multiple adventures, distinct districts and revised audio_
+_Last updated: 2026-10-23 · Status: adventure backups, mobile controls and staged hub finale_
 
 Current direction: the public release includes Variable District and Logic
 Junction in all four languages. The user's latest priority is deeper education
@@ -46,7 +46,7 @@ Beginners find programming tutorials dry and quit early. Reading theory without 
 ## 4. Non-goals (for now)
 - Accounts, login, cloud save (later: Google / GitHub login).
 - Public hosting (MVP runs on localhost only).
-- Mobile / touch controls, multiplayer, leaderboards.
+- Multiplayer and leaderboards.
 - Gold, shop, spells, inventory, XP/levels, AI tutor (shown in the reference picture, planned for "Later").
 - Paid anything.
 
@@ -80,6 +80,8 @@ Beginners find programming tutorials dry and quit early. Reading theory without 
 - US-8 As a learner, I keep my progress when I close the browser.
 - US-9 As a learner, losing all hearts only restarts the area I'm in, not the whole game.
 - US-10 As a learner, I can switch between multiple saved adventures in the same or different languages, keeping separate progress and practice drafts.
+- US-11 As a learner, I can download a backup file and load it later as a separate adventure.
+- US-12 As a mobile learner, I can walk and interact using touch controls.
 
 ## 7. MVP scope
 **In:** all 4 languages selectable; hero + name; title / continue screen; world map with 7 area nodes (areas 3–7 shown locked "coming soon"); **areas 1 and 2 fully playable in all 4 languages** (scroll + 8 tasks + boss each = 64 tasks + 8 bosses); in-browser runners for all 4 languages; hearts, gems, boss hints; browser save; keyboard controls; free pixel-art assets.

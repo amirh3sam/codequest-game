@@ -26,10 +26,14 @@ try {
     await page.getByRole("button", { name: "Switch adventure", exact: true }).click();
     if (lang !== "python") await page.getByRole("button", { name: "Start another adventure", exact: true }).click();
   }
-  await expect(page.locator(".adventure-card")).toHaveCount(3);
-  await page.waitForTimeout(4600);
+  await page.getByRole("button", { name: "Back to current adventure", exact: true }).click();
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await page.getByRole("button", { name: "Title screen", exact: true }).click();
+  await expect(page.locator(".title-adventure-row")).toHaveCount(3);
+  await page.waitForTimeout(2500);
+  await page.addStyleTag({ content: ".toast { display: none !important; }" });
   await page.screenshot({ path: `${directory}/adventure-library.png` });
-  await page.getByRole("button", { name: "Resume Ada · JavaScript", exact: true }).click();
+  await page.getByRole("button", { name: /Ada's JavaScript adventure/ }).click();
   // Use a valid completed-first-district fixture to frame the second map. These are isolated capture saves.
   await page.evaluate((variables) => {
     const state = JSON.parse(localStorage.getItem("codequest:v1:javascript"));
@@ -57,7 +61,7 @@ try {
   const scene = await framed.newPage();
   scene.on("pageerror", (error) => errors.push(error.message));
   await scene.goto(origin);
-  await scene.getByRole("button", { name: "Continue adventure", exact: true }).click();
+  await scene.getByRole("button", { name: /Ada\x27s JavaScript adventure/ }).click();
   await expect(scene.locator(".location-name")).toHaveText("Logic Junction");
   await scene.waitForTimeout(4600);
   await scene.screenshot({ path: `${directory}/logic-junction.png` });

@@ -118,7 +118,8 @@ type Save = {
   discoveries?: { beacon?: "garden" | "arcade" };
   areas: Record<string, {
     solved: string[]; lessonsFound: boolean; gems: number; hearts: number;
-    hintsBought: number; bossDefeated: boolean; drafts: Record<string, string>;
+    hintsBought: number; bossDefeated: boolean; finaleStage?: 0 | 1 | 2;
+    drafts: Record<string, string>;
   }>;
   updatedAt: string;
 };
@@ -134,6 +135,25 @@ the latest valid per-language slot as a compatibility snapshot; the library is
 the source for choosing any adventure. A new UUID creates another save without
 confirmation or replacement. The tablet uses `codequest:tablet:v2:<adventureId>`;
 only imported legacy adventures fall back to their older per-language draft.
+
+The title groups every saved journey under its language. Progress stays in the
+browser profile and autosaves to the library. Portable backups use the
+`codequest-adventure` JSON format, version 1, and include one full game state
+plus the optional tablet draft. Import validates before writing and assigns a
+new UUID, so loading a file adds an adventure without replacing another. The
+browser's file picker and download APIs keep file access explicit.
+
+Variable District's firewall approach has two free, worker-run diagnostics
+before its normal graded boss. Restored power and operator checkpoints live in
+the optional bounded `finaleStage` field; existing version-1 saves default to
+zero. `HubSignals` renders those checkpoints as ground lights, and the tablet
+mission log can reopen the hub diagnostics or review the completed sequence.
+The diagnostic runner never spends hearts or gems; the original firewall
+grader, hints and heart policy remain unchanged.
+
+Touch players get a thumb-sized directional pad and interact button. Held
+pointer controls feed the same collision-limited movement update as the
+keyboard. Tap-to-walk also uses world coordinates and the same solid map data.
 
 `district-layout.ts` defines independent entrances, walk bounds, terminal routes,
 lesson and boss positions. Variable District retains its campus. Logic Junction

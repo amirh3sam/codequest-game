@@ -44,7 +44,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await page.keyboard.press("t");
     await expect(page.getByLabel("Practice code", { exact: true })).toHaveValue(code);
     await page.reload();
-    await page.getByRole("button", { name: "Continue adventure", exact: true }).click();
+    await page.locator(".title-adventure-row").first().click();
     await page.getByRole("button", { name: "Tablet", exact: true }).click();
     await expect(page.getByLabel("Practice code", { exact: true })).toHaveValue(code);
     expect(await progress(page, lang)).toEqual(before);

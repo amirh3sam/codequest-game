@@ -10,6 +10,7 @@ import { CommunityBeacon } from "../community-beacon";
 import { districtLayout } from "../district-layout";
 import { DroneQuest } from "../drone-quest";
 import { createHeroTextures, type Facing, heroFrame } from "../hero-sprites";
+import { HubSignals } from "../hub-signals";
 import { createQuestProps } from "../quest-props";
 
 type Marker = {
@@ -40,6 +41,7 @@ export class BootScene extends Phaser.Scene {
   private districtLabel!: Phaser.GameObjects.Text;
   private droneQuest!: DroneQuest;
   private communityBeacon!: CommunityBeacon;
+  private hubSignals!: HubSignals;
   private world!: DistrictWorld;
   private delivering = false;
   private solids: Solid[] = [];
@@ -52,6 +54,9 @@ export class BootScene extends Phaser.Scene {
   private lastSave = 0;
   private facing: Facing = "south";
   private walked = 0;
+  private touchAxis = { x: 0, y: 0 };
+  private tapTarget: Position | null = null;
+  private hubTour?: Phaser.Time.TimerEvent;
   private reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   constructor() {
     super("boot");
@@ -110,6 +115,7 @@ export class BootScene extends Phaser.Scene {
         this.callbacks?.interact("discovery-beacon");
       } else this.callbacks?.message("Walk closer to the community beacon, then press E.");
     });
+    this.hubSignals = new HubSignals(this);
     this.prompt = this.add
       .text(480, 512, "", {
         fontFamily: "monospace",
@@ -128,6 +134,10 @@ export class BootScene extends Phaser.Scene {
         Phaser.Input.Keyboard.Key
       >;
     for (const name of ["E", "SPACE"]) this.keys[name]?.on("down", () => this.interactClosest());
+    this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      if (!this.blocked && this.state && pointer.event.target === this.game.canvas)
+        this.tapTarget = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+    });
     this.game.events.emit("village-ready");
   }
   private marker(id: string, x: number, y: number, sprite: { texture: string; frame: number }, title: string): void {
@@ -201,6 +211,7 @@ export class BootScene extends Phaser.Scene {
     if (previous?.currentArea !== state?.currentArea) this.cancelDelivery();
     this.droneQuest.sync(state);
     this.communityBeacon.sync(state);
+    this.hubSignals.sync(state);
     this.hero.setVisible(Boolean(state));
     this.shadow.setVisible(Boolean(state));
     if (!state || !area) {
@@ -301,12 +312,37 @@ export class BootScene extends Phaser.Scene {
   }
   setBlocked(blocked: boolean): void {
     if (blocked) this.cancelDelivery();
+    if (blocked) this.cancelHubTour();
     this.blocked = blocked;
+    this.touchAxis = { x: 0, y: 0 };
+    this.tapTarget = null;
     this.input.keyboard?.resetKeys();
     this.prompt.setVisible(false);
   }
   getPosition(): Position {
     return { ...this.position };
+  }
+  setTouchAxis(x: -1 | 0 | 1, y: -1 | 0 | 1): void {
+    this.touchAxis = { x, y };
+    if (x || y) this.tapTarget = null;
+  }
+  touchStep(x: -1 | 0 | 1, y: -1 | 0 | 1): void {
+    this.tapTarget = null;
+    if (this.blocked || !this.state || !this.area) return;
+    const length = Math.hypot(x, y) || 1;
+    const before = this.position;
+    this.position = moveWithCollisions(before, (x * 36) / length, (y * 36) / length, {
+      bounds: districtLayout(this.area.id).bounds,
+      solids: this.worldSolids(),
+    });
+    this.facing = x ? (x < 0 ? "west" : "east") : y < 0 ? "north" : "south";
+    this.walked = 0;
+    if (Math.hypot(this.position.x - before.x, this.position.y - before.y) > 0.01) {
+      this.dirtyPosition = true;
+      gameAudio.play("step");
+    }
+    this.hero.setPosition(this.position.x, this.position.y + 4).setDepth(this.position.y);
+    this.shadow.setPosition(this.position.x, this.position.y - 1);
   }
   focusTablet(): () => void {
     const camera = this.cameras.main,
@@ -326,6 +362,26 @@ export class BootScene extends Phaser.Scene {
       camera.centerOn(this.hero.x, this.hero.y);
       camera.startFollow(this.hero, true, 0.14, 0.14);
     };
+  }
+  tourHub(): void {
+    if (this.state?.currentArea !== "variables") return;
+    this.hubSignals.reboot();
+    this.callbacks?.message("Data hub online. The route to Logic Junction is open.");
+    if (this.reducedMotion) return;
+    this.cameras.main.stopFollow();
+    this.cameras.main.pan(village.boss.x, village.boss.y + 20, 650, "Sine.easeInOut");
+    this.hubTour = this.time.delayedCall(2300, () => {
+      this.hubTour = undefined;
+      if (this.state) this.cameras.main.startFollow(this.hero, true, 0.14, 0.14);
+    });
+  }
+  private cancelHubTour(): void {
+    if (!this.hubTour) return;
+    this.hubTour.remove(false);
+    this.hubTour = undefined;
+    this.cameras.main.panEffect.reset();
+    this.cameras.main.centerOn(this.hero.x, this.hero.y);
+    if (this.state) this.cameras.main.startFollow(this.hero, true, 0.14, 0.14);
   }
   previewDrone(value?: number): void {
     this.droneQuest.preview(value);
@@ -381,6 +437,9 @@ export class BootScene extends Phaser.Scene {
       this.callbacks?.interact(nearest.id);
     }
   }
+  interactTouch(): void {
+    this.interactClosest();
+  }
   private nearestInteraction(): { id: string; prompt: string } | null {
     const points = this.markers.map((marker) => ({
       id: marker.id,
@@ -405,8 +464,21 @@ export class BootScene extends Phaser.Scene {
   update(time: number, delta: number): void {
     if (this.blocked || !this.state || !this.area || document.activeElement?.matches("input, textarea, select")) return;
     const pressed = (key: string) => this.keys[key]?.isDown;
-    let dx = Number(pressed("D") || pressed("RIGHT")) - Number(pressed("A") || pressed("LEFT"));
-    let dy = Number(pressed("S") || pressed("DOWN")) - Number(pressed("W") || pressed("UP"));
+    let dx =
+      Number(pressed("D") || pressed("RIGHT") || this.touchAxis.x > 0) -
+      Number(pressed("A") || pressed("LEFT") || this.touchAxis.x < 0);
+    let dy =
+      Number(pressed("S") || pressed("DOWN") || this.touchAxis.y > 0) -
+      Number(pressed("W") || pressed("UP") || this.touchAxis.y < 0);
+    if (!dx && !dy && this.tapTarget) {
+      const tx = this.tapTarget.x - this.position.x,
+        ty = this.tapTarget.y - this.position.y;
+      if (Math.hypot(tx, ty) < 8) this.tapTarget = null;
+      else {
+        dx = Math.sign(tx);
+        dy = Math.sign(ty);
+      }
+    }
     const length = Math.hypot(dx, dy) || 1;
     const step = (150 * Math.min(delta, 40)) / 1000;
     dx *= step / length;

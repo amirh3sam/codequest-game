@@ -7,7 +7,11 @@ Each task fits in one session. Tags point to PRD requirements.
 - [x] Add an adventure library for multiple journeys in the same or different languages, preserving old saves and separate practice drafts.
 - [x] Give Logic Junction an elevated skyrail map, independent paths, scenery, solid control hub and terminal positions.
 - [x] Replace simple beeps with textured footsteps, clicks, swishes and layered chimes; add a saved effects-volume control.
-- [ ] Next: turn the Variable District finale into a staged city repair with visible subsystem progress.
+- [x] Turn the Variable District finale into two free, teachable hub repairs before its graded Firewall challenge. Persist each checkpoint, show it on the world hub and in the tablet log, and let players review the completed sequence.
+- [x] List every saved adventure beneath its language on the title screen; add portable export/import backups that load as separate saves.
+- [x] Add touch movement, touch interaction and tap-to-walk using the existing solid-object rules.
+- [x] Soften and vary the synthesized footsteps.
+- [ ] Next: run a beginner playtest of the staged repair loop, tablet lessons and mobile controls; use the observations to prioritize the next curriculum/map task.
 
 - [x] Replace the 3D hand model with an illustrated 2D wrist-tablet animation: lift, settle and screen entry, preserving city zoom and the editor/output layout.
 - [x] Revise the tablet opening to a city zoom followed by the character's first-person view of their attached wrist tablet. Keep the sequence to three seconds, with skip, cancellation and instant reduced-motion access. Missions and Guide remain inside the device.

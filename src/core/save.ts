@@ -55,6 +55,11 @@ function isAreaState(value: unknown): value is AreaState {
 
   const maxGems = value.solved.length * Math.max(...Object.values(GEM_REWARD));
   if (
+    Object.hasOwn(value, "finaleStage") &&
+    (!isInteger(value.finaleStage, 0, 2) || (Number(value.finaleStage) > 0 && value.solved.length !== TASKS_PER_AREA))
+  )
+    return false;
+  if (
     !isInteger(value.gems, 0, maxGems) ||
     !isInteger(value.hintsBought, 0, maxGems) ||
     value.gems + value.hintsBought > maxGems ||
@@ -73,6 +78,7 @@ function hasProgress(area: AreaState): boolean {
     area.hearts !== MAX_HEARTS ||
     area.hintsBought > 0 ||
     area.bossDefeated ||
+    (area.finaleStage ?? 0) > 0 ||
     Object.keys(area.drafts).length > 0
   );
 }

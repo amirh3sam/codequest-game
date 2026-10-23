@@ -1,5 +1,15 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (touch controls, portable saves and staged hub repair)
+
+- **Adventure list:** title screen now shows each saved hero under its language with a compact `0/8 tasks` progress line. The manager remains available for switching and starting another run.
+- **Save recovery:** progress continues to autosave in the browser profile. Players can download a versioned JSON adventure backup and import it later as a new UUID-keyed save, preserving all existing adventures. Optional tablet drafts travel with the file.
+- **Mobile:** added a four-direction touch pad, interact button and tap-to-walk. Both use the same scene collision data as keyboard movement. Touch movement is checked in Chromium on a phone-sized viewport.
+- **Audio:** lowered and varied shoe/fabric/grit footsteps, reducing the hard synthetic impact while retaining local Web Audio generation.
+- **Hub finale:** added two free worker-backed checkpoints (power arithmetic, then a name-built signal) before the existing graded Firewall boss. Checkpoints persist in the version-1 state, inlaid hub lights reflect them, tablet Missions offers the log, and completed players can watch the hub boot. Existing save records remain compatible.
+- **Checks:** 227 unit tests passed; Biome lint, TypeScript and production build passed. All 106 Chromium cases passed with one worker; a fresh six-case run also passed against the final hub lesson checks and backup/mobile changes. The adventure title capture and narrow library had no browser errors or overflow.
+- **Next:** beginner playtesting of the teaching loop and touch controls.
+
 ## 2026-10-23 (multiple adventures, distinct districts and revised audio)
 
 - **Done:** added an adventure library, available from the title and Menu → Switch adventure. Players can keep multiple named journeys in the same or different languages; new journeys preserve older ones. Each adventure has independent progress, discoveries, position and tablet draft. Old per-language games and practice drafts import without deletion. Corrupt/future data and failed writes preserve existing saves; canceled runtime warmups cannot report errors in a different adventure.

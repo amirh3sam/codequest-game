@@ -78,6 +78,6 @@ test("boy developer selection survives walking and reloading", async ({ page }) 
       .toBe("hero-boy");
   await expectBoy();
   await page.reload();
-  await page.getByRole("button", { name: "Continue adventure", exact: true }).click();
+  await page.locator(".title-adventure-row").first().click();
   await expectBoy();
 });

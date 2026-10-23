@@ -11,7 +11,7 @@ real game and working code, rather than concept art or interface mockups.
 - `tablet-opening.webm`: browser video of the city zoom, 2D wrist lift/settle and full-screen transition.
 - `community-beacon.png`: Mina's optional event choice with real code and a successful announcement preview.
 - `community-courtyard.png`: the solid beacon and mint courtyard lights after activating Garden night, with the sound toggle in the toolbar.
-- `adventure-library.png`: three independent named adventures ready to resume in different languages.
+- `adventure-library.png`: the title screen grouping three named adventures beneath their languages, each with task progress.
 - `logic-junction.png`: the distinct skyrail plaza with its transparent routing hub, solid props and relocated terminals.
 
 Regenerate with the local game running at `http://127.0.0.1:5173`:

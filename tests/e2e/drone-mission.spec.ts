@@ -18,7 +18,7 @@ async function seed(page: Page, lang: Lang, repaired = false): Promise<void> {
   await expect(page.getByRole("textbox", { name: "Developer name", exact: true })).toBeVisible({ timeout: 15_000 });
   await page.evaluate((state) => localStorage.setItem(`codequest:v1:${state.lang}`, JSON.stringify(state)), state);
   await page.reload();
-  await page.getByRole("button", { name: "Continue adventure", exact: true }).click();
+  await page.locator(".title-adventure-row").first().click();
 }
 async function saved(page: Page, lang: Lang): Promise<GameState> {
   return page.evaluate((lang) => JSON.parse(localStorage.getItem(`codequest:v1:${lang}`) ?? "{}"), lang);
@@ -71,7 +71,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.locator(".toast")).toContainText("Delivery complete!");
     await page.reload();
-    await page.getByRole("button", { name: "Continue adventure", exact: true }).click();
+    await page.locator(".title-adventure-row").first().click();
     expect(await routeOpen(page)).toBe(true);
     expect((await saved(page, lang)).areas.variables).toMatchObject({
       solved: ["variables-1", "variables-2"],

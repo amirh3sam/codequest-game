@@ -46,7 +46,10 @@ test("switches between Java and two JavaScript adventures with independent progr
   await page.getByLabel("Practice code", { exact: true }).fill('console.log("Ari draft");');
   await page.keyboard.press("Escape");
   await page.reload();
-  await page.getByRole("button", { name: "Your adventures · 3 saved", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Your adventures · 3 saved" })).toBeVisible();
+  await expect(page.locator(".title-adventure-row")).toHaveCount(3);
+  await expect(page.locator(".title-language-saves")).toHaveCount(2);
+  await page.getByRole("button", { name: "Manage adventures", exact: true }).click();
   await expect(page.locator(".adventure-card")).toHaveCount(3);
   for (const [name, language, code, gems] of [
     ["Nova", "Java", draft, "0"],

@@ -18,7 +18,7 @@ async function seed(page: Page, lang: Lang, repaired = true) {
   await expect(page.getByRole("button", { name: "Start adventure", exact: true })).toBeVisible();
   await page.evaluate((state) => localStorage.setItem(`codequest:v1:${state.lang}`, JSON.stringify(state)), state);
   await page.reload();
-  await page.getByRole("button", { name: "Continue adventure", exact: true }).click();
+  await page.locator(".title-adventure-row").first().click();
 }
 async function saved(page: Page, lang: Lang): Promise<GameState> {
   return page.evaluate((lang) => JSON.parse(localStorage.getItem(`codequest:v1:${lang}`) ?? "{}"), lang);
@@ -61,7 +61,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     expect(await choiceInWorld(page)).toBe(choice);
     expect((await saved(page, lang)).areas).toEqual(before);
     await page.reload();
-    await page.getByRole("button", { name: "Continue adventure", exact: true }).click();
+    await page.locator(".title-adventure-row").first().click();
     expect(await choiceInWorld(page)).toBe(choice);
     await page.keyboard.press("t");
     await page.getByRole("tab", { name: "Missions", exact: true }).click();

@@ -65,6 +65,18 @@ test("hoodie developer turns in four directions and reaches every coding termina
   await walk(page, "d", "x", village.boss.x, 2);
   await walk(page, "w", "y", village.boss.y + 30, 3);
   await page.keyboard.press("e");
+  await expect(page.getByRole("heading", { name: "Restore the data hub", exact: true })).toBeVisible();
+  await page.getByLabel("Repair code").fill("let power = 5;\npower += 3;\npower -= 2;\nconsole.log(power);");
+  await page.getByRole("button", { name: "Run repair preview", exact: true }).click();
+  await expect(page.locator(".hub-finale .feedback")).toContainText("Preview passed");
+  await page.getByRole("button", { name: "Restore power", exact: true }).click();
+  await page
+    .getByLabel("Repair code")
+    .fill('const operatorName = "Ada";\nconst signal = "Ready, " + operatorName + "!";\nconsole.log(signal);');
+  await page.getByRole("button", { name: "Run repair preview", exact: true }).click();
+  await expect(page.locator(".hub-finale .feedback")).toContainText("Preview passed");
+  await page.getByRole("button", { name: "Connect operator signal", exact: true }).click();
+  await page.getByRole("button", { name: "Open final repair", exact: true }).click();
   await expect(page.getByRole("heading", { name: "The Firewall", exact: true })).toBeVisible();
   await page.getByLabel("Your code").fill(content.boss.solution);
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();

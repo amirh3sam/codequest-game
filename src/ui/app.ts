@@ -4,8 +4,10 @@ import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
 import type { AreaContent, Boss, Task } from "../content/schema";
 import village from "../content/village.json" with { type: "json" };
 import { loadAdventures, saveAdventure } from "../core/adventures";
+import { makeAdventureBackup, parseAdventureBackup } from "../core/backup";
 import { canLightBeacon, lightBeacon } from "../core/discoveries";
 import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone-mission";
+import { hubStage, restoreHubSubsystem } from "../core/finale";
 import { GEM_REWARD, isValidHeroName } from "../core/rules";
 import { loadGame, saveGame } from "../core/save";
 import {
@@ -31,6 +33,8 @@ import { WorkerHost } from "../runners/worker-host";
 import { openCommunityBeacon } from "./community-beacon";
 import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
+import { openHubFinale } from "./hub-finale";
+import { mobileControls } from "./mobile-controls";
 import { openTablet } from "./tablet";
 
 const now = () => new Date().toISOString();
@@ -53,6 +57,11 @@ export class GameApp {
   private overlay = el("div", "overlay");
   private notice = el("div", "toast");
   private saved = el("span", "save-state");
+  private mobile = mobileControls({
+    axis: (x, y) => this.scene.setTouchAxis(x, y),
+    step: (x, y) => this.scene.touchStep(x, y),
+    interact: () => this.scene.interactTouch(),
+  });
   private savingAllowed = true;
   private busy = false;
   private runToken = 0;
@@ -69,7 +78,8 @@ export class GameApp {
     this.scene = scene;
     this.notice.setAttribute("role", "status");
     this.notice.setAttribute("aria-live", "polite");
-    root.replaceChildren(this.hud, this.overlay, this.notice);
+    this.mobile.hidden = true;
+    root.replaceChildren(this.hud, this.overlay, this.notice, this.mobile);
     window.addEventListener("keydown", (event) => {
       if (
         event.code === "KeyT" &&
@@ -194,6 +204,7 @@ export class GameApp {
     this.runToken++;
     this.runner?.kill();
     this.state = null;
+    this.mobile.hidden = true;
     this.hud.hidden = true;
     this.scene.setSession(null, null, this.callbacks);
     const panel = this.panel(
@@ -246,14 +257,30 @@ export class GameApp {
     const archived =
       library.status === "loaded" ? library.adventures.find((entry) => entry.lang === this.lang) : undefined;
     const existing = archived ? { status: "loaded" as const, state: archived } : loadGame(this.lang);
-    if (library.status === "loaded" && library.adventures.length)
+    if (library.status === "loaded" && library.adventures.length) {
+      panel.append(el("h3", "section-label", `Your adventures · ${library.adventures.length} saved`));
+      const grouped = el("div", "title-adventures");
+      for (const language of LANGUAGES) {
+        const saves = library.adventures.filter((entry) => entry.lang === language.id);
+        if (!saves.length) continue;
+        const group = el("section", "title-language-saves");
+        group.append(el("h4", "", language.name));
+        for (const state of saves) {
+          const row = button("", () => this.begin(state), "title-adventure-row");
+          row.append(
+            el("strong", "", `${state.hero.name}'s ${language.name} adventure`),
+            el("span", "", `${state.areas[state.currentArea].solved.length}/8 tasks`),
+          );
+          if (state.adventureId === archived?.adventureId) row.classList.add("selected-adventure");
+          group.append(row);
+        }
+        grouped.append(group);
+      }
       panel.append(
-        button(
-          `Your adventures · ${library.adventures.length} saved`,
-          () => this.adventureLibrary(),
-          "button adventure-library-link",
-        ),
+        grouped,
+        button("Manage adventures", () => this.adventureLibrary(), "button adventure-library-link"),
       );
+    }
     if (library.status !== "loaded")
       panel.append(
         el(
@@ -262,18 +289,7 @@ export class GameApp {
           "The adventure library is unavailable. Existing data is preserved; new play will stay in this session.",
         ),
       );
-    if (existing.status === "loaded") {
-      const saved = el("div", "saved-adventure");
-      saved.append(
-        el(
-          "div",
-          "",
-          `${existing.state.hero.name}'s adventure · ${existing.state.areas[existing.state.currentArea].solved.length}/8 tasks`,
-        ),
-        button("Continue adventure", () => this.begin(existing.state), "button primary"),
-      );
-      panel.append(saved);
-    } else if (existing.status === "corrupt" || existing.status === "unsupported-version")
+    if (existing.status === "corrupt" || existing.status === "unsupported-version")
       panel.append(
         el(
           "p",
@@ -348,6 +364,7 @@ export class GameApp {
     panel.append(
       form,
       el("p", "intro-footer", "Start as many adventures as you like. Each keeps its own progress on this device."),
+      this.backupControls(),
       this.soundToggle(),
     );
   }
@@ -373,6 +390,7 @@ export class GameApp {
     this.lang = state.lang;
     this.area = area;
     this.hud.hidden = false;
+    this.mobile.hidden = false;
     this.commit(state);
     this.close();
     const runner = this.runner,
@@ -465,8 +483,76 @@ export class GameApp {
     }
     const actions = el("div", "panel-actions");
     actions.append(button("Start another adventure", () => this.intro()));
+    actions.append(button("Save backup file", () => this.exportAdventure()));
+    actions.append(button("Load backup file", () => this.importAdventure()));
     if (this.state) actions.append(button("Back to current adventure", () => this.close()));
     panel.append(actions);
+  }
+  private backupControls(): HTMLElement {
+    const controls = el("div", "backup-controls");
+    controls.append(
+      el("p", "", "Download a backup file to keep your adventure safe. Loading one adds a separate adventure."),
+      button("Load adventure backup", () => this.importAdventure()),
+    );
+    if (this.state) controls.prepend(button("Save adventure backup", () => this.exportAdventure()));
+    return controls;
+  }
+  private exportAdventure(): void {
+    if (!this.state) {
+      this.toast("Start or continue an adventure before saving a backup file.");
+      return;
+    }
+    let tabletDraft: string | undefined;
+    try {
+      tabletDraft =
+        localStorage.getItem(`codequest:tablet:v2:${this.state.adventureId}`) ??
+        (this.state.adventureId?.startsWith("legacy-")
+          ? (localStorage.getItem(`codequest:tablet:v1:${this.state.lang}`) ?? undefined)
+          : undefined);
+    } catch {
+      /* Optional draft. */
+    }
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(makeAdventureBackup(this.state, tabletDraft), null, 2)], { type: "application/json" }),
+    );
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `CodeQuest-${this.state.lang}-${this.state.hero.name.replace(/[^a-z0-9]+/gi, "-")}.json`;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    this.toast("Adventure backup downloaded to your device.");
+  }
+  private importAdventure(): void {
+    const picker = document.createElement("input");
+    picker.type = "file";
+    picker.accept = ".json,application/json";
+    picker.addEventListener(
+      "change",
+      async () => {
+        const file = picker.files?.[0];
+        if (!file) return;
+        try {
+          const parsed = parseAdventureBackup(await file.text());
+          const state: GameState = { ...parsed.state, adventureId: crypto.randomUUID(), updatedAt: now() };
+          if (loadAdventures().status !== "loaded")
+            throw new Error("The adventure library cannot be updated right now.");
+          if (saveAdventure(state).status !== "saved")
+            throw new Error("Browser storage is full; the backup was not imported.");
+          if (parsed.tabletDraft) {
+            try {
+              localStorage.setItem(`codequest:tablet:v2:${state.adventureId}`, parsed.tabletDraft);
+            } catch {
+              /* Progress imported even if draft storage is full. */
+            }
+          }
+          this.begin(state);
+        } catch (error) {
+          this.toast(error instanceof Error ? error.message : "Could not read this adventure backup.");
+        }
+      },
+      { once: true },
+    );
+    picker.click();
   }
   private renderHud(): void {
     if (!this.state) return;
@@ -563,7 +649,7 @@ export class GameApp {
     else if (id === "discovery-beacon") this.communityBeacon();
     else if (id === "lesson") this.lesson();
     else if (id === "boss") {
-      if (canFightBoss(this.state, this.area)) this.editor(this.area.boss);
+      if (canFightBoss(this.state, this.area)) this.openBoss();
       else
         this.toast(
           this.state.areas[this.area.id].bossDefeated
@@ -581,8 +667,45 @@ export class GameApp {
         );
     }
   }
+  private openBoss(): void {
+    if (!this.state) return;
+    if (this.area.id !== "variables" || hubStage(this.state) >= 2) this.editor(this.area.boss);
+    else this.hubFinale();
+  }
+  private hubFinale(): void {
+    if (!this.state || (hubStage(this.state) < 3 && !canFightBoss(this.state, this.area))) return;
+    const adventureId = this.state.adventureId;
+    const draftIds = ["variables-boss:relay-1", "variables-boss:relay-2"] as const;
+    openHubFinale({
+      lang: this.lang,
+      name: this.state.hero.name,
+      stage: hubStage(this.state),
+      drafts: draftIds.map((id) => this.state?.areas.variables.drafts[id]),
+      panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
+      run: (code) => this.practice(code),
+      draft: (step, code) => this.draft({ id: draftIds[step] }, code),
+      restore: (stage) => {
+        if (!this.state || this.state.adventureId !== adventureId) return false;
+        const next = restoreHubSubsystem(this.state, this.area, stage, now());
+        if (next === this.state) return false;
+        this.commit(next);
+        gameAudio.play("success");
+        return true;
+      },
+      finalRepair: () => this.editor(this.area.boss),
+      close: () => this.close(),
+      inspect: () => {
+        this.close();
+        this.scene.tourHub();
+      },
+    });
+  }
   private mission(): void {
     if (!this.state || this.area.id !== "variables") return;
+    if (canFightBoss(this.state, this.area) && !this.state.areas.variables.bossDefeated) {
+      this.hubFinale();
+      return;
+    }
     this.capturePosition();
     if (!this.state.areas.variables.solved.includes("variables-1")) {
       const panel = this.panel(
@@ -683,6 +806,20 @@ export class GameApp {
               },
             }
           : undefined,
+      finale:
+        this.area.id === "variables" && (canFightBoss(this.state, this.area) || this.state.areas.variables.bossDefeated)
+          ? {
+              title: "Firewall data hub",
+              status:
+                hubStage(this.state) === 3
+                  ? "All three repair signals are online. Logic Junction is unlocked."
+                  : `${hubStage(this.state)}/3 repair signals restored. Free code previews protect hearts and gems.`,
+              open: () => {
+                this.tabletNavigation = true;
+                this.hubFinale();
+              },
+            }
+          : undefined,
       missions: this.area.tasks.map((task) => ({
         title: task.title,
         prompt: task.prompt,
@@ -745,7 +882,9 @@ export class GameApp {
       panel.append(row);
     }
     if (canFightBoss(this.state, this.area))
-      panel.append(button(`Challenge ${this.area.boss.name}`, () => this.editor(this.area.boss), "button primary"));
+      panel.append(button(`Challenge ${this.area.boss.name}`, () => this.openBoss(), "button primary"));
+    else if (this.area.id === "variables" && this.state.areas.variables.bossDefeated)
+      panel.append(button("Review the restored data hub", () => this.hubFinale(), "button mission-link"));
   }
   private pause(): void {
     if (!this.state) return;
@@ -755,6 +894,8 @@ export class GameApp {
     actions.append(
       button("Resume adventure", () => this.close(), "button primary"),
       button("Switch adventure", () => this.adventureLibrary()),
+      button("Save backup file", () => this.exportAdventure()),
+      button("Load backup file", () => this.importAdventure()),
       button("World map", () => this.worldMap()),
       button("Read the lesson", () => this.lesson()),
       button("Title screen", () => this.intro()),
@@ -811,7 +952,7 @@ export class GameApp {
     }
     panel.append(nodes);
   }
-  private draft(task: Task | Boss, code: string): void {
+  private draft(task: Pick<Task, "id">, code: string): void {
     if (!this.state) return;
     const progress = this.state.areas[this.area.id];
     this.state = {
@@ -958,7 +1099,7 @@ export class GameApp {
                 next ? "Next task →" : `Inspect ${this.area.boss.name.replace(/^The /, "the ")} →`,
                 () => {
                   if (next) this.editor(next);
-                  else this.editor(this.area.boss);
+                  else this.openBoss();
                 },
                 "button primary",
               ),
@@ -1037,5 +1178,7 @@ export class GameApp {
       button("Continue journey", () => this.worldMap(), "button primary"),
       button("Explore the district", () => this.close()),
     );
+    if (this.area.id === "variables")
+      panel.append(button("Watch the hub boot", () => this.hubFinale(), "button mission-link"));
   }
 }

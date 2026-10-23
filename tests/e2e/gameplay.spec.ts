@@ -42,7 +42,7 @@ test("moves, runs real code, earns gems and continues a saved adventure", async 
   await expect(page.locator(".feedback")).toContainText("Correct!");
   await expect(page.getByTestId("gems")).toHaveText("◆ 1");
   await page.reload();
-  await page.getByRole("button", { name: "Continue adventure", exact: true }).click();
+  await page.locator(".title-adventure-row").first().click();
   await expect(page.getByTestId("gems")).toHaveText("◆ 1");
   await expect(page.getByTestId("hearts")).toHaveText("♥♥♡");
   await expect(page.locator(".hero-name")).toHaveText("Nova");
@@ -59,6 +59,18 @@ test("completes all eight tasks, buys a hint and defeats the boss", async ({ pag
     await page.getByRole("button", { name: index < 7 ? "Next task →" : "Inspect the Firewall →", exact: true }).click();
   }
   await expect(page.getByTestId("gems")).toHaveText("◆ 15");
+  await expect(page.getByRole("heading", { name: "Restore the data hub" })).toBeVisible();
+  await page.getByLabel("Repair code").fill("let power = 5;\npower += 3;\npower -= 2;\nconsole.log(power);");
+  await page.getByRole("button", { name: "Run repair preview", exact: true }).click();
+  await expect(page.locator(".hub-finale .feedback")).toContainText("Preview passed");
+  await page.getByRole("button", { name: "Restore power", exact: true }).click();
+  await page
+    .getByLabel("Repair code")
+    .fill('const operatorName = "Nova";\nconst signal = "Ready, " + operatorName + "!";\nconsole.log(signal);');
+  await page.getByRole("button", { name: "Run repair preview", exact: true }).click();
+  await expect(page.locator(".hub-finale .feedback")).toContainText("Preview passed");
+  await page.getByRole("button", { name: "Connect operator signal", exact: true }).click();
+  await page.getByRole("button", { name: "Open final repair", exact: true }).click();
   await page.getByRole("button", { name: "Get next hint · 1 gem", exact: true }).click();
   await expect(page.getByTestId("gems")).toHaveText("◆ 14");
   await page.getByLabel("Your code").fill(variables.boss.solution);

@@ -23,6 +23,7 @@ export type AreaState = Readonly<{
   hearts: number;
   hintsBought: number;
   bossDefeated: boolean;
+  finaleStage?: 0 | 1 | 2;
   drafts: Readonly<Record<string, string>>;
 }>;
 

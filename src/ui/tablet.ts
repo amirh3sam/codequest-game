@@ -20,6 +20,7 @@ type TabletHost = {
   guide: { heading: string; body: string; code?: string }[];
   story?: () => void;
   discovery?: { title: string; status: string; open(): void };
+  finale?: { title: string; status: string; open(): void };
 };
 const FILES: Record<Lang, string> = {
   javascript: "practice.js",
@@ -245,6 +246,16 @@ export function openTablet(host: TabletHost): () => void {
       button("Visit community beacon", host.discovery.open),
     );
     missionsPane.append(discovery);
+  }
+  if (host.finale) {
+    const card = el("article", "studio-mission finale-log");
+    card.append(
+      el("span", "eyebrow", "DATA HUB RESTORATION"),
+      el("h4", "", host.finale.title),
+      el("p", "", host.finale.status),
+      button("Open hub diagnostics", host.finale.open),
+    );
+    missionsPane.append(card);
   }
   for (const [i, mission] of host.missions.entries()) {
     const card = el("article", "studio-mission");

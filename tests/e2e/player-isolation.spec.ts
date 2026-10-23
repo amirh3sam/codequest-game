@@ -35,7 +35,7 @@ test("two players opening the same link retain separate characters, missions and
       await page.keyboard.press("t");
       await page.getByLabel("Practice code", { exact: true }).fill(draft);
       await page.reload();
-      await page.getByRole("button", { name: "Continue adventure", exact: true }).click();
+      await page.locator(".title-adventure-row").first().click();
       await page.keyboard.press("t");
       await expect(page.getByLabel("Practice code", { exact: true })).toHaveValue(draft);
     }

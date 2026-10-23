@@ -4,9 +4,11 @@
 
 A 2D adventure game that teaches programming in a modern tech city. Pick **Java, JavaScript, TypeScript or Python**, choose a hoodie developer, and help Kai repair a delivery drone. Predict a battery value, experiment with real code, then submit a repair to open a city lane. Explore two districts, solve coding terminals and challenge the Firewall and Router. Your code runs in the browser, with no account.
 
-> Status: **Two distinct districts are playable in all four languages.** Walk with WASD/arrows and press E to interact. Complete eight missions and the Firewall in Variable District to unlock Logic Junction's elevated skyrail plaza, with its own scenery, terminal route, solid control hub and Router. Travel between unlocked districts through Menu → World map. Areas 3–7 are coming next. See [docs/ROADMAP.md](docs/ROADMAP.md).
+> Status: **Two distinct districts are playable in all four languages.** Walk with WASD/arrows or the mobile touch controls and press E to interact. Complete eight missions, restore the hub's power and operator signals, then solve the Firewall to unlock Logic Junction's elevated skyrail plaza. Areas 3–7 are coming next. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
-Keep **multiple saved adventures**, including several in the same language. Use **Menu → Switch adventure** or **Your adventures** on the title screen to resume a hero. Starting another adventure preserves the others; progress, event choices and tablet drafts stay separate. Existing language saves appear in the library automatically.
+Keep **multiple saved adventures**, including several in the same language. The title screen lists every save under its language; use **Menu → Switch adventure** to manage them. Progress, event choices, hub repairs and tablet drafts stay separate. Existing language saves appear automatically.
+
+Progress saves in this browser profile and survives refreshes. Use **Menu → Save backup file** to download a portable JSON backup, and **Load backup file** to restore it as another adventure. Keep that file somewhere safe to move progress between browsers or devices.
 
 ![Saved adventures with separate heroes and languages](docs/screenshots/adventure-library.png)
 

@@ -30,6 +30,7 @@ if (import.meta.env.MODE === "e2e") {
     game,
     createRunner: (lang: Lang) => new WorkerHost(lang),
     createGame,
+    position: () => (game.scene.getScene("boot") as BootScene).getPosition(),
     loadGame,
     saveGame,
   };

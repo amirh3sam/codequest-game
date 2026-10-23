@@ -75,7 +75,7 @@ test("effects unlock on interaction, follow walking, stop when muted and remembe
   expect((await probe()).starts.length).toBe(mutedCount);
   await page.reload();
   await expect(page.getByRole("button", { name: "Enable sound effects", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Continue adventure", exact: true }).click();
+  await page.locator(".title-adventure-row").first().click();
   expect((await probe()).contexts).toBe(0);
   await page.getByRole("button", { name: "Enable sound effects", exact: true }).click();
   await page.getByRole("button", { name: "Tasks", exact: true }).click();
@@ -91,7 +91,7 @@ test("effects volume is adjustable and survives a reload independently of mute",
   await page.getByRole("slider", { name: "Effects volume", exact: true }).fill("25");
   await expect(page.locator(".sound-settings output")).toHaveText("25%");
   await page.reload();
-  await page.getByRole("button", { name: "Continue adventure", exact: true }).click();
+  await page.locator(".title-adventure-row").first().click();
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   await expect(page.getByRole("slider", { name: "Effects volume", exact: true })).toHaveValue("25");
   await expect(

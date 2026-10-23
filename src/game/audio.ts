@@ -100,10 +100,11 @@ class GameAudio {
     switch (cue) {
       case "step": {
         this.foot = 1 - this.foot;
-        const variation = 0.92 + Math.random() * 0.16;
-        this.noise(0.11, 0.34, 850 * variation, 0, "lowpass");
-        this.noise(0.07, 0.1, 2200, 0.028, "bandpass");
-        this.tone((this.foot ? 82 : 95) * variation, 0.07, 0.16, 0, 38);
+        const variation = (0.88 + Math.random() * 0.2) * (this.foot ? 1 : 0.8);
+        this.noise(0.105, 0.2 * variation, 680 + Math.random() * 260, 0, "lowpass");
+        this.noise(0.045, 0.055 * variation, 1700 + Math.random() * 500, 0.018, "bandpass");
+        this.noise(0.06, 0.035 * variation, 510, 0.042, "lowpass");
+        this.tone((67 + Math.random() * 13) * variation, 0.06, 0.035, 0.008, 40);
         break;
       }
       case "tap":
