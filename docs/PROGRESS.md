@@ -5,7 +5,7 @@
 - **First district guide:** the delivery courier now appears as the opposite hero: selecting the boy shows Ava, and selecting the girl shows Kai. The map character, nameplate, battery mission portrait, introduction and task prompt use the same identity.
 - **Coverage:** added a Chromium regression flow that opens the first mission for both hero choices and checks each guide's avatar and dialogue.
 - **Checks:** 231 unit tests, the focused two-hero browser flow, lint, TypeScript and production build passed.
-- **Release:** pending public push and production deployment.
+- **Release:** source commit `1be3a44` is public on `main`. Deployment `dpl_5WBaUWRx8GZK8TiudswAzH8mrHYg` is READY at https://codequest-game-inky.vercel.app/; the deployment-protected production alias returned the CodeQuest HTML through `vercel curl`.
 
 ## 2026-10-23 (Packet Dash, task consoles and audible footsteps)
 
