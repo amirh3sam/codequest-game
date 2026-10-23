@@ -477,10 +477,11 @@ export function openTablet(host: TabletHost): () => void {
     try {
       project.files[activePath] = code.value;
       const extension = { javascript: ".js", typescript: ".ts", python: ".py", java: ".java" }[host.lang];
+      const runPath = host.lang === "java" ? activePath : entryPath;
       const projectSources = Object.fromEntries(
-        Object.entries(project.files).filter(([path]) => path.endsWith(extension) && path !== entryPath),
+        Object.entries(project.files).filter(([path]) => path.endsWith(extension) && path !== runPath),
       );
-      const result = await host.run(project.files[entryPath] ?? code.value, projectSources, entryPath);
+      const result = await host.run(project.files[runPath] ?? code.value, projectSources, runPath);
       if (!panel.isConnected) return;
       const error = executionError(result);
       output.textContent = [result.stdout || "(No output)", result.stderr, error?.message].filter(Boolean).join("\n");

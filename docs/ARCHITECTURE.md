@@ -255,8 +255,9 @@ items need only a name; files and folders can be renamed or deleted, and open
 files appear as tabs above the Monaco editor with individual close controls.
 Closing a tab preserves its file in the project tree; at least one file remains
 open, and the active tab moves to a neighbor when closed. Folder rows separate selecting a
-creation destination from expanding or collapsing its contents. The selected Java entry file plus
-every other `.java` file goes to the Java worker. New Java files get a
+creation destination from expanding or collapsing its contents. Java Run compiles
+all project `.java` files and prefers the active file when it contains `main`,
+falling back to a detected project entry otherwise. New Java files get a
 `public class` scaffold matching the filename, `import java.util.*;`, and a
 package derived from their folder under `src/`. JavaScript and TypeScript local named/default imports and Python
 `from module import Name` statements are bundled from project files before

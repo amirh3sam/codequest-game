@@ -157,6 +157,21 @@ test("Java editor expands common typing shortcuts into snippets", async ({ page 
   );
 });
 
+test("Java Run uses the active file's main method instead of the project starter", async ({ page }) => {
+  await start(page, "java");
+  await page.keyboard.press("t");
+  await page.getByRole("button", { name: "+ File", exact: true }).click();
+  await page.getByLabel("New file name").fill("Test1.java");
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  const editor = page.getByLabel("Code editor: src/Test1.java");
+  await expect(editor).toHaveValue(/public class Test1/);
+  await editor.fill(
+    'import java.util.*;\n\npublic class Test1 {\n    public static void main(String[] args) {\n        System.out.println("hello");\n    }\n}',
+  );
+  await page.getByRole("button", { name: "Run practice code", exact: true }).click();
+  await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("hello\n", { timeout: 60_000 });
+});
+
 for (const lang of ["javascript", "typescript", "python"] as const) {
   test(`${lang}: local class imports run from files in the project tree`, async ({ page }) => {
     test.setTimeout(150_000);

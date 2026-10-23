@@ -1,5 +1,10 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (run the active Java class)
+- **Bug fix:** Java Run used the project starter as its entry source even when another Java file was active. It now compiles that active file under its filename and runs its `main` method when present; other project classes remain available. If the active file has no `main`, it falls back to a detected project entry.
+- **Checks:** browser regression test created `src/Test1.java`, ran its `main`, and confirmed output is exactly lowercase `hello`. The packaged Java class flow also passed. All 242 unit tests, lint, TypeScript and production build passed; dependency audit reports zero vulnerabilities.
+- **Release:** pending public commit and Vercel deployment.
+
 ## 2026-10-23 (Java editor typing shortcuts)
 - Monaco now offers Java snippet completions for `main`/`psvm`, `sout`/`sysout`/`syso`, `serr`, `soutv`, `print`, `fori`, `foreach`/`iter`, `if`/`ifelse`, `while`, `dowhile`, `switch`, `trycatch`, `class`, `interface`, `enum`, and `ctor`. Tab stops make the generated code quick to customize; the editor shows a shortcut reference.
 - **Checks:** browser typing test confirmed `sout` expands to `System.out.println` and `main` expands to the full entry method. All 242 unit tests, lint, TypeScript and production build passed; dependency audit reports zero vulnerabilities.

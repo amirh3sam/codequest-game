@@ -51,21 +51,30 @@ function init() {
   return ready;
 }
 
-async function run({ id, code, files }: RunRequest): Promise<RunResult> {
+async function run({ id, code, files, entryPath }: RunRequest): Promise<RunResult> {
   const { compiler, load } = await init();
   diagnostics = [];
   const t0 = performance.now();
   compiler.clearSourceFiles();
   compiler.clearOutputFiles();
-  compiler.addSourceFile("Main.java", code);
+  const sourceName = entryPath?.split("/").at(-1) ?? "Main.java";
+  compiler.addSourceFile(sourceName, code);
   for (const [path, source] of Object.entries(files ?? {})) {
-    if (/^[\w./-]+\.java$/.test(path) && !path.split("/").some((part) => part === "..") && path !== "Main.java") {
+    if (
+      /^[\w./-]+\.java$/.test(path) &&
+      !path.split("/").some((part) => part === "..") &&
+      path !== entryPath &&
+      path !== sourceName
+    ) {
       compiler.addSourceFile(path.split("/").at(-1) ?? path, source);
     }
   }
 
   const compiled = compiler.compile();
-  const mainClass = compiled ? compiler.detectMainClasses()[0] : undefined;
+  const detectedMainClasses = compiled ? compiler.detectMainClasses() : [];
+  const packageName = /^\s*package\s+([\w$.]+)\s*;/m.exec(code)?.[1];
+  const expectedMain = `${packageName ? `${packageName}.` : ""}${sourceName.replace(/\.java$/i, "")}`;
+  const mainClass = detectedMainClasses.find((candidate) => candidate === expectedMain) ?? detectedMainClasses[0];
   const built = mainClass !== undefined && compiler.generateWebAssembly({ outputName: "app", mainClass });
   const compileMs = performance.now() - t0;
   if (!built) {
