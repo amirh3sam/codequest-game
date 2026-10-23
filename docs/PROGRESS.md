@@ -8,7 +8,9 @@
 - **Checks:** 219 unit tests and 33 focused Chromium checks passed, including all four beacon languages, safe previews, stale-result cancellation, save reloads, event changes, collisions, the full first-district journey, the courier mission and the approved 2D tablet. Audio checks verified gesture unlocking, walking effects, immediate mute, preference persistence and unsupported-audio fallback. Lint, types and production build passed; production test hooks are absent.
 - **Visual review:** inspected the running lesson and restored courtyard at 1440 × 900; the capture script also checked the panel at 390 pixels wide. Added actual game screenshots and `scripts/capture-beacon.mjs`. No new dependencies or downloaded audio.
 - **Next:** a staged district finale and beginner playtesting. Comprehension and enjoyment have not yet been measured with beginners.
-- **Release:** pending public deployment verification.
+- **Release:** source commit `a5fc54a` is public and deployed to the separate CodeQuest project as `dpl_8B5bsCmpRZiF42EswHHVTHwVJXJF` (READY), aliased at https://codequest-game-inky.vercel.app/.
+- **Public verification:** two fresh unauthenticated browser profiles received HTTP 200, completed both prerequisite missions with real code and announced different events (Nova/garden and Ari/arcade). Each retained its character, choice, two gems and three hearts after reload. Audio played after interaction, stopped when muted and retained the mute setting after reload. No page errors or production test hooks.
+- **CI:** GitHub run `39892652545` passed lint, types, 219 unit tests and all 100 Chromium cases for source commit `a5fc54a`.
 
 ## 2026-10-22 (illustrated 2D wrist animation)
 
