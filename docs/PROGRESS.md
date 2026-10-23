@@ -8,7 +8,7 @@
 - **Adventure story:** the Progress panel now tracks the network outage from the broken courier route to the first restored relay, reflects the garden or game-night choice, and explains why Logic Junction is next. Courier naming stays consistent with the selected hero throughout the mission and tablet.
 - **Practice variety:** the tablet Examples tab now has a free typo-repair activity and a predict-before-run battery exercise. Both are ungraded, preserve mission rewards and do not cost hearts.
 - **Checks:** Chromium flows cover all four distinct language colors, guide movement and mission stages, guide dismissal, progress totals/meters, story opening and both practice activities. All 233 unit tests, lint, TypeScript and production build passed.
-- **Release:** pending public push and production deployment.
+- **Release:** source commit `3d03954` is public on `main`. Deployment `dpl_HCSqEUhXoe52kmXJt2hUATR5W5qM` is READY at https://codequest-game-inky.vercel.app/; the production alias serves the latest JS and CSS assets.
 
 ## 2026-10-23 (player-specific battery courier)
 
