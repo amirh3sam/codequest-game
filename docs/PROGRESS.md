@@ -1,5 +1,11 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (rename and delete project files)
+- **Explorer actions:** each file and folder now has Rename and Delete controls. Folder operations include nested files; deleting asks for confirmation, the last file is protected, and the run entry and open editor tabs follow renames. The controls stay visible on touch screens.
+- **Local folders:** rename copies files and subfolders to the new path before removing the old path. Deletes remove the selected item from both the browser project and connected local folder.
+- **Checks:** 241 unit tests passed; the Java tablet browser flow passed through file rename, folder rename, file delete and folder delete. Lint, TypeScript, production build and dependency audit passed.
+- **Release:** pending public commit and Vercel deployment.
+
 ## 2026-10-23 (browser IDE and cross-language project files)
 - **Closer to VS Code:** the tablet now lazy-loads Monaco, the browser editor from VS Code. It adds language highlighting, line numbers, indentation, completion, multi-file editor tabs, the clickable folder tree and the run output panel beneath the editor. The Explorer selects a target folder; creating an item asks only for its name and adds the selected language's extension when needed.
 - **Projects run together:** Java compiles the entry class with all sibling `.java` files. JavaScript/TypeScript local imports and Python `from module import Name` imports are resolved from workspace files. Each editor model is scoped to the player's adventure. Opening a local computer folder can import and save edits back to disk.

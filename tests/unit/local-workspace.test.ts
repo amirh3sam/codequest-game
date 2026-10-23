@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { combineProjectSources } from "../../src/runners/project-source";
-import { createWorkspace, readWorkspace, writeWorkspace } from "../../src/ui/local-workspace";
+import {
+  createWorkspace,
+  deleteWorkspaceEntry,
+  readWorkspace,
+  renameWorkspaceEntry,
+  writeWorkspace,
+} from "../../src/ui/local-workspace";
 
 describe("per-adventure project workspace", () => {
   beforeEach(() => {
@@ -55,5 +61,20 @@ describe("per-adventure project workspace", () => {
     expect(python).not.toContain("from player import Player");
     const external = combineProjectSources('import { Player } from "./Player.js";', {}, "javascript");
     expect(external).toContain('import { Player } from "./Player.js";');
+  });
+
+  it("renames and deletes project entries with nested contents and keeps the run entry in sync", () => {
+    const workspace = createWorkspace("src/Main.java", "class Main {}");
+    workspace.folders.push("src/models");
+    workspace.files["src/models/Badge.java"] = "class Badge {}";
+    expect(renameWorkspaceEntry(workspace, "src/models", "entities", "folder")).toBe("src/entities");
+    expect(workspace.files["src/entities/Badge.java"]).toBe("class Badge {}");
+    expect(workspace.folders).toContain("src/entities");
+    expect(renameWorkspaceEntry(workspace, "src/Main.java", "App.java", "file")).toBe("src/App.java");
+    expect(workspace.entryPath).toBe("src/App.java");
+    expect(renameWorkspaceEntry(workspace, "src/App.java", "entities", "file")).toBeNull();
+    expect(deleteWorkspaceEntry(workspace, "src/entities", "folder")).toBe(true);
+    expect(workspace.files["src/entities/Badge.java"]).toBeUndefined();
+    expect(workspace.folders).not.toContain("src/entities");
   });
 });

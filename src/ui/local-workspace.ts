@@ -1,10 +1,10 @@
 export type WorkspaceFiles = Record<string, string>;
-export type WorkspaceData = { version: 1; files: WorkspaceFiles; folders: string[] };
+export type WorkspaceData = { version: 1; entryPath?: string; files: WorkspaceFiles; folders: string[] };
 
 export interface LocalFileHandle {
   readonly kind: "file";
   getFile(): Promise<File>;
-  createWritable(): Promise<{ write(data: string): Promise<void>; close(): Promise<void> }>;
+  createWritable(): Promise<{ write(data: string | Blob): Promise<void>; close(): Promise<void> }>;
 }
 
 export interface LocalDirectoryHandle {
@@ -13,6 +13,7 @@ export interface LocalDirectoryHandle {
   entries(): AsyncIterableIterator<[string, LocalFileHandle | LocalDirectoryHandle]>;
   getDirectoryHandle(name: string, options?: { create?: boolean }): Promise<LocalDirectoryHandle>;
   getFileHandle(name: string, options?: { create?: boolean }): Promise<LocalFileHandle>;
+  removeEntry(name: string, options?: { recursive?: boolean }): Promise<void>;
 }
 
 type FolderPickerWindow = Window & {
@@ -40,6 +41,7 @@ export function createWorkspace(mainFile: string, starter: string): WorkspaceDat
   }
   return {
     version: 1,
+    entryPath: mainFile,
     folders: ["src", "notes"],
     files,
   };
@@ -59,6 +61,12 @@ export function readWorkspace(key: string, fallback: WorkspaceData): WorkspaceDa
     const workspace = value as WorkspaceData;
     return {
       version: 1,
+      entryPath:
+        typeof workspace.entryPath === "string" &&
+        isSafePath(workspace.entryPath) &&
+        workspace.files[workspace.entryPath] !== undefined
+          ? workspace.entryPath
+          : Object.keys(workspace.files)[0],
       folders: [...new Set(workspace.folders.filter(isSafePath))],
       files: Object.fromEntries(Object.entries(workspace.files).filter(([path]) => isSafePath(path))),
     };
@@ -87,6 +95,51 @@ export async function chooseLocalFolder(): Promise<{ handle: LocalDirectoryHandl
   return { handle, workspace: { version: 1, files, folders } };
 }
 
+export function renameWorkspaceEntry(
+  workspace: WorkspaceData,
+  path: string,
+  name: string,
+  kind: "file" | "folder",
+): string | null {
+  if (!/^[\w.-]+$/.test(name) || name === "." || name === "..") return null;
+  const isFolder = (candidate: string) => workspace.folders.includes(candidate);
+  if (kind === "file" ? workspace.files[path] === undefined : !isFolder(path)) return null;
+  const nextPath = [path.split("/").slice(0, -1).join("/"), name].filter(Boolean).join("/");
+  if (nextPath === path || !isSafePath(nextPath)) return nextPath === path ? path : null;
+  const affected = (candidate: string) =>
+    kind === "folder" ? candidate === path || candidate.startsWith(`${path}/`) : candidate === path;
+  if (
+    Object.keys(workspace.files).some((candidate) => !affected(candidate) && candidate === nextPath) ||
+    workspace.folders.some((candidate) => !affected(candidate) && candidate === nextPath)
+  )
+    return null;
+  const renamed = (candidate: string) => `${nextPath}${candidate.slice(path.length)}`;
+  if (kind === "file") {
+    workspace.files[renamed(path)] = workspace.files[path] ?? "";
+    delete workspace.files[path];
+  } else {
+    workspace.folders = workspace.folders.map((candidate) => (affected(candidate) ? renamed(candidate) : candidate));
+    for (const [candidate, contents] of Object.entries(workspace.files)) {
+      if (affected(candidate)) {
+        workspace.files[renamed(candidate)] = contents;
+        delete workspace.files[candidate];
+      }
+    }
+  }
+  if (workspace.entryPath && affected(workspace.entryPath)) workspace.entryPath = renamed(workspace.entryPath);
+  return nextPath;
+}
+
+export function deleteWorkspaceEntry(workspace: WorkspaceData, path: string, kind: "file" | "folder"): boolean {
+  const affected = (candidate: string) =>
+    kind === "folder" ? candidate === path || candidate.startsWith(`${path}/`) : candidate === path;
+  if (kind === "file" ? workspace.files[path] === undefined : !workspace.folders.includes(path)) return false;
+  for (const candidate of Object.keys(workspace.files)) if (affected(candidate)) delete workspace.files[candidate];
+  workspace.folders = workspace.folders.filter((candidate) => !affected(candidate));
+  if (workspace.entryPath && affected(workspace.entryPath)) workspace.entryPath = undefined;
+  return true;
+}
+
 export async function createLocalFolder(handle: LocalDirectoryHandle, path: string): Promise<void> {
   await directoryForPath(handle, path.split("/").filter(Boolean), true);
 }
@@ -100,6 +153,58 @@ export async function writeLocalFile(handle: LocalDirectoryHandle, path: string,
     writable = await file.createWritable();
   await writable.write(contents);
   await writable.close();
+}
+
+export async function removeLocalEntry(
+  handle: LocalDirectoryHandle,
+  path: string,
+  kind: "file" | "folder",
+): Promise<void> {
+  const segments = path.split("/").filter(Boolean),
+    name = segments.pop();
+  if (!name || !isSafePath(path)) throw new Error("That local path is not allowed.");
+  const parent = await directoryForPath(handle, segments, false);
+  await parent.removeEntry(name, kind === "folder" ? { recursive: true } : undefined);
+}
+
+export async function renameLocalEntry(
+  handle: LocalDirectoryHandle,
+  path: string,
+  nextPath: string,
+  kind: "file" | "folder",
+): Promise<void> {
+  const sourceParts = path.split("/").filter(Boolean),
+    sourceName = sourceParts.pop(),
+    targetParts = nextPath.split("/").filter(Boolean),
+    targetName = targetParts.pop();
+  if (!sourceName || !targetName || !isSafePath(path) || !isSafePath(nextPath))
+    throw new Error("That local path is not allowed.");
+  const sourceParent = await directoryForPath(handle, sourceParts, false);
+  const targetParent = await directoryForPath(handle, targetParts, true);
+  if (kind === "file") {
+    const source = await sourceParent.getFileHandle(sourceName),
+      target = await targetParent.getFileHandle(targetName, { create: true }),
+      writable = await target.createWritable();
+    await writable.write(await source.getFile());
+    await writable.close();
+  } else {
+    const source = await sourceParent.getDirectoryHandle(sourceName),
+      target = await targetParent.getDirectoryHandle(targetName, { create: true });
+    await copyDirectory(source, target);
+  }
+  await sourceParent.removeEntry(sourceName, kind === "folder" ? { recursive: true } : undefined);
+}
+
+async function copyDirectory(source: LocalDirectoryHandle, target: LocalDirectoryHandle): Promise<void> {
+  for await (const [name, entry] of source.entries()) {
+    if (entry.kind === "directory") {
+      await copyDirectory(entry, await target.getDirectoryHandle(name, { create: true }));
+    } else {
+      const writable = await target.getFileHandle(name, { create: true }).then((file) => file.createWritable());
+      await writable.write(await entry.getFile());
+      await writable.close();
+    }
+  }
 }
 
 function isWorkspaceFiles(value: unknown): value is WorkspaceFiles {

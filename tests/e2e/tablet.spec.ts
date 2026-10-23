@@ -60,11 +60,11 @@ test("Java tablet builds and runs a project split across class files", async ({ 
   await page.keyboard.press("t");
   await expect(page.getByRole("dialog", { name: "Developer tablet", exact: true })).toBeVisible();
   await expect(page.locator(".field-guide")).toBeHidden();
-  await expect(page.getByRole("button", { name: /Player\.java/ })).toBeVisible();
+  await expect(page.locator(".studio-file[title='src/Player.java']")).toBeVisible();
   await page.getByRole("button", { name: "Run practice code", exact: true }).click();
   await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("Hello, Ada!\n", { timeout: 60_000 });
 
-  await page.getByRole("button", { name: /Player\.java/ }).click();
+  await page.locator(".studio-file[title='src/Player.java']").click();
   const editor = page.getByLabel("Code editor: src/Player.java");
   await expect(editor).toHaveValue(/greeting/);
   await editor.fill(
@@ -84,13 +84,27 @@ test("Java tablet builds and runs a project split across class files", async ({ 
   await page.getByRole("button", { name: "Create", exact: true }).click();
   await expect(page.getByLabel("Code editor: src/models/Badge.java")).toBeVisible();
   await expect(page.locator(".studio-open-file-tab", { hasText: "Badge.java" })).toBeVisible();
+  await page.getByRole("button", { name: "Rename src/models/Badge.java" }).click();
+  await page.getByRole("textbox", { name: "Rename src/models/Badge.java" }).fill("Crest.java");
+  await page.getByRole("button", { name: "Save name", exact: true }).click();
+  await expect(page.getByLabel("Code editor: src/models/Crest.java")).toBeVisible();
+  await page.getByRole("button", { name: "Rename src/models", exact: true }).click();
+  await page.getByRole("textbox", { name: "Rename src/models" }).fill("entities");
+  await page.getByRole("button", { name: "Save name", exact: true }).click();
+  await expect(page.getByLabel("Code editor: src/entities/Crest.java")).toBeVisible();
   await page.reload();
   await page.locator(".title-adventure-row").first().click();
   await page.getByRole("button", { name: "Tablet", exact: true }).click();
-  await expect(page.getByRole("button", { name: /Badge\.java/ })).toBeVisible();
+  await expect(page.locator(".studio-file[title='src/entities/Crest.java']")).toBeVisible();
   await expect(page.locator(".tablet-studio")).toHaveAttribute("data-language", "java");
-  await page.getByRole("button", { name: /Player\.java/ }).click();
+  await page.locator(".studio-file[title='src/Player.java']").click();
   await expect(page.getByLabel("Code editor: src/Player.java")).toHaveValue(/Hello from Player!/);
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Delete src/entities/Crest.java", exact: true }).click();
+  await expect(page.locator(".studio-file[title='src/entities/Crest.java']")).toHaveCount(0);
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Delete src/entities", exact: true }).click();
+  await expect(page.locator(".studio-tree-folder", { hasText: "entities" })).toHaveCount(0);
 });
 
 for (const lang of ["javascript", "typescript", "python"] as const) {

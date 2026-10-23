@@ -1923,6 +1923,42 @@ small {
   align-content: start;
   overflow: auto;
 }
+.studio-entry-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.studio-entry-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 2px;
+  opacity: 0;
+}
+.studio-entry-row:hover .studio-entry-actions,
+.studio-entry-row:focus-within .studio-entry-actions {
+  opacity: 1;
+}
+@media (hover: none) {
+  .studio-entry-actions {
+    opacity: 1;
+  }
+}
+.studio-entry-action {
+  min-height: 24px;
+  padding: 2px 4px;
+  border: 0;
+  color: #9bb6c8;
+  background: transparent;
+  font: 9px monospace;
+}
+.studio-entry-action:hover {
+  color: #e5f4fa;
+  background: #ffffff12;
+}
+.studio-entry-action.danger:hover {
+  color: #ff9b9b;
+  background: #a8323228;
+}
 .studio-file {
   width: 100%;
   overflow: hidden;
@@ -1946,6 +1982,11 @@ small {
   font: 11px monospace;
   cursor: pointer;
   list-style: none;
+}
+.studio-entry-row > .studio-file,
+.studio-entry-row > .studio-folder {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .studio-tree-folder > summary::-webkit-details-marker {
   display: none;

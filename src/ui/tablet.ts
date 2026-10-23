@@ -7,8 +7,12 @@ import {
   chooseLocalFolder,
   createLocalFolder,
   createWorkspace,
+  deleteWorkspaceEntry,
   type LocalDirectoryHandle,
   readWorkspace,
+  removeLocalEntry,
+  renameLocalEntry,
+  renameWorkspaceEntry,
   type WorkspaceData,
   writeLocalFile,
   writeWorkspace,
@@ -145,18 +149,112 @@ export function openTablet(host: TabletHost): () => void {
   const mainPath = host.lang === "java" ? "src/Main.java" : `src/${FILES[host.lang]}`;
   let project: WorkspaceData = readWorkspace(workspaceKey, createWorkspace(mainPath, initialCode));
   if (!project.files[mainPath]) project.files[mainPath] = initialCode;
-  let activePath = mainPath;
+  let entryPath = project.entryPath ?? mainPath;
+  if (!project.files[entryPath]) entryPath = mainPath;
+  project.entryPath = entryPath;
+  let activePath = entryPath;
   let selectedFolder = project.folders.includes("src") ? "src" : "";
   const expandedFolders = new Set(project.folders);
   let connectedFolder: LocalDirectoryHandle | null = null;
   let saveTimer = 0;
   const editorHeader = el("div", "studio-editor-header");
-  const openFiles = [mainPath];
+  const openFiles = [entryPath];
   let monacoEditor: ProjectEditor | null = null;
   const focusCode = () => (monacoEditor ? monacoEditor.focus() : code.focus());
   const fileActions = el("div", "studio-file-actions");
   const folderTarget = el("span", "studio-folder-target");
   const parentPath = (path: string) => path.split("/").slice(0, -1).join("/");
+  const entryActions = (path: string, kind: "file" | "folder") => {
+    const actions = el("div", "studio-entry-actions");
+    const rename = button("Rename", () => promptRename(path, kind), "studio-entry-action");
+    rename.setAttribute("aria-label", `Rename ${path}`);
+    const remove = button("Delete", () => deleteEntry(path, kind), "studio-entry-action danger");
+    remove.setAttribute("aria-label", `Delete ${path}`);
+    actions.append(rename, remove);
+    return actions;
+  };
+  const promptRename = (path: string, kind: "file" | "folder") => {
+    const form = el("form", "studio-create-form");
+    const input = el("input", "studio-create-input");
+    input.value = path.split("/").at(-1) ?? path;
+    input.setAttribute("aria-label", `Rename ${path}`);
+    const submit = button("Save name", () => {}, "studio-small-action");
+    submit.type = "submit";
+    form.append(
+      input,
+      submit,
+      button("Cancel", () => form.remove(), "studio-small-action"),
+    );
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      project.files[activePath] = code.value;
+      const newPath = renameWorkspaceEntry(project, path, input.value.trim(), kind);
+      if (!newPath) {
+        status.textContent = "That name is invalid or already in use.";
+        return;
+      }
+      if (newPath === path) {
+        form.remove();
+        return;
+      }
+      const remap = (candidate: string) =>
+        kind === "folder" && candidate.startsWith(`${path}/`)
+          ? `${newPath}${candidate.slice(path.length)}`
+          : candidate === path
+            ? newPath
+            : candidate;
+      for (let index = 0; index < openFiles.length; index++) openFiles[index] = remap(openFiles[index] ?? "");
+      activePath = remap(activePath);
+      entryPath = project.entryPath ?? activePath;
+      project.entryPath = entryPath;
+      monacoEditor?.setModel(activePath, project.files[activePath] ?? code.value);
+      code.setAttribute("aria-label", `Code editor: ${activePath}`);
+      if (connectedFolder)
+        void renameLocalEntry(connectedFolder, path, newPath, kind).catch(() => {
+          if (panel.isConnected)
+            status.textContent = "Renamed in CodeQuest, but the connected folder could not be updated.";
+        });
+      form.remove();
+      renderEditorTabs();
+      renderTree();
+      persistProject();
+    });
+    fileTree.append(form);
+    input.focus();
+    input.select();
+  };
+  const deleteEntry = (path: string, kind: "file" | "folder") => {
+    const deleted = (candidate: string) =>
+      candidate === path || (kind === "folder" && candidate.startsWith(`${path}/`));
+    const survivors = Object.keys(project.files).filter((candidate) => !deleted(candidate));
+    if (!survivors.length) {
+      status.textContent = "Keep at least one project file.";
+      return;
+    }
+    if (!window.confirm(`Delete ${kind} “${path}” and its contents? This cannot be undone.`)) return;
+    project.files[activePath] = code.value;
+    deleteWorkspaceEntry(project, path, kind);
+    for (let index = openFiles.length - 1; index >= 0; index--) {
+      if (deleted(openFiles[index] ?? "")) openFiles.splice(index, 1);
+    }
+    if (deleted(activePath)) {
+      activePath = openFiles.at(-1) ?? survivors[0] ?? "";
+      if (!openFiles.includes(activePath)) openFiles.push(activePath);
+      code.value = project.files[activePath] ?? "";
+      monacoEditor?.setModel(activePath, code.value);
+      code.setAttribute("aria-label", `Code editor: ${activePath}`);
+    }
+    entryPath = project.entryPath ?? activePath;
+    project.entryPath = entryPath;
+    if (connectedFolder)
+      void removeLocalEntry(connectedFolder, path, kind).catch(() => {
+        if (panel.isConnected)
+          status.textContent = "Deleted in CodeQuest, but the connected folder could not be updated.";
+      });
+    renderEditorTabs();
+    renderTree();
+    persistProject();
+  };
   const renderEditorTabs = () => {
     editorHeader.replaceChildren(
       ...openFiles.map((path) => {
@@ -210,7 +308,9 @@ export function openTablet(host: TabletHost): () => void {
             else expandedFolders.add(path);
             renderTree();
           });
-          details.append(summary, ...children(path, depth + 1));
+          const row = el("div", "studio-entry-row");
+          row.append(summary, entryActions(path, "folder"));
+          details.append(row, ...children(path, depth + 1));
           return details;
         }),
         ...files.map((path) => {
@@ -222,7 +322,9 @@ export function openTablet(host: TabletHost): () => void {
           );
           item.style.setProperty("--tree-depth", String(depth));
           item.title = path;
-          return item;
+          const row = el("div", "studio-entry-row");
+          row.append(item, entryActions(path, "file"));
+          return row;
         }),
       ];
     };
@@ -324,9 +426,9 @@ export function openTablet(host: TabletHost): () => void {
       project.files[activePath] = code.value;
       const extension = { javascript: ".js", typescript: ".ts", python: ".py", java: ".java" }[host.lang];
       const projectSources = Object.fromEntries(
-        Object.entries(project.files).filter(([path]) => path.endsWith(extension) && path !== mainPath),
+        Object.entries(project.files).filter(([path]) => path.endsWith(extension) && path !== entryPath),
       );
-      const result = await host.run(project.files[mainPath] ?? code.value, projectSources, mainPath);
+      const result = await host.run(project.files[entryPath] ?? code.value, projectSources, entryPath);
       if (!panel.isConnected) return;
       const error = executionError(result);
       output.textContent = [result.stdout || "(No output)", result.stderr, error?.message].filter(Boolean).join("\n");
@@ -387,9 +489,11 @@ export function openTablet(host: TabletHost): () => void {
           openFiles.splice(0, openFiles.length, mainPath);
           if (!Object.keys(project.files).length) project = createWorkspace(mainPath, code.value);
           if (!project.files[mainPath]) project.files[mainPath] = HELLO[host.lang];
-          activePath = mainPath;
+          entryPath = project.files[project.entryPath ?? ""] !== undefined ? (project.entryPath ?? mainPath) : mainPath;
+          project.entryPath = entryPath;
+          activePath = entryPath;
           code.value = project.files[activePath] ?? "";
-          if (!openFiles.includes(activePath)) openFiles.push(activePath);
+          openFiles.splice(0, openFiles.length, activePath);
           monacoEditor?.setModel(activePath, code.value);
           renderEditorTabs();
           changed();
