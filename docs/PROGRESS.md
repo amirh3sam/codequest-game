@@ -3,7 +3,7 @@
 ## 2026-10-23 (resizable tablet Explorer)
 - Added a draggable divider between the Explorer and editor. It resizes the Explorer width on desktop and its height on narrow screens, supports arrow-key adjustments, has min/max bounds, and remembers both sizes locally.
 - **Checks:** the desktop/mobile drag browser test passed; lint, TypeScript, all 243 unit tests and production build passed.
-- **Release:** pending public push and Vercel deployment.
+- **Release:** commit `0ec0899` is public on `main`. Production deployment `dpl_C3Tze5b9LapZ5pyHLeXzPjD982UR` is READY at https://codequest-game-inky.vercel.app/; `vercel curl` confirmed the production alias serves the game.
 
 ## 2026-10-23 (project quests, debugging guide, badges and project sharing)
 - Added a two-step Badge Builder quest that practices class composition across separate files in JavaScript, TypeScript, Python and Java. Its workspace and milestone progress are saved per adventure, separately from the player's regular project.
