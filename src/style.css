@@ -854,6 +854,32 @@ small {
   gap: 10px;
   margin: 4px 0 16px;
 }
+.story-chapter {
+  margin: 2px 0 14px;
+  padding: 15px 17px;
+  border: 1px solid #e9c97966;
+  border-left: 3px solid #e9c979;
+  border-radius: 4px 11px 11px 4px;
+  background: linear-gradient(115deg, #382e246e, #18263a);
+}
+.story-chapter .eyebrow {
+  display: block;
+  color: #e9ca83;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+.story-chapter strong {
+  display: block;
+  margin-top: 6px;
+  color: #fff2d4;
+  font-size: 15px;
+}
+.story-chapter p {
+  margin: 7px 0 0;
+  color: #d3d9db;
+  font-size: 12px;
+  line-height: 1.55;
+}
 .skill-progress-summary > div {
   padding: 13px 15px;
   border: 1px solid #69d8ff33;
@@ -1790,6 +1816,9 @@ small {
   color: #afd3e5;
   font-size: 12px;
 }
+.studio-feedback.success {
+  color: #87e7b5;
+}
 .studio-status {
   display: flex;
   justify-content: space-between;
@@ -1836,6 +1865,36 @@ small {
 }
 .studio-example {
   padding: 4px 0 20px;
+}
+.studio-challenge {
+  max-width: 900px;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #5c89a855;
+  border-radius: 10px;
+  background: linear-gradient(140deg, #17324a99, #111c2c);
+}
+.studio-challenge .eyebrow {
+  color: #84d8e5;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+.studio-challenge > p {
+  color: #adc5d6;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.studio-challenge input {
+  max-width: 220px;
+  margin-right: 8px;
+  padding: 8px 10px;
+  border: 1px solid #6689a5;
+  border-radius: 6px;
+  background: #0b1826;
+  color: #edf7ff;
+}
+.studio-challenge > button {
+  margin: 6px 8px 0 0;
 }
 .studio-example h4 {
   color: #a6deef;

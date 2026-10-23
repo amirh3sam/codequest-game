@@ -6,6 +6,7 @@ import { button, el } from "./dom";
 
 type BeaconHost = {
   lang: Lang;
+  courierName: string;
   choice?: BeaconChoice;
   available: boolean;
   panel(title: string, subtitle: string, wide?: boolean): HTMLElement;
@@ -27,9 +28,9 @@ export function openCommunityBeacon(host: BeaconHost): void {
       el(
         "p",
         "lesson-body",
-        "Mina left a message: ‘The courtyard sign lost its connection. Help Kai repair the courier drone first, then come back. We have a neighborhood night to plan!’",
+        `Mina left a message: ‘The courtyard sign lost its connection. Help ${host.courierName} repair the courier drone first, then come back. We have a neighborhood night to plan!’`,
       ),
-      button("Help Kai first", host.courier, "button primary"),
+      button(`Help ${host.courierName} first`, host.courier, "button primary"),
     );
     return;
   }

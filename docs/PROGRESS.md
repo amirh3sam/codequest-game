@@ -5,8 +5,10 @@
 - **Language selection:** JavaScript, Python, TypeScript and Java now have distinct accent colors across their first-screen cards, selected state and focus styling.
 - **First-run guide:** each newly created adventure gets a dismissible three-step field guide. It explains movement on keyboard and mobile, meeting the selected adventure's courier, and safely running the first coding mission. The step is saved per adventure and resumes after reload.
 - **Skill progress:** the Progress panel now summarizes solved missions and restored playable districts, shows an accessible per-district mission meter and next task, and previews the five future skill tracks.
-- **Checks:** added a Chromium flow for all four distinct language colors, guide progression and dismissal, and progress totals/meters. The focused flow, 231 unit tests, lint and type checking passed.
-- **Release:** source commit `43a44e8` is public on `main`. Deployment `dpl_8xAbxqwadhR555QjUSjzb7xu67Ar` is READY at https://codequest-game-inky.vercel.app/; the production alias returned the new built assets through `vercel curl`.
+- **Adventure story:** the Progress panel now tracks the network outage from the broken courier route to the first restored relay, reflects the garden or game-night choice, and explains why Logic Junction is next. Courier naming stays consistent with the selected hero throughout the mission and tablet.
+- **Practice variety:** the tablet Examples tab now has a free typo-repair activity and a predict-before-run battery exercise. Both are ungraded, preserve mission rewards and do not cost hearts.
+- **Checks:** Chromium flows cover all four distinct language colors, guide movement and mission stages, guide dismissal, progress totals/meters, story opening and both practice activities. All 233 unit tests, lint, TypeScript and production build passed.
+- **Release:** pending public push and production deployment.
 
 ## 2026-10-23 (player-specific battery courier)
 

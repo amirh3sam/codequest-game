@@ -8,6 +8,7 @@ type TabletHost = {
   lang: Lang;
   name: string;
   kind: "boy" | "girl";
+  courierName: string;
   adventureId?: string;
   animate: boolean;
   focusCamera(): () => void;
@@ -33,6 +34,12 @@ const HELLO: Record<Lang, string> = {
   typescript: 'const message: string = "Hello, CodeQuest!";\nconsole.log(message);',
   python: 'message = "Hello, CodeQuest!"\nprint(message)',
   java: 'public class Main {\n    public static void main(String[] args) {\n        String message = "Hello, CodeQuest!";\n        System.out.println(message);\n    }\n}',
+};
+const DEBUG_GREETING: Record<Lang, string> = {
+  javascript: 'const message = "Ready";\nconsole.log(mesage);',
+  typescript: 'const message: string = "Ready";\nconsole.log(mesage);',
+  python: 'message = "Ready"\nprint(mesage)',
+  java: 'public class Main {\n    public static void main(String[] args) {\n        String message = "Ready";\n        System.out.println(mesage);\n    }\n}',
 };
 
 /** Practice stays ungraded; mission buttons enter the game's existing task flow. */
@@ -219,6 +226,51 @@ export function openTablet(host: TabletHost): () => void {
     );
     examplesPane.append(card);
   }
+  const debug = el("article", "studio-example studio-challenge");
+  debug.append(
+    el("span", "eyebrow", "DEBUG / NO PENALTY"),
+    el("h4", "", "Repair the greeting"),
+    el("p", "", "One variable name is misspelled. Load the challenge, fix it, then run your code to see the greeting."),
+    el("pre", "code-example", DEBUG_GREETING[host.lang]),
+    button("Load debugging challenge", () => {
+      code.value = DEBUG_GREETING[host.lang];
+      changed();
+      select(0);
+      code.focus();
+    }),
+  );
+  examplesPane.append(debug);
+  const prediction = el("article", "studio-example studio-challenge prediction-challenge"),
+    predicted = el("input"),
+    predictionFeedback = el("p", "studio-feedback");
+  predicted.type = "text";
+  predicted.inputMode = "numeric";
+  predicted.maxLength = 6;
+  predicted.placeholder = "Your predicted output";
+  predicted.setAttribute("aria-label", "Predict the battery program output");
+  const checkPrediction = button("Check prediction", () => {
+    predictionFeedback.textContent =
+      predicted.value.trim() === "7"
+        ? "Correct! 4 + 3 prints 7. Now run the example and compare."
+        : "Not yet. Trace the starting value and the amount added, or run the example to investigate.";
+    predictionFeedback.className = `studio-feedback${predicted.value.trim() === "7" ? " success" : ""}`;
+  });
+  prediction.append(
+    el("span", "eyebrow", "PREDICT / THEN RUN"),
+    el("h4", "", "Where does the battery land?"),
+    el("p", "", "The battery starts at 4 cells and receives 3 more. Predict the printed value before running it."),
+    el("pre", "code-example", batteryExample(host.lang, 4, 3)),
+    predicted,
+    checkPrediction,
+    predictionFeedback,
+    button("Load prediction example", () => {
+      code.value = batteryExample(host.lang, 4, 3);
+      changed();
+      select(0);
+      code.focus();
+    }),
+  );
+  examplesPane.append(prediction);
   consolePane.append(
     el("span", "eyebrow", "BROWSER CONSOLE"),
     consoleOutput,
@@ -236,7 +288,7 @@ export function openTablet(host: TabletHost): () => void {
       `${host.hearts} hearts · ${host.gems} gems · ${host.missions.filter((mission) => mission.status === "complete").length}/8 complete`,
     ),
   );
-  if (host.story) missionsPane.append(button("Courier story · Help Kai", host.story, "button primary"));
+  if (host.story) missionsPane.append(button(`Courier story - Help ${host.courierName}`, host.story, "button primary"));
   if (host.discovery) {
     const discovery = el("article", "studio-mission beacon-log");
     discovery.append(

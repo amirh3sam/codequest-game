@@ -207,3 +207,24 @@ test("missions and guides are usable inside the device and tasks open their own 
   await expect(page.locator(".studio-missions")).toContainText("1/8 complete");
   await expect(page.locator(".studio-missions")).toContainText("1 gems");
 });
+
+test("practice examples include a free debugging task and predict-before-run activity", async ({ page }) => {
+  await start(page);
+  await page.keyboard.press("t");
+  await page.evaluate(() => (window as unknown as Harness).__codequest.game.loop.sleep());
+  const before = await progress(page, "javascript");
+  await page.getByRole("tab", { name: "Examples", exact: true }).click();
+  await page.getByRole("button", { name: "Load debugging challenge", exact: true }).click();
+  const code = page.getByLabel("Practice code", { exact: true });
+  await expect(code).toHaveValue(/console\.log\(mesage\)/);
+  await page.getByRole("button", { name: "Run practice code", exact: true }).click();
+  await expect(page.getByLabel("Practice output", { exact: true })).toContainText("mesage", { timeout: 30_000 });
+  await code.fill('const message = "Ready";\nconsole.log(message);');
+  await page.getByRole("button", { name: "Run practice code", exact: true }).click();
+  await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("Ready\n", { timeout: 30_000 });
+  await page.getByRole("tab", { name: "Examples", exact: true }).click();
+  await page.getByLabel("Predict the battery program output", { exact: true }).fill("7");
+  await page.getByRole("button", { name: "Check prediction", exact: true }).click();
+  await expect(page.locator(".prediction-challenge .studio-feedback")).toContainText("Correct!");
+  expect(await progress(page, "javascript")).toEqual(before);
+});

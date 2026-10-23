@@ -1,3 +1,4 @@
+import { adventureStoryBeat } from "../content/adventure-story";
 import { BEACON_EVENTS } from "../content/community-beacon";
 import { dronePilot } from "../content/drone-pilot";
 import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
@@ -820,6 +821,7 @@ export class GameApp {
     }
     openDroneLesson({
       lang: this.lang,
+      courierName: this.courierName(),
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
       run: (code) => this.practice(code),
       preview: (value) => this.scene.previewDrone(value),
@@ -844,6 +846,7 @@ export class GameApp {
     this.capturePosition();
     openCommunityBeacon({
       lang: this.lang,
+      courierName: this.courierName(),
       choice: this.state.discoveries?.beacon,
       available: canLightBeacon(this.state),
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
@@ -878,6 +881,7 @@ export class GameApp {
       lang: this.lang,
       name: this.state.hero.name,
       kind: this.state.hero.kind,
+      courierName: this.courierName(),
       animate,
       focusCamera: () => this.scene.focusTablet(),
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
@@ -895,7 +899,7 @@ export class GameApp {
                 ? `Signal Maker · ${BEACON_EVENTS[this.state.discoveries.beacon].title} is on air`
                 : canLightBeacon(this.state)
                   ? "A message from Mina is waiting beyond the courier lane."
-                  : "Help Kai repair the drone to reconnect the courtyard.",
+                  : `Help ${this.courierName()} repair the drone to reconnect the courtyard.`,
               open: () => {
                 this.tabletNavigation = true;
                 this.communityBeacon();
@@ -977,6 +981,14 @@ export class GameApp {
       "See the skills you are building, what is complete, and what is coming next.",
       true,
     );
+    const storyBeat = adventureStoryBeat(state),
+      story = el("article", "story-chapter");
+    story.append(
+      el("span", "eyebrow", storyBeat.chapter),
+      el("strong", "", storyBeat.title),
+      el("p", "", storyBeat.message),
+    );
+    panel.append(story);
     const summary = el("div", "skill-progress-summary");
     const missionSummary = el("div"),
       districtSummary = el("div");
@@ -1025,7 +1037,13 @@ export class GameApp {
     }
     panel.append(tracks);
     if (this.area.id === "variables")
-      panel.append(button("Courier mission · Launch the drone", () => this.mission(), "button mission-link"));
+      panel.append(
+        button(
+          `Courier mission - Help ${this.courierName()} launch the drone`,
+          () => this.mission(),
+          "button mission-link",
+        ),
+      );
     if (this.area.id === "variables")
       panel.append(
         button("Optional discovery · Community beacon", () => this.communityBeacon(), "button mission-link"),

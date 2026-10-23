@@ -43,6 +43,7 @@ export function batteryCard(
 
 export type DroneLessonHost = {
   lang: Lang;
+  courierName: string;
   panel(title: string, subtitle: string, wide?: boolean): HTMLElement;
   run(code: string): Promise<RunResult>;
   preview(value: number): void;
@@ -202,7 +203,7 @@ export function openDroneLesson(host: DroneLessonHost): void {
   };
   if (host.delivered) {
     const panel = host.panel(
-      "Kai · Delivery restored",
+      `${host.courierName} - Delivery restored`,
       host.canLaunch ? "Your repair is accepted. Watch it change the city." : "The courier lane is open",
       true,
     );

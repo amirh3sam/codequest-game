@@ -68,6 +68,7 @@ test("language colors are distinct and the first-run guide follows play", async 
   await expect(page.locator(".field-guide")).toHaveCount(0);
   await page.getByRole("button", { name: "Progress", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Your coding progress" })).toBeVisible();
+  await expect(page.getByText("The city's network has gone dark.")).toBeVisible();
   await expect(page.getByText("0 / 16 missions")).toBeVisible();
   await expect(page.getByRole("progressbar", { name: "Variable District missions completed" })).toHaveAttribute(
     "aria-valuenow",
