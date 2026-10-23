@@ -15,6 +15,7 @@ import {
 
 export type Hero = Readonly<{ kind: "boy" | "girl"; name: string }>;
 export type Position = Readonly<{ x: number; y: number }>;
+export type GameExtras = Readonly<{ packetDashBest: number }>;
 
 export type AreaState = Readonly<{
   solved: readonly string[];
@@ -36,6 +37,7 @@ export type GameState = Readonly<{
   currentArea: AreaId;
   position?: Position;
   discoveries?: Discoveries;
+  games?: GameExtras;
   areas: Readonly<Record<AreaId, AreaState>>;
   updatedAt: string;
 }>;

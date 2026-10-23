@@ -1,5 +1,13 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (Packet Dash and task wrist tablet)
+
+- **Free arcade game:** added Packet Dash, an original 2D city runner reachable at a solid arcade cabinet. Players jump glitches, collect data bits and keep a personal high score with each adventure. Arcade shields and points are separate from coding hearts and gems. Keyboard and touch Jump controls are supported.
+- **Footsteps:** softened the synth further with lower filtered noise, less volume and a longer attack/fade to remove the sharp gunshot-like edge.
+- **Coding tablet:** every coding task now opens through the same illustrated 2D wrist-tablet sequence as the practice tablet. The full-screen task editor keeps the console under the code; each run animates new output into view. T and Skip animation work, and reduced-motion preferences open instantly.
+- **Checks:** 231 unit tests, Biome lint, TypeScript and focused Chromium checks for city travel into Packet Dash, runner controls, tablet opening/skip, animated console output and full eight-task progression passed. A simultaneous full E2E run and production build overloaded the browser workers and timed out unrelated suites; the touched flows were rerun successfully on one worker.
+- **Release:** pending final production build, public commit and Vercel deployment.
+
 ## 2026-10-23 (touch controls, portable saves and staged hub repair)
 
 - **Adventure list:** title screen now shows each saved hero under its language with a compact `0/8 tasks` progress line. The manager remains available for switching and starting another run.

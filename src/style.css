@@ -100,6 +100,61 @@ textarea:focus-visible {
 .panel-wide {
   width: min(100%, 940px);
 }
+.packet-dash {
+  width: min(100%, 1040px);
+  padding: clamp(18px, 3vw, 30px);
+  border-color: #56cee977;
+  background: radial-gradient(ellipse at 50% 0%, #22516d88, transparent 54%), #091526f7;
+}
+.packet-dash :where(.subtitle) {
+  margin-bottom: 12px;
+}
+.arcade-intro,
+.arcade-feedback,
+.arcade-best {
+  color: #b4c9df;
+  line-height: 1.5;
+}
+.arcade-score-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  align-items: center;
+  margin: 14px 0 10px;
+  color: #c8e8f2;
+  font-size: 13px;
+}
+.arcade-score {
+  color: #74eaff;
+}
+.packet-dash-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 24 / 8.5;
+  border: 1px solid #5ccde655;
+  border-radius: 12px;
+  background: #091427;
+  box-shadow:
+    0 12px 40px #0005,
+    0 0 28px #39d5ff18;
+}
+.arcade-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.arcade-jump {
+  min-width: 120px;
+  min-height: 48px;
+  touch-action: manipulation;
+}
+.arcade-best {
+  margin-bottom: 0;
+  color: #ffd77e;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
 .panel-heading {
   display: flex;
   align-items: center;
@@ -682,6 +737,23 @@ small {
     monospace;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+.tablet-task-view .output.console-reveal {
+  animation: console-reveal 360ms ease-out both;
+}
+@keyframes console-reveal {
+  from {
+    opacity: 0.45;
+    filter: blur(3px);
+    transform: translateY(7px);
+    box-shadow: 0 0 24px #48d9ff55;
+  }
+  to {
+    opacity: 1;
+    filter: none;
+    transform: translateY(0);
+    box-shadow: none;
+  }
 }
 .panel-actions,
 .editor-actions {

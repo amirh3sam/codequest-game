@@ -100,11 +100,11 @@ class GameAudio {
     switch (cue) {
       case "step": {
         this.foot = 1 - this.foot;
-        const variation = (0.88 + Math.random() * 0.2) * (this.foot ? 1 : 0.8);
-        this.noise(0.105, 0.2 * variation, 680 + Math.random() * 260, 0, "lowpass");
-        this.noise(0.045, 0.055 * variation, 1700 + Math.random() * 500, 0.018, "bandpass");
-        this.noise(0.06, 0.035 * variation, 510, 0.042, "lowpass");
-        this.tone((67 + Math.random() * 13) * variation, 0.06, 0.035, 0.008, 40);
+        const variation = (0.9 + Math.random() * 0.16) * (this.foot ? 1 : 0.82);
+        // A padded, slow attack keeps the sole from sounding like a sharp pop.
+        this.noise(0.28, 0.042 * variation, 210 + Math.random() * 65, 0, "lowpass", 0.075);
+        this.noise(0.19, 0.009 * variation, 520 + Math.random() * 100, 0.045, "lowpass", 0.085);
+        this.tone(78 + Math.random() * 9, 0.23, 0.016 * variation, 0.02, undefined, 0.08);
         break;
       }
       case "tap":
@@ -147,14 +147,14 @@ class GameAudio {
     this.tone(frequency * 3.98, duration * 0.24, level * 0.07, delay);
   }
 
-  private tone(frequency: number, duration: number, level: number, delay: number, end?: number): void {
+  private tone(frequency: number, duration: number, level: number, delay: number, end?: number, attack = 0.004): void {
     if (!this.context) return;
     const source = this.context.createOscillator(),
       start = this.context.currentTime + delay;
     source.type = "sine";
     source.frequency.setValueAtTime(frequency, start);
     if (end) source.frequency.exponentialRampToValueAtTime(end, start + duration);
-    this.voice(source, duration, level, delay, 0.004);
+    this.voice(source, duration, level, delay, attack);
   }
 
   private noise(

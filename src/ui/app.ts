@@ -35,7 +35,9 @@ import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
 import { openHubFinale } from "./hub-finale";
 import { mobileControls } from "./mobile-controls";
+import { openPacketDash } from "./packet-dash";
 import { openTablet } from "./tablet";
+import { presentTabletOpening } from "./tablet-opening";
 
 const now = () => new Date().toISOString();
 const LANGUAGES: { id: Lang; name: string; badge: string; description: string }[] = [
@@ -648,6 +650,7 @@ export class GameApp {
     if (id === "courier") this.mission();
     else if (id === "discovery-beacon") this.communityBeacon();
     else if (id === "lesson") this.lesson();
+    else if (id === "arcade") this.packetDash();
     else if (id === "boss") {
       if (canFightBoss(this.state, this.area)) this.openBoss();
       else
@@ -666,6 +669,26 @@ export class GameApp {
             : "Solve the earlier tasks to unlock this one.",
         );
     }
+  }
+  private packetDash(): void {
+    if (!this.state) return;
+    const adventureId = this.state.adventureId;
+    openPacketDash({
+      name: this.state.hero.name,
+      best: this.state.games?.packetDashBest ?? 0,
+      avatar: this.icon(this.state.hero.kind === "girl" ? "heroGirl" : "heroBoy"),
+      panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
+      record: (score) => {
+        if (!this.state || this.state.adventureId !== adventureId || score <= (this.state.games?.packetDashBest ?? 0))
+          return;
+        this.state = {
+          ...this.state,
+          updatedAt: now(),
+          games: { ...this.state.games, packetDashBest: score },
+        };
+        this.persist();
+      },
+    });
   }
   private openBoss(): void {
     if (!this.state) return;
@@ -973,6 +996,7 @@ export class GameApp {
           : `${"difficulty" in task ? task.difficulty.toUpperCase() : "BOSS"} · +${"difficulty" in task ? GEM_REWARD[task.difficulty] : 0} gems`,
         true,
       );
+    panel.classList.add("tablet-shell", "tablet-task-view");
     const columns = el("div", "editor-columns"),
       instructions = el("div", "instructions"),
       work = el("div", "code-workspace");
@@ -1039,6 +1063,12 @@ export class GameApp {
       );
     const output = el("pre", "output", "Your output will appear here."),
       feedback = el("div", "feedback");
+    const revealOutput = (text: string) => {
+      output.textContent = text;
+      output.classList.remove("console-reveal");
+      void output.offsetWidth;
+      output.classList.add("console-reveal");
+    };
     feedback.setAttribute("role", "status");
     const actions = el("div", "editor-actions"),
       run = button("Run code", () => {
@@ -1067,7 +1097,7 @@ export class GameApp {
           const result = await this.runner.run(code.value);
           if (token !== this.runToken) return;
           const error = executionError(result);
-          output.textContent = result.stdout || "(No output)";
+          revealOutput(result.stdout || "(No output)");
           feedback.textContent = error?.message ?? "Run complete. Submit when you're ready.";
           gameAudio.play(error ? "error" : "success");
           const charge = readBatteryOutput(result.stdout);
@@ -1079,7 +1109,7 @@ export class GameApp {
         } else {
           const result = await grade(task, code.value, this.runner);
           if (token !== this.runToken || !this.state) return;
-          output.textContent = result.output || "(No output)";
+          revealOutput(result.output || "(No output)");
           if (result.passed) {
             gameAudio.play(boss ? "victory" : "success");
             this.commit(
@@ -1162,7 +1192,9 @@ export class GameApp {
     work.append(label, code, actions, el("span", "section-label", "OUTPUT"), output, feedback);
     columns.append(instructions, work);
     panel.append(columns);
-    queueMicrotask(() => code.focus());
+    this.tabletCleanup = presentTabletOpening(panel, this.state.hero.kind, this.state.hero.name, () =>
+      this.scene.focusTablet(),
+    );
   }
   private victory(): void {
     const next = village.worldAreas[this.area.order];

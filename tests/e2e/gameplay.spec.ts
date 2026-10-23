@@ -2,6 +2,8 @@ import { expect, type Page, test } from "@playwright/test";
 import variables from "../../src/content/data/javascript/01-variables.json" with { type: "json" };
 import village from "../../src/content/village.json" with { type: "json" };
 
+test.use({ reducedMotion: "reduce" });
+
 async function start(page: Page): Promise<void> {
   await page.goto("/");
   await page.getByRole("textbox", { name: "Developer name", exact: true }).fill("Nova");

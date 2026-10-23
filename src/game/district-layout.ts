@@ -9,6 +9,7 @@ export type DistrictLayout = Readonly<{
   lesson: Position;
   tasks: readonly Position[];
   boss: Position;
+  arcade: Position;
   label: Position;
 }>;
 export const LOGIC_LAYOUT: DistrictLayout = {
@@ -26,6 +27,7 @@ export const LOGIC_LAYOUT: DistrictLayout = {
     { x: 800, y: 545 },
   ],
   boss: { x: 1320, y: 275 },
+  arcade: { x: 760, y: 300 },
   label: { x: 768, y: 475 },
 };
 
@@ -38,6 +40,7 @@ export function districtLayout(area: AreaId = "variables"): DistrictLayout {
         lesson: village.lesson,
         tasks: village.tasks,
         boss: village.boss,
+        arcade: village.arcade,
         label: { x: 768, y: 382 },
       };
 }

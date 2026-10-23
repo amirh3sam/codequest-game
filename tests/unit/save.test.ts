@@ -113,6 +113,13 @@ describe("language save slots", () => {
     expect(loadGame("javascript")).toEqual({ status: "loaded", state: newGame() });
   });
 
+  it("persists a Packet Dash record inside its own adventure", () => {
+    const storage = new MemoryStorage();
+    const state = { ...newGame(), games: { packetDashBest: 1234 } };
+    expect(saveGame(state, storage)).toEqual({ status: "saved" });
+    expect(loadGame("javascript", storage)).toEqual({ status: "loaded", state });
+  });
+
   it("does not treat a different language's otherwise valid save as the requested slot", () => {
     const storage = new MemoryStorage();
     const raw = JSON.stringify(newGame("python"));
@@ -178,6 +185,9 @@ describe("version and corruption handling", () => {
     ["null position", (state) => ({ ...state, position: null })],
     ["non-finite coordinates", (state) => ({ ...state, position: { x: Number.POSITIVE_INFINITY, y: 0 } })],
     ["a missing coordinate", (state) => ({ ...state, position: { x: 0 } })],
+    ["a negative arcade record", (state) => ({ ...state, games: { packetDashBest: -1 } })],
+    ["a fractional arcade record", (state) => ({ ...state, games: { packetDashBest: 4.5 } })],
+    ["an oversized arcade record", (state) => ({ ...state, games: { packetDashBest: 1_000_001 } })],
     ["progress in a locked area", (state) => changedArea(state, { lessonsFound: true }, "conditions")],
   ];
 

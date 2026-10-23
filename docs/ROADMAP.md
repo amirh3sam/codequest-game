@@ -11,6 +11,7 @@ Each task fits in one session. Tags point to PRD requirements.
 - [x] List every saved adventure beneath its language on the title screen; add portable export/import backups that load as separate saves.
 - [x] Add touch movement, touch interaction and tap-to-walk using the existing solid-object rules.
 - [x] Soften and vary the synthesized footsteps.
+- [x] Add Packet Dash, a free 2D city runner at a solid arcade cabinet, with mobile jump controls and per-adventure high scores; soften the footstep attack and lower its impact.
 - [x] Prepare an anonymous beginner playtest plan for the staged repair loop, tablet lessons, save recovery and touch controls ([playtest plan](BEGINNER-PLAYTEST.md)).
 - [ ] Next: run 3–5 beginner sessions and use repeated observations to prioritize the next curriculum/map task.
 

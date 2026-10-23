@@ -25,7 +25,7 @@ export function presentTabletOpening(
     panel.classList.remove("tablet-waiting");
     panel.dataset.tabletStage = "ready";
     document.removeEventListener("keydown", shortcut);
-    if (panel.isConnected) panel.querySelector<HTMLTextAreaElement>(".studio-code")?.focus();
+    if (panel.isConnected) panel.querySelector<HTMLTextAreaElement>(".studio-code, .code-editor")?.focus();
   };
   const shortcut = (event: KeyboardEvent) => {
     if (event.code !== "KeyT" || event.repeat || finished) return;

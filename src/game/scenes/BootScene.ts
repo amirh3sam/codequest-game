@@ -79,6 +79,7 @@ export class BootScene extends Phaser.Scene {
   create(): void {
     createHeroTextures(this);
     createQuestProps(this);
+    this.createArcadeTexture();
     this.cameras.main.setBackgroundColor("#7fa55b");
     this.world = buildAdventureWorld(this, this.reducedMotion);
     this.cameras.main.setBounds(0, 0, village.world.width, village.world.height).setRoundPixels(true);
@@ -86,6 +87,7 @@ export class BootScene extends Phaser.Scene {
     for (const [index, spot] of village.tasks.entries())
       this.marker(`variables-${index + 1}`, spot.x, spot.y, { texture: "tech-props", frame: 0 }, `${index + 1}`);
     this.marker("boss", village.boss.x, village.boss.y, SPRITES.boss, "Firewall");
+    this.marker("arcade", village.arcade.x, village.arcade.y, { texture: "packet-arcade", frame: 0 }, "Packet Dash");
     this.districtLabel = this.add
       .text(768, 382, "VALUES / DATA HUB", { fontFamily: "Consolas", fontSize: "15px", color: "#9ae9ff" })
       .setOrigin(0.5)
@@ -140,10 +142,23 @@ export class BootScene extends Phaser.Scene {
     });
     this.game.events.emit("village-ready");
   }
+  private createArcadeTexture(): void {
+    const art = this.add.graphics({ x: 0, y: 0 });
+    art.fillStyle(0x13233d).fillRoundedRect(7, 3, 34, 49, 5);
+    art.lineStyle(2, 0x74e5ff).strokeRoundedRect(7, 3, 34, 49, 5);
+    art.fillStyle(0x091326).fillRoundedRect(11, 8, 26, 19, 3);
+    art.fillStyle(0x44d6f0, 0.9).fillRoundedRect(14, 11, 20, 13, 2);
+    art.fillStyle(0x92ffe4).fillCircle(24, 16, 3);
+    art.fillStyle(0xffd16e).fillCircle(17, 34, 3);
+    art.fillStyle(0xff7ba0).fillCircle(26, 34, 3);
+    art.fillStyle(0x182943).fillRoundedRect(12, 53, 8, 5, 2).fillRoundedRect(29, 53, 8, 5, 2);
+    art.generateTexture("packet-arcade", 48, 60);
+    art.destroy();
+  }
   private marker(id: string, x: number, y: number, sprite: { texture: string; frame: number }, title: string): void {
-    const chest = id !== "lesson" && id !== "boss";
+    const chest = id !== "lesson" && id !== "boss" && id !== "arcade";
     const shadow = this.add.ellipse(x + 3, y, 37, 14, 0x233f34, 0.22).setDepth(1);
-    const glow = this.add.circle(x, y - 6, 33, 0x55cfff, 0.07).setDepth(1);
+    const glow = this.add.circle(x, y - 6, id === "arcade" ? 38 : 33, 0x55cfff, 0.07).setDepth(1);
     const pad = this.add
       .circle(x, y, 25, 0x233f34, 0.08)
       .setStrokeStyle(1, 0x65cfff, 0.5)
@@ -153,7 +168,7 @@ export class BootScene extends Phaser.Scene {
     const icon = this.add
       .image(0, 4, sprite.texture, sprite.frame)
       .setOrigin(0.5, 1)
-      .setScale(id === "boss" ? 0.86 : id === "lesson" ? 0.52 : 0.58);
+      .setScale(id === "arcade" ? 1 : id === "boss" ? 0.86 : id === "lesson" ? 0.52 : 0.58);
     group.add(icon);
     const plate = chest ? this.add.graphics() : null;
     if (plate) {
@@ -162,7 +177,7 @@ export class BootScene extends Phaser.Scene {
       group.add(plate);
     }
     const label = this.add
-      .text(0, chest ? -12 : id === "boss" ? -95 : -61, title, {
+      .text(0, chest ? -12 : id === "arcade" ? -52 : id === "boss" ? -95 : -61, title, {
         fontFamily: "Consolas",
         fontStyle: "bold",
         fontSize: chest ? "11px" : "11px",
@@ -172,7 +187,7 @@ export class BootScene extends Phaser.Scene {
       .setOrigin(0.5);
     if (chest) label.setName("task-number");
     group.add(label);
-    const beacon = this.add.triangle(0, chest ? -51 : -109, 0, 0, 10, 0, 5, 5, 0x7ce3ff);
+    const beacon = this.add.triangle(0, chest ? -51 : id === "arcade" ? -75 : -109, 0, 0, 10, 0, 5, 5, 0x7ce3ff);
     group.add(beacon);
     if (!this.reducedMotion) {
       this.tweens.add({
@@ -192,8 +207,8 @@ export class BootScene extends Phaser.Scene {
       id,
       x: x - (chest ? 24 : 16),
       y: y - (chest ? 24 : 16),
-      width: chest ? 48 : 32,
-      height: chest ? 25 : 18,
+      width: chest ? 48 : id === "arcade" ? 42 : 32,
+      height: chest ? 25 : id === "arcade" ? 30 : 18,
     });
     pad.on("pointerdown", () => {
       if (!this.blocked) {
@@ -225,7 +240,14 @@ export class BootScene extends Phaser.Scene {
       const layout = districtLayout(area.id);
       let index = 0;
       for (const marker of this.markers) {
-        const spot = marker.id === "lesson" ? layout.lesson : marker.id === "boss" ? layout.boss : layout.tasks[index];
+        const spot =
+          marker.id === "lesson"
+            ? layout.lesson
+            : marker.id === "boss"
+              ? layout.boss
+              : marker.id === "arcade"
+                ? layout.arcade
+                : layout.tasks[index];
         if (spot) {
           const dx = spot.x - marker.x,
             dy = spot.y - marker.y;
@@ -241,7 +263,7 @@ export class BootScene extends Phaser.Scene {
           marker.glow.setPosition(spot.x, spot.y - 6);
           marker.shadow.setPosition(spot.x + 3, spot.y);
         }
-        if (marker.id === "lesson") continue;
+        if (marker.id === "lesson" || marker.id === "arcade") continue;
         if (marker.id === "boss") {
           marker.label.setText(area.boss.name.replace(/^The /, ""));
           continue;
@@ -279,17 +301,19 @@ export class BootScene extends Phaser.Scene {
           : previous?.areas[area.id].solved.includes(marker.id);
       const active =
         marker.id === "lesson" ||
+        marker.id === "arcade" ||
         (marker.id === "boss"
           ? canFightBoss(state, area) || state.areas[area.id].bossDefeated
           : canSolveTask(state, area, marker.id) || solved);
       marker.icon.setAlpha(active ? 1 : 0.7).setTint(solved ? 0xb1e5b4 : active ? 0xffffff : 0xa1b7ac);
-      if (marker.id !== "lesson" && marker.id !== "boss") marker.icon.setFrame(solved ? 1 : 0);
+      if (marker.id !== "lesson" && marker.id !== "boss" && marker.id !== "arcade")
+        marker.icon.setFrame(solved ? 1 : 0);
       marker.pad
         .setFillStyle(solved ? 0x71d2ad : active ? 0x65cfff : 0x273c52, active ? 0.2 : 0.15)
         .setStrokeStyle(1, solved ? 0xa8e9ba : active ? 0x8be6ff : 0x758b71, 0.7);
       marker.glow.setVisible(active && !solved);
       marker.beacon.setVisible(active && !solved && marker.id !== "lesson");
-      if (marker.id !== "lesson" && marker.id !== "boss")
+      if (marker.id !== "lesson" && marker.id !== "boss" && marker.id !== "arcade")
         marker.label.setText(marker.id.split("-")[1] ?? "").setColor(solved ? "#a8e9ba" : "#def5ff");
       if (previous && solved && !wasSolved) this.celebrate(marker.x, marker.y);
     }
@@ -450,7 +474,9 @@ export class BootScene extends Phaser.Scene {
           ? "Open the quick guide"
           : marker.id === "boss"
             ? `Inspect ${this.area?.boss.name}`
-            : `Task ${marker.id.split("-")[1]}`,
+            : marker.id === "arcade"
+              ? "Play Packet Dash, a free city runner"
+              : `Task ${marker.id.split("-")[1]}`,
     }));
     const courier = this.droneQuest.nearby(this.position),
       beacon = this.communityBeacon.position;

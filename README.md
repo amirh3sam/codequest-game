@@ -20,6 +20,8 @@ Start with **Mission** to meet Kai. The guided drone lesson lets you predict, ru
 
 After repairing the drone, find the **community beacon** beside the courier lane, or open **Tasks → Optional discovery**. Help Mina choose **Garden night** or **Arcade night**, use a text variable to announce it, then light the courtyard in your event's colors. Free previews keep your hearts and gems safe. The saved choice earns the **Signal Maker** badge in your tablet mission log; you can change the event later.
 
+The city also has **Packet Dash**, a standalone 2D runner at the glowing arcade cabinet. Jump the signal glitches, collect data bits and chase a personal best. It has its own shields and score, so arcade runs never cost coding hearts or gems; best scores save with that adventure. On touchscreens, use the Jump button.
+
 ![Mina's optional community beacon with a chosen event, working code and live preview](docs/screenshots/community-beacon.png)
 
 Sound effects include textured footsteps, tactile clicks, tablet swishes, soft error knocks and layered completion chimes. Set **Effects volume** in **Menu**, or use **Sound on/off** on the title screen or toolbar. Both settings stay on this device. Audio starts after an interaction and stops when the tab is hidden.
@@ -27,6 +29,8 @@ Sound effects include textured footsteps, tactile clicks, tablet swishes, soft e
 ![The actual drone lesson with a working code example, prediction choices and battery meter](docs/screenshots/drone-lesson.png)
 
 Press **T** or click **Tablet**: the city camera zooms toward your developer, then an illustrated **2D wrist tablet** lifts into view, settles and zooms into its screen. The opening takes three seconds. Press **T** or **Skip animation** to jump ahead. Reduced motion opens it instantly.
+
+Opening any coding task uses that same illustrated wrist-tablet sequence. Run code in the full-screen task workspace and its console output animates into view below the editor.
 
 ![The illustrated 2D wrist tablet during its opening animation](docs/screenshots/tablet-cinematic.png)
 
