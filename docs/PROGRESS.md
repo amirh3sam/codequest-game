@@ -1,5 +1,10 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (clear folder selection and expand controls)
+- Folder names now select the destination for new items without collapsing the folder. A separate chevron expands or collapses contents; the selected folder is highlighted, nested items show a guide line, and controls remain keyboard and touch accessible.
+- **Checks:** Java tablet browser flow passed with collapse/expand, folder selection, rename and delete coverage. All 241 unit tests, lint, TypeScript and production build passed.
+- **Release:** pending public commit and Vercel deployment.
+
 ## 2026-10-23 (rename and delete project files)
 - **Explorer actions:** each file and folder now has Rename and Delete controls. Folder operations include nested files; deleting asks for confirmation, the last file is protected, and the run entry and open editor tabs follow renames. The controls stay visible on touch screens.
 - **Local folders:** rename copies files and subfolders to the new path before removing the old path. Deletes remove the selected item from both the browser project and connected local folder.

@@ -252,7 +252,8 @@ with relative file paths and folder names in browser storage. It can also import
 player-selected local folder through the File System Access API and write edits
 back to that folder while connected. Its Explorer selects a target folder, so new
 items need only a name; files and folders can be renamed or deleted, and open
-files appear as tabs above the Monaco editor. The selected Java entry file plus
+files appear as tabs above the Monaco editor. Folder rows separate selecting a
+creation destination from expanding or collapsing its contents. The selected Java entry file plus
 every other `.java` file goes to the Java worker. JavaScript and TypeScript local named/default imports and Python
 `from module import Name` statements are bundled from project files before
 running. External packages are not downloaded. The field guide is hidden while

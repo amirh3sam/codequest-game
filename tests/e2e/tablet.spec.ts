@@ -60,6 +60,13 @@ test("Java tablet builds and runs a project split across class files", async ({ 
   await page.keyboard.press("t");
   await expect(page.getByRole("dialog", { name: "Developer tablet", exact: true })).toBeVisible();
   await expect(page.locator(".field-guide")).toBeHidden();
+  await page.getByRole("button", { name: "Collapse src", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Expand src", exact: true })).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator(".studio-file[title='src/Player.java']")).toHaveCount(0);
+  await page.getByRole("button", { name: "Expand src", exact: true }).click();
+  await expect(page.locator(".studio-file[title='src/Player.java']")).toBeVisible();
+  await page.getByRole("button", { name: "Select src as the new item location", exact: true }).click();
+  await expect(page.locator(".studio-folder-target")).toHaveText("src/");
   await expect(page.locator(".studio-file[title='src/Player.java']")).toBeVisible();
   await page.getByRole("button", { name: "Run practice code", exact: true }).click();
   await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("Hello, Ada!\n", { timeout: 60_000 });

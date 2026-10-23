@@ -296,22 +296,40 @@ export function openTablet(host: TabletHost): () => void {
         .sort((a, b) => a.localeCompare(b));
       return [
         ...folders.map((path) => {
-          const details = el("details", `studio-tree-folder${selectedFolder === path ? " selected" : ""}`);
-          details.open = expandedFolders.has(path);
-          const summary = el("summary", "studio-folder", `📁 ${path.split("/").at(-1)}`);
+          const expanded = expandedFolders.has(path);
+          const folder = el("div", `studio-tree-folder${selectedFolder === path ? " selected" : ""}`);
+          const summary = button(
+            `📁  ${path.split("/").at(-1)}`,
+            () => {
+              selectedFolder = path;
+              renderTree();
+            },
+            "studio-folder",
+          );
           summary.style.setProperty("--tree-depth", String(depth));
-          summary.title = path;
-          summary.addEventListener("click", (event) => {
-            event.preventDefault();
-            selectedFolder = path;
-            if (details.open) expandedFolders.delete(path);
-            else expandedFolders.add(path);
-            renderTree();
-          });
+          summary.title = `Select ${path} as the new item location`;
+          summary.setAttribute("aria-label", `Select ${path} as the new item location`);
           const row = el("div", "studio-entry-row");
-          row.append(summary, entryActions(path, "folder"));
-          details.append(row, ...children(path, depth + 1));
-          return details;
+          const toggle = button(
+            expanded ? "▾" : "▸",
+            () => {
+              if (expanded) expandedFolders.delete(path);
+              else expandedFolders.add(path);
+              renderTree();
+            },
+            "studio-folder-toggle",
+          );
+          toggle.setAttribute("aria-label", `${expanded ? "Collapse" : "Expand"} ${path}`);
+          toggle.setAttribute("aria-expanded", String(expanded));
+          row.append(toggle, summary, entryActions(path, "folder"));
+          folder.append(row);
+          if (expanded) {
+            const nested = el("div", "studio-folder-children");
+            nested.setAttribute("role", "group");
+            nested.append(...children(path, depth + 1));
+            folder.append(nested);
+          }
+          return folder;
         }),
         ...files.map((path) => {
           const icon = path.endsWith(".java") ? "J" : path.endsWith(".py") ? "Py" : path.endsWith(".ts") ? "TS" : "JS";
