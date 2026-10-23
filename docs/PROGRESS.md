@@ -6,7 +6,7 @@
 - Added six Progress-page badges for mission completion, district restoration, the community beacon, the project quest and arcade high scores.
 - Added `.codequest.json` project export/import with language/version checks, unsafe path filtering and an import size limit. Local adventure saves remain device-local.
 - **Checks:** all 243 unit tests, lint, TypeScript, production build and production dependency audit passed (zero vulnerabilities). Five focused Chromium flows passed: project export/import and debugging guidance, plus quest completion in all four languages. The full 124-case browser sweep was stopped after unrelated pre-existing adventure/audio tests timed out waiting for an obsolete `Tasks` control; another old adventure selector now matches both the language chooser and saved-adventure row. The edited flows passed their focused tests.
-- **Release:** pending final validation, public push and Vercel deployment.
+- **Release:** commit `17ddb98` is public on `main`. Production deployment `dpl_4cMAbKYkRkZSepo7Ub7jkfDh4cMz` is READY at https://codequest-game-inky.vercel.app/; `vercel curl` confirmed the production alias serves the game.
 
 ## 2026-10-23 (multi-class runs in all four languages)
 - Expanded browser projects so JavaScript, TypeScript and Python each use `Main → Badge → Player` across separate files. Java runs `Main → Badge → Formatter` across packaged classes.
