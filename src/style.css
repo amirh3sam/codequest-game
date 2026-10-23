@@ -2184,6 +2184,17 @@ small {
   font: 11px monospace;
   color: #89a9c0;
 }
+.studio-java-shortcuts {
+  flex-shrink: 0;
+  overflow-x: auto;
+  padding: 7px 16px;
+  margin: 0;
+  border-top: 1px solid #20364a;
+  background: #101e2c;
+  color: #8daabc;
+  font: 10px monospace;
+  white-space: nowrap;
+}
 .studio-feedback {
   flex-shrink: 0;
   min-height: 20px;

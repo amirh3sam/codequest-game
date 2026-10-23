@@ -5,6 +5,7 @@ import "monaco-editor/esm/vs/basic-languages/java/java.contribution";
 import "monaco-editor/esm/vs/basic-languages/python/python.contribution";
 import "monaco-editor/min/vs/editor/editor.main.css";
 import type { Lang } from "../runners/types";
+import { JAVA_SNIPPETS } from "./java-snippets";
 
 const workerScope = self as typeof self & {
   MonacoEnvironment?: { getWorker(workerId: string, label: string): Worker };
@@ -14,6 +15,29 @@ workerScope.MonacoEnvironment = {
     return label === "typescript" || label === "javascript" ? new TypeScriptWorker() : new EditorWorker();
   },
 };
+
+monaco.languages.registerCompletionItemProvider("java", {
+  provideCompletionItems(model, position) {
+    const word = model.getWordUntilPosition(position);
+    const range = {
+      startLineNumber: position.lineNumber,
+      endLineNumber: position.lineNumber,
+      startColumn: word.startColumn,
+      endColumn: word.endColumn,
+    };
+    return {
+      suggestions: JAVA_SNIPPETS.map(({ label, detail, insertText }, index) => ({
+        label,
+        detail,
+        insertText,
+        range,
+        sortText: String(index).padStart(2, "0"),
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+      })),
+    };
+  },
+});
 
 const LANGUAGE_ID: Record<Lang, string> = {
   javascript: "javascript",

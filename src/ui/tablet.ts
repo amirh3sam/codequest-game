@@ -3,6 +3,7 @@ import { batteryExample } from "../content/drone-pilot";
 import { executionError } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
 import { button, el } from "./dom";
+import { JAVA_SHORTCUTS } from "./java-snippets";
 import {
   chooseLocalFolder,
   createLocalFolder,
@@ -558,6 +559,10 @@ export function openTablet(host: TabletHost): () => void {
     "studio-small-action",
   );
   toolbar.append(run, el("span", "", "Ctrl / ⌘ + Enter to run"), connect);
+  const javaShortcutHint =
+    host.lang === "java"
+      ? el("p", "studio-java-shortcuts", `Java snippets: ${JAVA_SHORTCUTS} · Press Ctrl+Space for suggestions`)
+      : null;
   const createEntry = (kind: "file" | "folder") => {
     const form = el("form", "studio-create-form");
     const input = el("input", "studio-create-input");
@@ -626,7 +631,9 @@ export function openTablet(host: TabletHost): () => void {
   const inlineConsole = el("section", "studio-inline-console");
   inlineConsole.setAttribute("aria-label", "Run results");
   inlineConsole.append(el("div", "studio-output-title", "OUTPUT"), output);
-  workspace.append(editorHeader, codeGrid, toolbar, inlineConsole, feedback);
+  workspace.append(editorHeader, codeGrid, toolbar);
+  if (javaShortcutHint) workspace.append(javaShortcutHint);
+  workspace.append(inlineConsole, feedback);
   editorPane.append(fileTree, workspace);
   examplesPane.append(
     el("h3", "", "Start with something small"),

@@ -260,7 +260,9 @@ every other `.java` file goes to the Java worker. New Java files get a
 `public class` scaffold matching the filename, `import java.util.*;`, and a
 package derived from their folder under `src/`. JavaScript and TypeScript local named/default imports and Python
 `from module import Name` statements are bundled from project files before
-running. External packages are not downloaded. The field guide is hidden while
+running. Monaco provides Java trigger-based code snippets for entry methods,
+printing, loops, conditions, classes, constructors, and exception handling.
+External packages are not downloaded. The field guide is hidden while
 modal pages are open so it cannot cover tablet or arcade content.
 
 ## 5. Screens (no URL routes — single page)

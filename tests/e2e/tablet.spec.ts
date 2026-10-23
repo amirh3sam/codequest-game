@@ -135,6 +135,28 @@ test("Java tablet builds and runs a project split across class files", async ({ 
   await expect(page.locator(".studio-tree-folder", { hasText: "entities" })).toHaveCount(0);
 });
 
+test("Java editor expands common typing shortcuts into snippets", async ({ page }) => {
+  await start(page, "java");
+  await page.keyboard.press("t");
+  await expect(page.locator(".studio-java-shortcuts")).toContainText("sout");
+  await page.locator(".studio-file[title='src/Player.java']").click();
+  await page.locator(".monaco-editor").click();
+  await page.keyboard.press("Control+A");
+  await page.keyboard.type("sout");
+  await page.keyboard.press("Control+Space");
+  await expect(page.locator(".suggest-widget")).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(page.getByLabel("Code editor: src/Player.java")).toHaveValue("System.out.println();");
+
+  await page.keyboard.press("Control+A");
+  await page.keyboard.type("main");
+  await page.keyboard.press("Control+Space");
+  await page.keyboard.press("Enter");
+  await expect(page.getByLabel("Code editor: src/Player.java")).toHaveValue(
+    /public static void main\(String\[\] args\)/,
+  );
+});
+
 for (const lang of ["javascript", "typescript", "python"] as const) {
   test(`${lang}: local class imports run from files in the project tree`, async ({ page }) => {
     test.setTimeout(150_000);
