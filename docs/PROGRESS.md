@@ -5,7 +5,7 @@
 - **Accessibility:** added persistent larger-text and high-contrast settings, adjustable effects volume and selectable WASD, arrow-only or IJKL keyboard movement. HUD instructions and the first-run guide reflect the chosen keys. Camera and decorative motion continue to respect the device's Reduce Motion preference; touch movement remains available.
 - **More to play:** the city cabinet now opens an arcade lobby with Packet Dash and Signal Stack. Signal Stack is a keyboard- and touch-friendly timing game, with a separate personal best saved in each adventure. Neither arcade game changes coding hearts or gems.
 - **Checks:** added a keyboard-remap and settings-persistence browser flow, extended the arcade walkthrough through both games and added validation for tower records. 235 unit tests, the focused Chromium flows, lint, TypeScript and production build passed.
-- **Release:** pending public push and production deployment.
+- **Release:** source commit `8eeed1b` is public on `main`. Deployment `dpl_BdnxiPoXSswCpEYeYHbocYAWtTaD` is READY at https://codequest-game-inky.vercel.app/; the production alias serves the new app and styles.
 
 ## 2026-10-23 (first-run onboarding and skill progress)
 
