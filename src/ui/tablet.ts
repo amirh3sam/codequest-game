@@ -7,7 +7,16 @@ import {
   readProjectQuestProgress,
   saveProjectQuestProgress,
 } from "../content/project-quests";
-import { readStudyProgress, STUDY_CURRICULUM, saveStudyTopic } from "../content/study-curriculum";
+import {
+  readCompletedStudyTasks,
+  readStudyProgress,
+  readStudyTaskProgress,
+  STUDY_CURRICULUM,
+  STUDY_TASKS_PER_TOPIC,
+  STUDY_TOTAL_TASKS,
+  saveStudyTaskProgress,
+  studyTaskFor,
+} from "../content/study-curriculum";
 import { executionError } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
 import { beginnerHint, diagnosticLine, focusEditorLine } from "./debug-guidance";
@@ -1160,7 +1169,8 @@ export function openTablet(host: TabletHost): () => void {
   let activeStudyId = STUDY_CURRICULUM[0]?.id ?? "";
   const studyAdventureKey = host.adventureId ?? `guest-${host.lang}`;
   const renderStudyPath = () => {
-    const completed = readStudyProgress(studyAdventureKey);
+    const completedTopics = readStudyProgress(studyAdventureKey);
+    const totalTasks = readCompletedStudyTasks(studyAdventureKey);
     const topic = STUDY_CURRICULUM.find(({ id }) => id === activeStudyId) ?? STUDY_CURRICULUM[0];
     studyPane.replaceChildren();
     studyPane.append(
@@ -1169,107 +1179,179 @@ export function openTablet(host: TabletHost): () => void {
       el(
         "p",
         "study-overview",
-        `${completed.length} / ${STUDY_CURRICULUM.length} topics practiced · progress saves with this adventure`,
+        totalTasks +
+          " / " +
+          STUDY_TOTAL_TASKS +
+          " tasks complete · " +
+          completedTopics.length +
+          " / " +
+          STUDY_CURRICULUM.length +
+          " levels mastered · saves with this adventure",
       ),
     );
-    const layout = el("div", "study-layout"),
-      navigation = el("nav", "study-topic-nav"),
-      detail = el("section", "study-topic-detail");
+    const layout = el("div", "study-layout");
+    const navigation = el("nav", "study-topic-nav");
+    const detail = el("section", "study-topic-detail");
     navigation.setAttribute("aria-label", "Study topics");
     for (const [index, item] of STUDY_CURRICULUM.entries()) {
-      const done = completed.includes(item.id);
+      const isComplete = completedTopics.includes(item.id);
+      const topicProgress = readStudyTaskProgress(studyAdventureKey, item.id);
       const topicButton = button(
-        `${done ? "✓" : String(index + 1).padStart(2, "0")}  ${item.title}`,
+        (isComplete ? "✓" : `${topicProgress}/${STUDY_TASKS_PER_TOPIC}`) +
+          "  " +
+          String(index + 1).padStart(2, "0") +
+          ". " +
+          item.title,
         () => {
           activeStudyId = item.id;
           renderStudyPath();
         },
-        `study-topic-button${item.id === topic?.id ? " active" : ""}${done ? " complete" : ""}`,
+        "study-topic-button" +
+          (item.id === topic?.id ? " active" : "") +
+          (isComplete ? " complete" : topicProgress > 0 ? " in-progress" : ""),
       );
       topicButton.setAttribute("aria-current", String(item.id === topic?.id));
       navigation.append(topicButton);
     }
     if (topic) {
-      const studyDraftKey = `codequest:study-draft:v1:${studyAdventureKey}:${host.lang}:${topic.id}`;
-      const lesson = el("p", "", topic.lesson),
-        idea = el("aside", "study-key-idea", topic.idea),
-        prompt = el("p", "study-try-it", topic.tryIt),
-        editorLabel = el("label", "editor-label", `${host.lang} example · edit and run it`),
-        sample = el("textarea", "study-example-editor"),
-        resultOutput = el("pre", "studio-output study-result-output", "Run this topic's example to see the result."),
-        resultFeedback = el("p", "studio-feedback"),
-        runExample = button("Run study example", () => void runStudyExample(), "button primary");
-      sample.rows = 7;
-      sample.spellcheck = false;
-      sample.autocapitalize = "off";
-      sample.id = `study-example-${topic.id}`;
-      sample.setAttribute("aria-label", `${topic.title} ${host.lang} example code`);
-      editorLabel.htmlFor = sample.id;
-      try {
-        sample.value = localStorage.getItem(studyDraftKey) ?? topic.examples[host.lang].code;
-      } catch {
-        sample.value = topic.examples[host.lang].code;
-      }
-      sample.addEventListener("input", () => {
-        try {
-          localStorage.setItem(studyDraftKey, sample.value);
-        } catch {
-          resultFeedback.textContent = "This example stays available for the current session.";
-        }
-      });
-      resultFeedback.setAttribute("role", "status");
-      const runStudyExample = async () => {
-        runExample.disabled = true;
-        sample.disabled = true;
-        resultFeedback.textContent = `Running ${host.lang} · no hearts or gems are used.`;
-        try {
-          const result = await host.run(sample.value);
-          const error = executionError(result);
-          resultOutput.textContent = [result.stdout || "(No output)", result.stderr, error?.message]
-            .filter(Boolean)
-            .join("\n");
-          if (error) {
-            resultFeedback.textContent = `${beginnerHint(error.message, host.lang)} Practice is free; fix it and try again.`;
-          } else if (result.stdout.trim() === topic.examples[host.lang].output) {
-            saveStudyTopic(studyAdventureKey, topic.id);
-            const topicCount = readStudyProgress(studyAdventureKey).length;
-            resultFeedback.textContent = `Checkpoint complete · ${topicCount} / ${STUDY_CURRICULUM.length} topics practiced. Your progress is saved.`;
-            const overview = studyPane.querySelector<HTMLElement>(".study-overview"),
-              activeTopic = studyPane.querySelector<HTMLButtonElement>(".study-topic-button.active");
-            if (overview)
-              overview.textContent = `${topicCount} / ${STUDY_CURRICULUM.length} topics practiced · progress saves with this adventure`;
-            if (activeTopic) {
-              activeTopic.classList.add("complete");
-              activeTopic.textContent = `✓  ${topic.title}`;
-            }
-          } else {
-            resultFeedback.textContent = `It ran successfully. Compare your output with the goal: ${topic.examples[host.lang].output}`;
-          }
-        } catch {
-          resultFeedback.textContent =
-            "The runner could not start. Try again; no progress or game resources were spent.";
-        } finally {
-          runExample.disabled = false;
-          sample.disabled = false;
-        }
-      };
+      const taskProgress = readStudyTaskProgress(studyAdventureKey, topic.id);
+      const topicNumber = String(STUDY_CURRICULUM.indexOf(topic) + 1).padStart(2, "0");
       detail.append(
-        el(
-          "span",
-          "eyebrow",
-          `TOPIC ${String(STUDY_CURRICULUM.indexOf(topic) + 1).padStart(2, "0")} / ${STUDY_CURRICULUM.length}`,
-        ),
+        el("span", "eyebrow", `LEVEL ${topicNumber} / ${STUDY_CURRICULUM.length}`),
         el("h4", "", topic.title),
-        lesson,
-        idea,
-        prompt,
-        editorLabel,
-        sample,
-        el("p", "study-goal", `Goal output: ${topic.examples[host.lang].output}`),
-        runExample,
-        resultOutput,
-        resultFeedback,
+        el("p", "", topic.lesson),
+        el("p", "study-try-it", topic.tryIt),
+        el("aside", "study-key-idea", topic.idea),
       );
+      if (taskProgress >= STUDY_TASKS_PER_TOPIC) {
+        detail.append(
+          el("strong", "study-level-complete", "Level mastered · 8/8 tasks"),
+          el(
+            "p",
+            "",
+            "Your eight checkpoints are saved for this adventure. Choose another topic to continue or revisit this lesson.",
+          ),
+        );
+      } else {
+        const levelIndex = taskProgress;
+        const task = studyTaskFor(topic, host.lang, levelIndex);
+        const studyDraftKey = `codequest:study-draft:v2:${studyAdventureKey}:${host.lang}:${topic.id}:${levelIndex}`;
+        const taskPrompt = el("p", "study-try-it", task.prompt);
+        const editorLabel = el("label", "editor-label", `${host.lang} code · make the requested change`);
+        const sample = el("textarea", "study-example-editor");
+        const predictionLabel = el("label", "editor-label", "Your predicted output");
+        const prediction = el("input", "study-prediction");
+        const resultOutput = el("pre", "studio-output study-result-output", "Run your code to check this task.");
+        const resultFeedback = el("p", "studio-feedback study-task-feedback");
+        const runTaskButton = button("Run and check task", () => void runStudyTask(), "button primary");
+        const nextTaskButton = button("Next task", () => renderStudyPath(), "button primary");
+        sample.rows = 7;
+        sample.spellcheck = false;
+        sample.autocapitalize = "off";
+        sample.id = `study-example-${topic.id}`;
+        sample.setAttribute("aria-label", `${topic.title} ${host.lang} task ${levelIndex + 1} code`);
+        editorLabel.htmlFor = sample.id;
+        prediction.type = "text";
+        prediction.autocomplete = "off";
+        prediction.id = `study-prediction-${topic.id}`;
+        prediction.setAttribute("aria-label", `Predicted output for ${topic.title} task ${levelIndex + 1}`);
+        predictionLabel.htmlFor = prediction.id;
+        nextTaskButton.hidden = true;
+        nextTaskButton.textContent = levelIndex === STUDY_TASKS_PER_TOPIC - 1 ? "Finish level" : "Next task";
+        try {
+          sample.value = localStorage.getItem(studyDraftKey) ?? task.starter;
+        } catch {
+          sample.value = task.starter;
+        }
+        sample.addEventListener("input", () => {
+          try {
+            localStorage.setItem(studyDraftKey, sample.value);
+          } catch {
+            resultFeedback.textContent = "This example stays available for the current session.";
+          }
+        });
+        resultFeedback.setAttribute("role", "status");
+        const runStudyTask = async () => {
+          runTaskButton.disabled = true;
+          sample.disabled = true;
+          prediction.disabled = true;
+          resultFeedback.textContent = `Running ${host.lang} · no hearts or gems are used.`;
+          try {
+            const result = await host.run(sample.value);
+            const error = executionError(result);
+            resultOutput.textContent = [result.stdout || "(No output)", result.stderr, error?.message]
+              .filter(Boolean)
+              .join("\n");
+            if (error) {
+              resultFeedback.textContent = `${beginnerHint(error.message, host.lang)} Practice is free; fix it and try again.`;
+            } else if (result.stdout.trim() === task.output && prediction.value.trim() === task.output) {
+              if (!saveStudyTaskProgress(studyAdventureKey, topic.id, levelIndex + 1)) {
+                resultFeedback.textContent =
+                  "Correct! Browser storage is unavailable, so the checkpoint could not be saved.";
+              } else {
+                const currentTotal = readCompletedStudyTasks(studyAdventureKey);
+                const currentLevelProgress = readStudyTaskProgress(studyAdventureKey, topic.id);
+                const levelButton = studyPane.querySelector<HTMLButtonElement>(".study-topic-button.active");
+                const overview = studyPane.querySelector<HTMLElement>(".study-overview");
+                if (levelButton) {
+                  if (currentLevelProgress >= STUDY_TASKS_PER_TOPIC) {
+                    levelButton.classList.remove("in-progress");
+                    levelButton.classList.add("complete");
+                    levelButton.textContent = `✓  ${topicNumber}. ${topic.title}`;
+                  } else {
+                    levelButton.classList.add("in-progress");
+                    levelButton.textContent = `${currentLevelProgress}/${STUDY_TASKS_PER_TOPIC}  ${topicNumber}. ${topic.title}`;
+                  }
+                }
+                if (overview) {
+                  overview.textContent =
+                    currentTotal +
+                    " / " +
+                    STUDY_TOTAL_TASKS +
+                    " tasks complete · " +
+                    readStudyProgress(studyAdventureKey).length +
+                    " / " +
+                    STUDY_CURRICULUM.length +
+                    " levels mastered · saves with this adventure";
+                }
+                resultFeedback.textContent =
+                  "Task " +
+                  (levelIndex + 1) +
+                  "/" +
+                  STUDY_TASKS_PER_TOPIC +
+                  " complete. Your code and prediction match.";
+                nextTaskButton.hidden = false;
+              }
+            } else if (result.stdout.trim() === task.output) {
+              resultFeedback.textContent =
+                "Your code produced the right result. Your prediction was different; review it and run again.";
+            } else {
+              resultFeedback.textContent =
+                "It ran successfully. Check your code change and predicted output, then try again.";
+            }
+          } catch {
+            resultFeedback.textContent =
+              "The runner could not start. Try again; no progress or game resources were spent.";
+          } finally {
+            runTaskButton.disabled = false;
+            sample.disabled = false;
+            prediction.disabled = false;
+          }
+        };
+        detail.append(
+          el("span", "eyebrow", `TASK ${levelIndex + 1} / ${STUDY_TASKS_PER_TOPIC} · ${taskProgress} complete`),
+          taskPrompt,
+          editorLabel,
+          sample,
+          predictionLabel,
+          prediction,
+          runTaskButton,
+          nextTaskButton,
+          el("span", "studio-output-title", "OUTPUT"),
+          resultOutput,
+          resultFeedback,
+        );
+      }
     }
     layout.append(navigation, detail);
     studyPane.append(layout);

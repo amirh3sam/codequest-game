@@ -1,5 +1,12 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (176-task Study Path)
+- Expanded all 22 study topics to eight sequential checkpoints each: 176 per language, with separate saved progress and editable drafts for each adventure. Each checkpoint requires both a correct program output and a correct prediction; finishing a topic marks that level mastered. Existing one-checkpoint topic completions migrate as task 1.
+- Added progress counts for tasks and mastered levels. The Code Scholar badge now requires all 176 tasks. Java's exception example uses a custom message field supported by the browser Java runtime.
+- **Checks:** all 88 topic starters ran successfully across Java, JavaScript, TypeScript and Python. The eight-task completion flow passed in Chromium; old progress migration and task ordering passed unit tests. Tablet practice and Explorer resize regressions passed. All 246 unit tests, lint, TypeScript and production dependency audit passed (zero vulnerabilities); production build passed.
+- **Next:** publish this course expansion, then add another arcade challenge to make free play more rewarding.
+- **Blockers:** none.
+
 ## 2026-10-23 (22-topic study path and mouse steering)
 - Added every category from the supplied Java study screenshot as a Study Path in the tablet. All 22 topics have a short explanation, an editable runnable example and a free checkpoint in Java, JavaScript, TypeScript and Python. Progress and drafts save per adventure; completing all topics unlocks the Code Scholar badge. The JDK/IntelliJ topic explains the browser setup and equivalent local tools for each language.
 - Mouse users can click a destination to walk or hold the left button and drag to steer. The field guide and HUD explain the controls; collision rules still stop the character at solid objects.

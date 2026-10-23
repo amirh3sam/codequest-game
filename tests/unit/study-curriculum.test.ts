@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   readStudyProgress,
+  readStudyTaskProgress,
   STUDY_CURRICULUM,
-  saveStudyTopic,
+  STUDY_TASKS_PER_TOPIC,
+  saveStudyTaskProgress,
   studyProgressKey,
+  studyTaskFor,
 } from "../../src/content/study-curriculum";
 
 describe("full study path curriculum", () => {
@@ -18,27 +21,47 @@ describe("full study path curriculum", () => {
     });
   });
 
-  it("includes the 22 study categories with runnable samples for all four languages", () => {
+  it("includes 22 levels with eight tasks and runnable examples for every language", () => {
     expect(STUDY_CURRICULUM).toHaveLength(22);
     expect(new Set(STUDY_CURRICULUM.map(({ id }) => id)).size).toBe(22);
     for (const topic of STUDY_CURRICULUM) {
       expect(topic.title).toBeTruthy();
       expect(topic.lesson.length).toBeGreaterThan(60);
+      expect(topic.practice.variations).toHaveLength(STUDY_TASKS_PER_TOPIC);
       for (const lang of ["java", "javascript", "typescript", "python"] as const) {
         expect(topic.examples[lang].code.length).toBeGreaterThan(0);
         expect(topic.examples[lang].output.length).toBeGreaterThan(0);
+        expect(topic.examples[lang].code).toContain(topic.practice.token[lang]);
+        for (let taskIndex = 0; taskIndex < STUDY_TASKS_PER_TOPIC; taskIndex++) {
+          const task = studyTaskFor(topic, lang, taskIndex);
+          expect(task.starter.length).toBeGreaterThan(0);
+          expect(task.solution.length).toBeGreaterThan(0);
+          expect(task.output.length).toBeGreaterThan(0);
+        }
       }
     }
   });
 
-  it("saves unique completed topics separately for each adventure", () => {
+  it("saves all eight task checkpoints separately for each adventure", () => {
     const topic = STUDY_CURRICULUM[0];
     if (!topic) throw new Error("Missing study topic");
-    expect(saveStudyTopic("nova", topic.id)).toBe(true);
-    expect(saveStudyTopic("nova", topic.id)).toBe(true);
+    for (let count = 1; count <= STUDY_TASKS_PER_TOPIC; count++)
+      expect(saveStudyTaskProgress("nova", topic.id, count)).toBe(true);
+    expect(readStudyTaskProgress("nova", topic.id)).toBe(8);
     expect(readStudyProgress("nova")).toEqual([topic.id]);
     expect(readStudyProgress("ari")).toEqual([]);
     expect(studyProgressKey("nova")).not.toBe(studyProgressKey("ari"));
-    expect(saveStudyTopic("nova", "not-a-topic")).toBe(false);
+    expect(saveStudyTaskProgress("nova", topic.id, 8)).toBe(false);
+    expect(saveStudyTaskProgress("nova", "not-a-topic", 1)).toBe(false);
+  });
+
+  it("keeps a prior one-checkpoint completion as the first task of its level", () => {
+    const topic = STUDY_CURRICULUM[0];
+    if (!topic) throw new Error("Missing study topic");
+    localStorage.setItem(`codequest:study-progress:v1:legacy`, JSON.stringify([topic.id]));
+    expect(readStudyTaskProgress("legacy", topic.id)).toBe(1);
+    expect(readStudyProgress("legacy")).toEqual([]);
+    expect(saveStudyTaskProgress("legacy", topic.id, 2)).toBe(true);
+    expect(readStudyTaskProgress("legacy", topic.id)).toBe(2);
   });
 });

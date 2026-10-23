@@ -2277,6 +2277,10 @@ small {
 .study-topic-button.complete {
   color: #8ce1c4;
 }
+
+.study-topic-button.in-progress {
+  color: #f1d291;
+}
 .study-topic-detail {
   min-width: 0;
   overflow: auto;

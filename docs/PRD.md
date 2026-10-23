@@ -37,9 +37,11 @@ Project files and badges remain local to each browser adventure unless the
 player exports a backup; this does not add accounts, cloud saves or multiplayer.
 
 The tablet's Study Path now covers all 22 categories in the supplied Java study
-list, adapted for JavaScript, TypeScript, Python and Java. Each topic includes a
-short lesson, language-specific editable code, a free run-and-checkpoint exercise,
-and per-adventure progress. The JDK/IntelliJ setup topic explains the browser
+list, adapted for JavaScript, TypeScript, Python and Java. Each topic has eight
+sequential, free checkpoints that ask learners to predict output and run an
+editable example: 176 tasks per language. Progress and code drafts save per
+adventure; existing one-task topic completions carry forward as task one. The
+JDK/IntelliJ setup topic explains the browser
 workflow and equivalent local tools for each language. On the map, players can
 click a destination to walk or hold the left mouse button and drag to steer.
 

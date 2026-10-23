@@ -1,6 +1,7 @@
 import type { Lang } from "../runners/types";
 
 export type StudyExample = { code: string; output: string };
+export type StudyTaskVariation = { value: string; output: string };
 export type StudyTopic = {
   id: string;
   title: string;
@@ -8,12 +9,17 @@ export type StudyTopic = {
   idea: string;
   tryIt: string;
   examples: Record<Lang, StudyExample>;
+  practice: {
+    token: Record<Lang, string>;
+    action: string;
+    variations: readonly StudyTaskVariation[];
+  };
 };
 
 const example = (code: string, output: string): StudyExample => ({ code, output });
 
 /** The complete topic list adapted from the player's study-plan screenshot. */
-export const STUDY_CURRICULUM: readonly StudyTopic[] = [
+const TOPICS: Omit<StudyTopic, "practice">[] = [
   {
     id: "review-sessions",
     title: "Live Review Sessions",
@@ -151,16 +157,16 @@ export const STUDY_CURRICULUM: readonly StudyTopic[] = [
     tryIt: "Change the condition or value and see which message appears.",
     examples: {
       javascript: example(
-        'const hasKey = true;\nif (hasKey) {\n  console.log("Unlocked");\n} else {\n  console.log("Locked");\n}',
+        'const keys = 1;\nif (keys >= 1) {\n  console.log("Unlocked");\n} else {\n  console.log("Locked");\n}',
         "Unlocked",
       ),
       typescript: example(
-        'const hasKey: boolean = true;\nif (hasKey) {\n  console.log("Unlocked");\n} else {\n  console.log("Locked");\n}',
+        'const keys: number = 1;\nif (keys >= 1) {\n  console.log("Unlocked");\n} else {\n  console.log("Locked");\n}',
         "Unlocked",
       ),
-      python: example('has_key = True\nif has_key:\n    print("Unlocked")\nelse:\n    print("Locked")', "Unlocked"),
+      python: example('keys = 1\nif keys >= 1:\n    print("Unlocked")\nelse:\n    print("Locked")', "Unlocked"),
       java: example(
-        'public class Main {\n    public static void main(String[] args) {\n        boolean hasKey = true;\n        if (hasKey) {\n            System.out.println("Unlocked");\n        } else {\n            System.out.println("Locked");\n        }\n    }\n}',
+        'public class Main {\n    public static void main(String[] args) {\n        int keys = 1;\n        if (keys >= 1) {\n            System.out.println("Unlocked");\n        } else {\n            System.out.println("Locked");\n        }\n    }\n}',
         "Unlocked",
       ),
     },
@@ -178,7 +184,7 @@ export const STUDY_CURRICULUM: readonly StudyTopic[] = [
         "let total: number = 0;\nfor (let i = 1; i <= 3; i++) {\n  total += i;\n}\nconsole.log(total);",
         "6",
       ),
-      python: example("total = 0\nfor number in range(1, 4):\n    total += number\nprint(total)", "6"),
+      python: example("total = 0\nfor number in range(1, 1 + 3):\n    total += number\nprint(total)", "6"),
       java: example(
         "public class Main {\n    public static void main(String[] args) {\n        int total = 0;\n        for (int i = 1; i <= 3; i++) {\n            total += i;\n        }\n        System.out.println(total);\n    }\n}",
         "6",
@@ -270,15 +276,18 @@ export const STUDY_CURRICULUM: readonly StudyTopic[] = [
     idea: "Choose a collection that can grow when the number of values changes.",
     tryIt: "Add another item and predict the new count.",
     examples: {
-      javascript: example('const items = ["map", "key"];\nitems.push("badge");\nconsole.log(items.length);', "3"),
-      typescript: example(
-        'const items: string[] = ["map", "key"];\nitems.push("badge");\nconsole.log(items.length);',
-        "3",
+      javascript: example(
+        'const items = Array.from({ length: 3 }, (_, i) => "item" + i);\nitems.push("badge");\nconsole.log(items.length);',
+        "4",
       ),
-      python: example('items = ["map", "key"]\nitems.append("badge")\nprint(len(items))', "3"),
+      typescript: example(
+        'const items: string[] = Array.from({ length: 3 }, (_, i) => "item" + i);\nitems.push("badge");\nconsole.log(items.length);',
+        "4",
+      ),
+      python: example('items = ["item" + str(i) for i in range(3)]\nitems.append("badge")\nprint(len(items))', "4"),
       java: example(
-        'import java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        ArrayList<String> items = new ArrayList<>();\n        items.add("map");\n        items.add("key");\n        items.add("badge");\n        System.out.println(items.size());\n    }\n}',
-        "3",
+        'import java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        ArrayList<String> items = new ArrayList<>();\n        for (int i = 0; i < 3; i++) items.add("item" + i);\n        items.add("badge");\n        System.out.println(items.size());\n    }\n}',
+        "4",
       ),
     },
   },
@@ -395,17 +404,20 @@ export const STUDY_CURRICULUM: readonly StudyTopic[] = [
     tryIt: "Change the thrown message and see where the handler catches it.",
     examples: {
       javascript: example(
-        'try {\n  throw new Error("offline");\n} catch (error) {\n  console.log("Recovered");\n}',
-        "Recovered",
+        'try {\n  throw new Error("offline");\n} catch (error) {\n  console.log("Recovered: " + error.message);\n}',
+        "Recovered: offline",
       ),
       typescript: example(
-        'try {\n  throw new Error("offline");\n} catch (error) {\n  console.log("Recovered");\n}',
-        "Recovered",
+        'try {\n  throw new Error("offline");\n} catch (error) {\n  console.log("Recovered: " + (error as Error).message);\n}',
+        "Recovered: offline",
       ),
-      python: example('try:\n    raise ValueError("offline")\nexcept ValueError:\n    print("Recovered")', "Recovered"),
+      python: example(
+        'try:\n    raise ValueError("offline")\nexcept ValueError as error:\n    print("Recovered: " + str(error))',
+        "Recovered: offline",
+      ),
       java: example(
-        'public class Main {\n    public static void main(String[] args) {\n        try {\n            throw new IllegalStateException("offline");\n        } catch (IllegalStateException error) {\n            System.out.println("Recovered");\n        }\n    }\n}',
-        "Recovered",
+        'public class Main {\n    static class QuestException extends RuntimeException {\n        private final String questMessage;\n        QuestException(String message) { this.questMessage = message; }\n        String message() { return questMessage; }\n    }\n    public static void main(String[] args) {\n        try {\n            throw new QuestException("offline");\n        } catch (QuestException error) {\n            System.out.println("Recovered: " + error.message());\n        }\n    }\n}',
+        "Recovered: offline",
       ),
     },
   },
@@ -417,14 +429,20 @@ export const STUDY_CURRICULUM: readonly StudyTopic[] = [
     idea: "Pick a data structure based on the operations you need.",
     tryIt: "Add a unique item or a duplicate and observe the set size.",
     examples: {
-      javascript: example('const areas = new Set(["hub", "park", "hub", "lab"]);\nconsole.log(areas.size);', "3"),
-      typescript: example(
-        'const areas: Set<string> = new Set(["hub", "park", "hub", "lab"]);\nconsole.log(areas.size);',
+      javascript: example(
+        'const areas = new Set(Array.from({ length: 3 }, (_, i) => "area" + i));\nif (areas.size > 0) areas.add("area0");\nconsole.log(areas.size);',
         "3",
       ),
-      python: example('areas = {"hub", "park", "hub", "lab"}\nprint(len(areas))', "3"),
+      typescript: example(
+        'const areas: Set<string> = new Set(Array.from({ length: 3 }, (_, i) => "area" + i));\nif (areas.size > 0) areas.add("area0");\nconsole.log(areas.size);',
+        "3",
+      ),
+      python: example(
+        'areas = {"area" + str(i) for i in range(3)}\nif areas:\n    areas.add("area0")\nprint(len(areas))',
+        "3",
+      ),
       java: example(
-        'import java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        Set<String> areas = new HashSet<>(List.of("hub", "park", "hub", "lab"));\n        System.out.println(areas.size());\n    }\n}',
+        'import java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        Set<String> areas = new HashSet<>();\n        for (int i = 0; i < 3; i++) areas.add("area" + i);\n        if (!areas.isEmpty()) areas.add("area0");\n        System.out.println(areas.size());\n    }\n}',
         "3",
       ),
     },
@@ -462,45 +480,344 @@ export const STUDY_CURRICULUM: readonly StudyTopic[] = [
         "READY",
       ),
       typescript: example(
-        'type Status = "READY" | "BUSY";\nconst status: Status = "READY";\nconsole.log(status);',
+        'enum Status { READY = "READY", BUSY = "BUSY", TESTING = "TESTING", PAUSED = "PAUSED", OFFLINE = "OFFLINE", LOADING = "LOADING", SAVED = "SAVED", DONE = "DONE" }\nconsole.log(Status.READY);',
         "READY",
       ),
       python: example(
-        'from enum import Enum\nclass Status(Enum):\n    READY = "READY"\n    BUSY = "BUSY"\nprint(Status.READY.value)',
+        'from enum import Enum\nclass Status(Enum):\n    READY = "READY"\n    BUSY = "BUSY"\n    TESTING = "TESTING"\n    PAUSED = "PAUSED"\n    OFFLINE = "OFFLINE"\n    LOADING = "LOADING"\n    SAVED = "SAVED"\n    DONE = "DONE"\nprint(Status.READY.value)',
         "READY",
       ),
       java: example(
-        "enum Status { READY, BUSY }\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(Status.READY);\n    }\n}",
+        "enum Status { READY, BUSY, TESTING, PAUSED, OFFLINE, LOADING, SAVED, DONE }\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(Status.READY);\n    }\n}",
         "READY",
       ),
     },
   },
 ];
 
-const STUDY_IDS = new Set(STUDY_CURRICULUM.map(({ id }) => id));
+type PracticeConfig = StudyTopic["practice"];
+const allLanguages = (token: string): Record<Lang, string> => ({
+  java: token,
+  javascript: token,
+  typescript: token,
+  python: token,
+});
+const practice = (token: string, action: string, pairs: [string, string][]): PracticeConfig => ({
+  token: allLanguages(token),
+  action,
+  variations: pairs.map(([value, output]) => ({ value, output })),
+});
+const PRACTICE: Record<string, PracticeConfig> = {
+  "review-sessions": practice("input", "word in the review sequence", [
+    ["input", "input -> process -> output"],
+    ["data", "data -> process -> output"],
+    ["event", "event -> process -> output"],
+    ["signal", "signal -> process -> output"],
+    ["question", "question -> process -> output"],
+    ["player", "player -> process -> output"],
+    ["message", "message -> process -> output"],
+    ["result", "result -> process -> output"],
+  ]),
+  "computer-programming": practice("4", "input number", [
+    ["4", "8"],
+    ["1", "2"],
+    ["2", "4"],
+    ["3", "6"],
+    ["5", "10"],
+    ["6", "12"],
+    ["7", "14"],
+    ["8", "16"],
+  ]),
+  "language-tools": practice("Editor ready", "ready-check message", [
+    ["Editor ready", "Editor ready"],
+    ["Workspace ready", "Workspace ready"],
+    ["Tools ready", "Tools ready"],
+    ["Runner ready", "Runner ready"],
+    ["IDE ready", "IDE ready"],
+    ["Project ready", "Project ready"],
+    ["Course ready", "Course ready"],
+    ["Game ready", "Game ready"],
+  ]),
+  "editor-hello-world": practice("world", "word in the greeting", [
+    ["world", "Hello, world!"],
+    ["CodeQuest", "Hello, CodeQuest!"],
+    ["Nova", "Hello, Nova!"],
+    ["Ava", "Hello, Ava!"],
+    ["developer", "Hello, developer!"],
+    ["student", "Hello, student!"],
+    ["programmer", "Hello, programmer!"],
+    ["friend", "Hello, friend!"],
+  ]),
+  "language-introduction": practice("Language ready", "status message", [
+    ["Language ready", "Language ready"],
+    ["Java ready", "Java ready"],
+    ["Web ready", "Web ready"],
+    ["Python ready", "Python ready"],
+    ["Types ready", "Types ready"],
+    ["Code ready", "Code ready"],
+    ["Build ready", "Build ready"],
+    ["Quest ready", "Quest ready"],
+  ]),
+  "variables-types": practice("4", "starting battery value", [
+    ["4", "7"],
+    ["1", "4"],
+    ["2", "5"],
+    ["3", "6"],
+    ["5", "8"],
+    ["6", "9"],
+    ["7", "10"],
+    ["8", "11"],
+  ]),
+  operators: practice("10", "number before the remainder operator", [
+    ["10", "1"],
+    ["4", "1"],
+    ["5", "2"],
+    ["7", "1"],
+    ["8", "2"],
+    ["11", "2"],
+    ["13", "1"],
+    ["14", "2"],
+  ]),
+  "decision-statements": practice("1", "number of keys", [
+    ["1", "Unlocked"],
+    ["0", "Locked"],
+    ["2", "Unlocked"],
+    ["3", "Unlocked"],
+    ["4", "Unlocked"],
+    ["5", "Unlocked"],
+    ["6", "Unlocked"],
+    ["7", "Unlocked"],
+  ]),
+  loops: practice("3", "loop limit", [
+    ["3", "6"],
+    ["0", "0"],
+    ["1", "1"],
+    ["2", "3"],
+    ["4", "10"],
+    ["5", "15"],
+    ["6", "21"],
+    ["7", "28"],
+  ]),
+  "methods-functions": practice("3", "second number passed to add", [
+    ["3", "7"],
+    ["0", "4"],
+    ["1", "5"],
+    ["2", "6"],
+    ["4", "8"],
+    ["5", "9"],
+    ["6", "10"],
+    ["7", "11"],
+  ]),
+  "classes-objects-one": practice("Nova", "player name", [
+    ["Nova", "Hello, Nova"],
+    ["Ari", "Hello, Ari"],
+    ["Kai", "Hello, Kai"],
+    ["Mina", "Hello, Mina"],
+    ["Lee", "Hello, Lee"],
+    ["Sam", "Hello, Sam"],
+    ["Rin", "Hello, Rin"],
+    ["Jo", "Hello, Jo"],
+  ]),
+  "string-class": practice("code quest", "phrase converted to uppercase", [
+    ["code quest", "CODE QUEST"],
+    ["game map", "GAME MAP"],
+    ["bright city", "BRIGHT CITY"],
+    ["blue badge", "BLUE BADGE"],
+    ["small steps", "SMALL STEPS"],
+    ["smart robot", "SMART ROBOT"],
+    ["open source", "OPEN SOURCE"],
+    ["fun project", "FUN PROJECT"],
+  ]),
+  arrays: practice("6", "last number in the array", [
+    ["6", "12"],
+    ["1", "7"],
+    ["3", "9"],
+    ["5", "11"],
+    ["7", "13"],
+    ["8", "14"],
+    ["9", "15"],
+    ["10", "16"],
+  ]),
+  "array-list": practice("3", "number of generated items before adding the badge", [
+    ["3", "4"],
+    ["0", "1"],
+    ["1", "2"],
+    ["2", "3"],
+    ["4", "5"],
+    ["5", "6"],
+    ["6", "7"],
+    ["7", "8"],
+  ]),
+  "classes-objects-two": practice("Ava", "player name passed into Badge", [
+    ["Ava", "Ava: Explorer"],
+    ["Kai", "Kai: Explorer"],
+    ["Mina", "Mina: Explorer"],
+    ["Lee", "Lee: Explorer"],
+    ["Sam", "Sam: Explorer"],
+    ["Rin", "Rin: Explorer"],
+    ["Jo", "Jo: Explorer"],
+    ["Noor", "Noor: Explorer"],
+  ]),
+  encapsulation: practice("3", "amount added to the private wallet", [
+    ["3", "5"],
+    ["0", "2"],
+    ["1", "3"],
+    ["2", "4"],
+    ["4", "6"],
+    ["5", "7"],
+    ["6", "8"],
+    ["7", "9"],
+  ]),
+  inheritance: practice("Lee", "developer name", [
+    ["Lee", "Coder: Lee"],
+    ["Ari", "Coder: Ari"],
+    ["Kai", "Coder: Kai"],
+    ["Mina", "Coder: Mina"],
+    ["Sam", "Coder: Sam"],
+    ["Rin", "Coder: Rin"],
+    ["Jo", "Coder: Jo"],
+    ["Noor", "Coder: Noor"],
+  ]),
+  "abstraction-polymorphism": practice("Ready to code", "message returned by the Coder implementation", [
+    ["Ready to code", "Ready to code"],
+    ["Ready to build", "Ready to build"],
+    ["Ready to test", "Ready to test"],
+    ["Ready to explore", "Ready to explore"],
+    ["Ready to learn", "Ready to learn"],
+    ["Ready to play", "Ready to play"],
+    ["Ready to ship", "Ready to ship"],
+    ["Ready to help", "Ready to help"],
+  ]),
+  "exceptions-errors": practice("offline", "message inside the thrown exception", [
+    ["offline", "Recovered: offline"],
+    ["missing", "Recovered: missing"],
+    ["timeout", "Recovered: timeout"],
+    ["locked", "Recovered: locked"],
+    ["broken", "Recovered: broken"],
+    ["busy", "Recovered: busy"],
+    ["empty", "Recovered: empty"],
+    ["unknown", "Recovered: unknown"],
+  ]),
+  "collections-framework": practice("3", "number of unique areas to place in the Set", [
+    ["3", "3"],
+    ["0", "0"],
+    ["1", "1"],
+    ["2", "2"],
+    ["4", "4"],
+    ["5", "5"],
+    ["6", "6"],
+    ["7", "7"],
+  ]),
+  maps: practice("Ada", "name stored for the pilot key", [
+    ["Ada", "Ada"],
+    ["Mina", "Mina"],
+    ["Kai", "Kai"],
+    ["Ava", "Ava"],
+    ["Noor", "Noor"],
+    ["Rin", "Rin"],
+    ["Sam", "Sam"],
+    ["Jo", "Jo"],
+  ]),
+  "extra-topics": practice("Status.READY", "status enum or constant selected", [
+    ["Status.READY", "READY"],
+    ["Status.BUSY", "BUSY"],
+    ["Status.TESTING", "TESTING"],
+    ["Status.PAUSED", "PAUSED"],
+    ["Status.OFFLINE", "OFFLINE"],
+    ["Status.LOADING", "LOADING"],
+    ["Status.SAVED", "SAVED"],
+    ["Status.DONE", "DONE"],
+  ]),
+};
 
-export function studyProgressKey(adventureId: string): string {
-  return `codequest:study-progress:v1:${adventureId}`;
+export const STUDY_CURRICULUM: readonly StudyTopic[] = TOPICS.map((topic) => ({
+  ...topic,
+  practice:
+    PRACTICE[topic.id] ??
+    (() => {
+      throw new Error(`Missing eight-task practice for ${topic.id}`);
+    })(),
+}));
+
+const STUDY_IDS = new Set(STUDY_CURRICULUM.map(({ id }) => id));
+export const STUDY_TASKS_PER_TOPIC = 8;
+export const STUDY_TOTAL_TASKS = STUDY_CURRICULUM.length * STUDY_TASKS_PER_TOPIC;
+
+export type StudyTask = StudyTaskVariation & { index: number; prompt: string; starter: string; solution: string };
+
+export function studyTaskFor(topic: StudyTopic, lang: Lang, index: number): StudyTask {
+  if (!Number.isSafeInteger(index) || index < 0 || index >= STUDY_TASKS_PER_TOPIC)
+    throw new Error("Study task number is out of range.");
+  const variation = topic.practice.variations[index];
+  if (!variation) throw new Error(`Missing task ${index + 1} for ${topic.title}.`);
+  const starter = topic.examples[lang].code;
+  const token = topic.practice.token[lang];
+  if (!starter.includes(token))
+    throw new Error(`The ${lang} example for ${topic.title} is missing its practice value.`);
+  const solution = index === 0 ? starter : starter.replace(token, variation.value);
+  const prompt =
+    index === 0
+      ? "Trace the starter, enter the output you predict, then run it to check your answer."
+      : `Change the ${topic.practice.action} to ${variation.value}. Predict the output, enter your prediction, then run the code.`;
+  return { ...variation, index, prompt, starter, solution };
 }
 
-export function readStudyProgress(adventureId: string): string[] {
+export function studyProgressKey(adventureId: string): string {
+  return `codequest:study-progress:v2:${adventureId}`;
+}
+
+function readStudyCounts(adventureId: string): Record<string, number> {
   try {
-    const value: unknown = JSON.parse(localStorage.getItem(studyProgressKey(adventureId)) ?? "[]");
-    return Array.isArray(value)
-      ? [...new Set(value.filter((id): id is string => typeof id === "string" && STUDY_IDS.has(id)))]
-      : [];
+    const value: unknown = JSON.parse(localStorage.getItem(studyProgressKey(adventureId)) ?? "null");
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      return Object.fromEntries(
+        Object.entries(value).filter(
+          ([id, count]) =>
+            STUDY_IDS.has(id) &&
+            Number.isSafeInteger(count) &&
+            Number(count) >= 0 &&
+            Number(count) <= STUDY_TASKS_PER_TOPIC,
+        ),
+      ) as Record<string, number>;
+    }
+    // Upgrade the previous one-checkpoint study path without discarding those completions.
+    const previous: unknown = JSON.parse(localStorage.getItem(`codequest:study-progress:v1:${adventureId}`) ?? "[]");
+    if (!Array.isArray(previous)) return {};
+    return Object.fromEntries(
+      previous.filter((id): id is string => typeof id === "string" && STUDY_IDS.has(id)).map((id) => [id, 1]),
+    );
   } catch {
-    return [];
+    return {};
   }
 }
 
-export function saveStudyTopic(adventureId: string, topicId: string): boolean {
-  if (!STUDY_IDS.has(topicId)) return false;
+export function readStudyTaskProgress(adventureId: string, topicId: string): number {
+  if (!STUDY_IDS.has(topicId)) return 0;
+  return readStudyCounts(adventureId)[topicId] ?? 0;
+}
+
+export function readCompletedStudyTasks(adventureId: string): number {
+  return Object.values(readStudyCounts(adventureId)).reduce((total, count) => total + count, 0);
+}
+
+export function readStudyProgress(adventureId: string): string[] {
+  const progress = readStudyCounts(adventureId);
+  return STUDY_CURRICULUM.filter(({ id }) => (progress[id] ?? 0) >= STUDY_TASKS_PER_TOPIC).map(({ id }) => id);
+}
+
+export function saveStudyTaskProgress(adventureId: string, topicId: string, completedTasks: number): boolean {
+  if (
+    !STUDY_IDS.has(topicId) ||
+    !Number.isSafeInteger(completedTasks) ||
+    completedTasks < 1 ||
+    completedTasks > STUDY_TASKS_PER_TOPIC ||
+    completedTasks !== readStudyTaskProgress(adventureId, topicId) + 1
+  )
+    return false;
   try {
-    localStorage.setItem(
-      studyProgressKey(adventureId),
-      JSON.stringify([...new Set([...readStudyProgress(adventureId), topicId])]),
-    );
+    const progress = readStudyCounts(adventureId);
+    progress[topicId] = completedTasks;
+    localStorage.setItem(studyProgressKey(adventureId), JSON.stringify(progress));
     return true;
   } catch {
     return false;
