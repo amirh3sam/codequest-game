@@ -135,6 +135,99 @@ export function openTablet(host: TabletHost): () => void {
     }
   }
   const fileTree = el("aside", "studio-explorer");
+  const explorerDivider = el("div", "studio-resizer");
+  explorerDivider.setAttribute("role", "separator");
+  explorerDivider.setAttribute("aria-label", "Resize file explorer");
+  explorerDivider.tabIndex = 0;
+  const explorerWidthKey = "codequest:explorer-width:v1";
+  const explorerHeightKey = "codequest:explorer-height:v1";
+  const readPanelSize = (key: string, fallback: number, min: number, max: number): number => {
+    try {
+      const value = Number(localStorage.getItem(key));
+      return Number.isFinite(value) && value >= min && value <= max ? value : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+  const setExplorerSize = (width: number, height: number) => {
+    editorPane.style.setProperty("--explorer-width", `${width}px`);
+    editorPane.style.setProperty("--explorer-height", `${height}px`);
+    explorerDivider.setAttribute(
+      "aria-valuenow",
+      String(Math.round(matchMedia("(max-width: 700px)").matches ? height : width)),
+    );
+  };
+  let explorerWidth = readPanelSize(explorerWidthKey, 185, 150, 420);
+  let explorerHeight = readPanelSize(explorerHeightKey, 145, 96, 280);
+  setExplorerSize(explorerWidth, explorerHeight);
+  const mobileExplorer = () => {
+    const mobile = matchMedia("(max-width: 700px)").matches;
+    explorerDivider.setAttribute("aria-orientation", mobile ? "horizontal" : "vertical");
+    explorerDivider.setAttribute("aria-valuemin", mobile ? "96" : "150");
+    explorerDivider.setAttribute("aria-valuemax", mobile ? "280" : "420");
+    setExplorerSize(explorerWidth, explorerHeight);
+  };
+  window.addEventListener("resize", mobileExplorer);
+  mobileExplorer();
+  explorerDivider.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0 && event.pointerType !== "touch") return;
+    event.preventDefault();
+    explorerDivider.setPointerCapture(event.pointerId);
+    const mobile = matchMedia("(max-width: 700px)").matches;
+    const start = mobile ? event.clientY : event.clientX;
+    const initial = mobile ? explorerHeight : explorerWidth;
+    const min = mobile ? 96 : 150;
+    const max = mobile ? 280 : 420;
+    const onMove = (move: PointerEvent) => {
+      const next = Math.round(Math.min(max, Math.max(min, initial + (mobile ? move.clientY : move.clientX) - start)));
+      if (mobile) explorerHeight = next;
+      else explorerWidth = next;
+      setExplorerSize(explorerWidth, explorerHeight);
+    };
+    const onUp = () => {
+      explorerDivider.removeEventListener("pointermove", onMove);
+      explorerDivider.removeEventListener("pointerup", onUp);
+      explorerDivider.removeEventListener("pointercancel", onUp);
+      try {
+        localStorage.setItem(
+          mobile ? explorerHeightKey : explorerWidthKey,
+          String(mobile ? explorerHeight : explorerWidth),
+        );
+      } catch {
+        // Resizing still works for this session when storage is unavailable.
+      }
+    };
+    explorerDivider.addEventListener("pointermove", onMove);
+    explorerDivider.addEventListener("pointerup", onUp);
+    explorerDivider.addEventListener("pointercancel", onUp);
+  });
+  explorerDivider.addEventListener("keydown", (event) => {
+    const mobile = matchMedia("(max-width: 700px)").matches;
+    const direction = mobile
+      ? event.key === "ArrowDown"
+        ? 1
+        : event.key === "ArrowUp"
+          ? -1
+          : 0
+      : event.key === "ArrowRight"
+        ? 1
+        : event.key === "ArrowLeft"
+          ? -1
+          : 0;
+    if (!direction) return;
+    event.preventDefault();
+    if (mobile) explorerHeight = Math.min(280, Math.max(96, explorerHeight + direction * (event.shiftKey ? 32 : 12)));
+    else explorerWidth = Math.min(420, Math.max(150, explorerWidth + direction * (event.shiftKey ? 32 : 12)));
+    setExplorerSize(explorerWidth, explorerHeight);
+    try {
+      localStorage.setItem(
+        mobile ? explorerHeightKey : explorerWidthKey,
+        String(mobile ? explorerHeight : explorerWidth),
+      );
+    } catch {
+      // Keyboard resizing still works for this session when storage is unavailable.
+    }
+  });
   const workspace = el("div", "studio-workspace"),
     codeGrid = el("div", "studio-code-grid");
   const lines = el("pre", "studio-lines"),
@@ -839,7 +932,7 @@ export function openTablet(host: TabletHost): () => void {
   workspace.append(editorHeader, codeGrid, toolbar);
   if (javaShortcutHint) workspace.append(javaShortcutHint);
   workspace.append(inlineConsole, feedback, debugHelp);
-  editorPane.append(fileTree, workspace);
+  editorPane.append(fileTree, explorerDivider, workspace);
   examplesPane.append(
     el("h3", "", "Start with something small"),
     el("p", "", "Examples use your selected language. Inserting one replaces the current practice draft."),
@@ -1062,6 +1155,7 @@ export function openTablet(host: TabletHost): () => void {
   const close = presentTabletOpening(panel, host.kind, host.name, host.focusCamera, host.animate);
   return () => {
     window.clearTimeout(saveTimer);
+    window.removeEventListener("resize", mobileExplorer);
     if (connectedFolder) void writeLocalFile(connectedFolder, activePath, code.value);
     const closingEditor = monacoEditor;
     monacoEditor = null;

@@ -1,5 +1,10 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (resizable tablet Explorer)
+- Added a draggable divider between the Explorer and editor. It resizes the Explorer width on desktop and its height on narrow screens, supports arrow-key adjustments, has min/max bounds, and remembers both sizes locally.
+- **Checks:** the desktop/mobile drag browser test passed; lint, TypeScript, all 243 unit tests and production build passed.
+- **Release:** pending public push and Vercel deployment.
+
 ## 2026-10-23 (project quests, debugging guide, badges and project sharing)
 - Added a two-step Badge Builder quest that practices class composition across separate files in JavaScript, TypeScript, Python and Java. Its workspace and milestone progress are saved per adventure, separately from the player's regular project.
 - Tablet and mission editors now translate diagnostics into beginner-friendly tips and offer a Go to line action. Tablet line hints map bundle offsets back to the player's source file.

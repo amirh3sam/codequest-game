@@ -54,6 +54,38 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
   });
 }
 
+test("Explorer divider resizes by dragging on desktop and mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await start(page, "javascript");
+  await page.keyboard.press("t");
+  const divider = page.getByRole("separator", { name: "Resize file explorer" });
+  const explorer = page.locator(".studio-explorer");
+  const drag = async (deltaX: number, deltaY: number) => {
+    const box = await divider.boundingBox();
+    if (!box) throw new Error("Explorer divider is not visible");
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + deltaX, y + deltaY);
+    await page.mouse.up();
+  };
+  const initialWidth = (await explorer.boundingBox())?.width ?? 0;
+  await drag(70, 0);
+  await expect.poll(async () => (await explorer.boundingBox())?.width ?? 0).toBeGreaterThan(initialWidth + 50);
+  await expect(divider).toHaveAttribute("aria-orientation", "vertical");
+  expect(await page.evaluate(() => localStorage.getItem("codequest:explorer-width:v1"))).toBeTruthy();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(divider).toHaveAttribute("aria-orientation", "horizontal");
+  const initialHeight = (await explorer.boundingBox())?.height ?? 0;
+  await drag(0, 45);
+  await expect.poll(async () => (await explorer.boundingBox())?.height ?? 0).toBeGreaterThan(initialHeight + 25);
+  expect(await page.evaluate(() => localStorage.getItem("codequest:explorer-height:v1"))).toBeTruthy();
+  await divider.focus();
+  await page.keyboard.press("ArrowDown");
+});
+
 test("tablet gives a line-specific debugging hint and exports an importable project backup", async ({ page }) => {
   await start(page, "javascript");
   await page.keyboard.press("t");
