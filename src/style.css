@@ -325,6 +325,9 @@ textarea:focus-visible {
 .arcade-score {
   color: #74eaff;
 }
+.arcade-combo {
+  color: #ffd77e;
+}
 .packet-dash-canvas {
   display: block;
   width: 100%;

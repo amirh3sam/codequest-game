@@ -35,6 +35,8 @@ from a player's personal project for each adventure. The Progress page includes
 unlockable badges earned through missions, exploration and arcade activities.
 Project files and badges remain local to each browser adventure unless the
 player exports a backup; this does not add accounts, cloud saves or multiplayer.
+Packet Dash adds a repeatable data-bit combo: every third pickup awards bonus
+points and recharges an arcade shield, with its meter visible during the run.
 
 The tablet's Study Path now covers all 22 categories in the supplied Java study
 list, adapted for JavaScript, TypeScript, Python and Java. Each topic has eight

@@ -30,6 +30,8 @@ test("finds the city arcade and plays a round of Packet Dash", async ({ page }, 
   await page.getByRole("button", { name: "Play Packet Dash" }).click();
   await expect(page.getByRole("heading", { name: "Packet Dash" })).toBeVisible();
   await expect(page.getByLabel(/Packet Dash runner/)).toBeVisible();
+  await expect(page.locator(".arcade-combo")).toHaveText("COMBO 0/3");
+  await expect(page.locator(".packet-dash")).toContainText("Every third bit makes a combo");
   await page.getByRole("button", { name: "Start 60-second run" }).click();
   await expect(page.locator(".arcade-feedback")).toContainText("Run!");
   await page.locator(".packet-dash").screenshot({ path: testInfo.outputPath("packet-dash-view.png") });

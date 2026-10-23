@@ -1,5 +1,11 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (Packet Dash data combos)
+- Added a visible 0/3 data combo to each runner round. Every three pickups awards 100 bonus points and restores one arcade shield, up to the normal three-shield cap. The mechanic stays separate from coding hearts and gems.
+- **Checks:** two unit tests cover combo rewards and the shield cap; the City Arcade / Packet Dash browser flow passed. All 248 unit tests, lint, TypeScript and production build passed.
+- **Next:** publish the arcade update, then continue improving optional play activities.
+- **Blockers:** none.
+
 ## 2026-10-23 (176-task Study Path)
 - Expanded all 22 study topics to eight sequential checkpoints each: 176 per language, with separate saved progress and editable drafts for each adventure. Each checkpoint requires both a correct program output and a correct prediction; finishing a topic marks that level mastered. Existing one-checkpoint topic completions migrate as task 1.
 - Added progress counts for tasks and mastered levels. The Code Scholar badge now requires all 176 tasks. Java's exception example uses a custom message field supported by the browser Java runtime.

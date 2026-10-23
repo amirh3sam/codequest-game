@@ -1,3 +1,4 @@
+import { collectPacketDashBit } from "../core/packet-dash";
 import { button, el } from "./dom";
 
 export type PacketDashHost = {
@@ -42,14 +43,15 @@ export function openPacketDash(host: PacketDashHost): void {
   const intro = el(
     "p",
     "arcade-intro",
-    "Jump the signal glitches, scoop up data bits, and see how far you can run. Your coding hearts and gems are never at risk.",
+    "Jump the signal glitches and collect data. Every third bit makes a combo for bonus points and a shield recharge. Your coding hearts and gems are never at risk.",
   );
   const scoreStrip = el("div", "arcade-score-strip");
   const scoreDisplay = el("strong", "arcade-score", "DISTANCE 0");
   const bitDisplay = el("span", "arcade-bits", "DATA 0");
+  const comboDisplay = el("span", "arcade-combo", "COMBO 0/3");
   const livesDisplay = el("span", "arcade-lives", "SHIELDS 3");
   const timeDisplay = el("span", "arcade-time", "60 SEC");
-  scoreStrip.append(scoreDisplay, bitDisplay, livesDisplay, timeDisplay);
+  scoreStrip.append(scoreDisplay, bitDisplay, comboDisplay, livesDisplay, timeDisplay);
   const canvas = el("canvas", "packet-dash-canvas");
   canvas.width = WIDTH;
   canvas.height = HEIGHT;
@@ -82,6 +84,8 @@ export function openPacketDash(host: PacketDashHost): void {
   let finished = false;
   let distance = 0;
   let collected = 0;
+  let combo = 0;
+  let comboBonus = 0;
   let shields = 3;
   let elapsed = 0;
   let jumpHeight = 0;
@@ -94,10 +98,11 @@ export function openPacketDash(host: PacketDashHost): void {
   let bits: Bit[] = [];
   let personalBest = host.best;
 
-  const currentScore = () => Math.floor(distance / 14) + collected * 50;
+  const currentScore = () => Math.floor(distance / 14) + collected * 50 + comboBonus;
   const refreshReadout = () => {
     scoreDisplay.textContent = `DISTANCE ${Math.floor(distance / 10)} m · SCORE ${currentScore()}`;
     bitDisplay.textContent = `DATA ${collected}`;
+    comboDisplay.textContent = `COMBO ${combo}/3`;
     livesDisplay.textContent = `SHIELDS ${"◆".repeat(shields)}${"◇".repeat(3 - shields)}`;
     timeDisplay.textContent = `${Math.max(0, ROUND_SECONDS - Math.floor(elapsed))} SEC`;
   };
@@ -107,6 +112,8 @@ export function openPacketDash(host: PacketDashHost): void {
     finished = false;
     distance = 0;
     collected = 0;
+    combo = 0;
+    comboBonus = 0;
     shields = 3;
     elapsed = 0;
     jumpHeight = 0;
@@ -320,7 +327,18 @@ export function openPacketDash(host: PacketDashHost): void {
         const centerX = 148;
         if (!bit.taken && Math.abs(bit.x - centerX) < 30 && Math.abs(bit.y - (GROUND - jumpHeight - 30)) < 38) {
           bit.taken = true;
-          collected++;
+          const previousShields = shields;
+          const pickup = collectPacketDashBit({ collected, combo, bonus: comboBonus, shields });
+          collected = pickup.collected;
+          combo = pickup.combo;
+          comboBonus = pickup.bonus;
+          shields = pickup.shields;
+          if (pickup.combo === 0) {
+            feedback.textContent =
+              shields > previousShields
+                ? "3-bit combo! +100 points and one shield recharged."
+                : "3-bit combo! +100 bonus points. Your shields are already full.";
+          }
         }
       }
       hazards = hazards.filter((hazard) => hazard.x + hazard.width > -20);
