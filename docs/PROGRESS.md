@@ -6,7 +6,9 @@
 - **Done:** placed the Run button and live output below practice code. Running keeps the editor visible; Console offers a larger view of the same result. Per-language drafts, mission grading, hearts and gems retain their existing rules.
 - **Checks:** 211 unit tests and 18 focused Chromium cases passed, covering all four tablet languages and drone missions, both first-person openings, connected wrist geometry, phone sizing, skip/close/fallback, worker cancellation, saved drafts and missions inside the device. Lint, type checking and production build passed. Production test hooks are absent. The final first-person framing and editor/output layout were inspected in actual browser captures.
 - **Media:** updated the real tablet screenshots and opening video, capture script and current documentation to match the new view and inline results; both browser captures completed without page errors.
-- **Release:** publishing and public verification follow this implementation entry.
+- **Release:** source commit `6119082` is public and deployed to the separate CodeQuest project as `dpl_5m3rxQD9eswWnM65VZRbQvyMdN51` (READY), aliased at https://codequest-game-inky.vercel.app/.
+- **Public verification:** fresh unauthenticated browsers received HTTP 200 and entered the first-person wrist view for both developers. Each ran code printing 42 with the editor and output visible together, then displayed a syntax error below the editor. Closing returned to the city; no page errors or production test hooks were present.
+- **CI:** GitHub run `39864184820` passed lint, types, 211 unit tests and all 90 Chromium cases for source commit `6119082`.
 
 ## 2026-10-22 (verified public 3D tablet release)
 - **Release:** commit `ae867b9` is deployed by Vercel as `dpl_FZdk1sWYSQgrtoPCYx3SumwqwzrG`, READY at https://codequest-game-inky.vercel.app/. GitHub CI run `39861733403` passed lint, types, 211 unit tests and all 90 Chromium tests, without retries reported.
