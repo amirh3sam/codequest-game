@@ -36,6 +36,13 @@ unlockable badges earned through missions, exploration and arcade activities.
 Project files and badges remain local to each browser adventure unless the
 player exports a backup; this does not add accounts, cloud saves or multiplayer.
 
+The tablet's Study Path now covers all 22 categories in the supplied Java study
+list, adapted for JavaScript, TypeScript, Python and Java. Each topic includes a
+short lesson, language-specific editable code, a free run-and-checkpoint exercise,
+and per-adventure progress. The JDK/IntelliJ setup topic explains the browser
+workflow and equivalent local tools for each language. On the map, players can
+click a destination to walk or hold the left mouse button and drag to steer.
+
 ## 1. Problem
 Beginners find programming tutorials dry and quit early. Reading theory without practice doesn't stick, and practice sites feel like homework. CodeQuest teaches programming through a 2D top-down RPG. You walk a world, read short lessons found in the map, and solve real coding tasks to move forward.
 

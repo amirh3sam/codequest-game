@@ -1,5 +1,11 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (22-topic study path and mouse steering)
+- Added every category from the supplied Java study screenshot as a Study Path in the tablet. All 22 topics have a short explanation, an editable runnable example and a free checkpoint in Java, JavaScript, TypeScript and Python. Progress and drafts save per adventure; completing all topics unlocks the Code Scholar badge. The JDK/IntelliJ topic explains the browser setup and equivalent local tools for each language.
+- Mouse users can click a destination to walk or hold the left button and drag to steer. The field guide and HUD explain the controls; collision rules still stop the character at solid objects.
+- **Checks:** all 88 curriculum examples passed browser runs (22 × 4 languages); left/right mouse steering passed; five project-quest/resizer regressions passed. All 245 unit tests, lint, TypeScript, production build and the production dependency audit passed (zero vulnerabilities).
+- **Release:** pending public push and Vercel deployment.
+
 ## 2026-10-23 (resizable tablet Explorer)
 - Added a draggable divider between the Explorer and editor. It resizes the Explorer width on desktop and its height on narrow screens, supports arrow-key adjustments, has min/max bounds, and remembers both sizes locally.
 - **Checks:** the desktop/mobile drag browser test passed; lint, TypeScript, all 243 unit tests and production build passed.

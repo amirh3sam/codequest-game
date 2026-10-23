@@ -57,6 +57,9 @@ export class BootScene extends Phaser.Scene {
   private walked = 0;
   private touchAxis = { x: 0, y: 0 };
   private tapTarget: Position | null = null;
+  private mouseDragPointer: number | null = null;
+  private mouseDragStart = { x: 0, y: 0 };
+  private mouseSteering = false;
   private controlScheme: ControlScheme = "wasd";
   private hubTour?: Phaser.Time.TimerEvent;
   private reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -142,9 +145,35 @@ export class BootScene extends Phaser.Scene {
       >;
     for (const name of ["E", "SPACE"]) this.keys[name]?.on("down", () => this.interactClosest());
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      if (!this.blocked && this.state && pointer.event.target === this.game.canvas)
+      if (!this.blocked && this.state && pointer.event.target === this.game.canvas) {
         this.tapTarget = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+        if (pointer.event instanceof MouseEvent && pointer.button === 0) {
+          this.mouseDragPointer = pointer.id;
+          this.mouseDragStart = { x: pointer.x, y: pointer.y };
+          this.mouseSteering = false;
+        }
+      }
     });
+    this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+      if (this.blocked || pointer.id !== this.mouseDragPointer || !pointer.isDown) return;
+      const dx = pointer.x - this.mouseDragStart.x;
+      const dy = pointer.y - this.mouseDragStart.y;
+      if (Math.hypot(dx, dy) < 14) return;
+      this.mouseSteering = true;
+      this.tapTarget = null;
+      this.touchAxis = {
+        x: Math.abs(dx) >= 14 ? Math.sign(dx) : 0,
+        y: Math.abs(dy) >= 14 ? Math.sign(dy) : 0,
+      };
+    });
+    const finishMouseDrag = (pointer: Phaser.Input.Pointer) => {
+      if (pointer.id !== this.mouseDragPointer) return;
+      if (this.mouseSteering) this.touchAxis = { x: 0, y: 0 };
+      this.mouseDragPointer = null;
+      this.mouseSteering = false;
+    };
+    this.input.on("pointerup", finishMouseDrag);
+    this.input.on("pointerupoutside", finishMouseDrag);
     this.game.events.emit("village-ready");
   }
   private createArcadeTexture(): void {
@@ -345,6 +374,8 @@ export class BootScene extends Phaser.Scene {
     this.blocked = blocked;
     this.touchAxis = { x: 0, y: 0 };
     this.tapTarget = null;
+    this.mouseDragPointer = null;
+    this.mouseSteering = false;
     this.input.keyboard?.resetKeys();
     this.prompt.setVisible(false);
   }

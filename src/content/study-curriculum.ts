@@ -1,0 +1,508 @@
+import type { Lang } from "../runners/types";
+
+export type StudyExample = { code: string; output: string };
+export type StudyTopic = {
+  id: string;
+  title: string;
+  lesson: string;
+  idea: string;
+  tryIt: string;
+  examples: Record<Lang, StudyExample>;
+};
+
+const example = (code: string, output: string): StudyExample => ({ code, output });
+
+/** The complete topic list adapted from the player's study-plan screenshot. */
+export const STUDY_CURRICULUM: readonly StudyTopic[] = [
+  {
+    id: "review-sessions",
+    title: "Live Review Sessions",
+    lesson:
+      "Review means explaining an idea from memory, running a small example, then fixing one variation. Revisit a topic after a break so you practice recalling it, not only recognizing it.",
+    idea: "Trace the flow: input → process → output.",
+    tryIt: "Run this tiny review example, then change one word and run it again.",
+    examples: {
+      javascript: example(
+        'const steps = ["input", "process", "output"];\nconsole.log(steps.join(" -> "));',
+        "input -> process -> output",
+      ),
+      typescript: example(
+        'const steps: string[] = ["input", "process", "output"];\nconsole.log(steps.join(" -> "));',
+        "input -> process -> output",
+      ),
+      python: example(
+        'steps = ["input", "process", "output"]\nprint(" -> ".join(steps))',
+        "input -> process -> output",
+      ),
+      java: example(
+        'import java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(String.join(" -> ", List.of("input", "process", "output")));\n    }\n}',
+        "input -> process -> output",
+      ),
+    },
+  },
+  {
+    id: "computer-programming",
+    title: "Introduction to Computers & Programming",
+    lesson:
+      "A program is a set of instructions. It can receive input, process data, and produce output. Start with a tiny change and observe what the computer does.",
+    idea: "A program turns instructions into a result.",
+    tryIt: "Change the input value and predict the new result before running.",
+    examples: {
+      javascript: example("const input = 4;\nconst result = input * 2;\nconsole.log(result);", "8"),
+      typescript: example("const input: number = 4;\nconst result: number = input * 2;\nconsole.log(result);", "8"),
+      python: example("input_value = 4\nresult = input_value * 2\nprint(result)", "8"),
+      java: example(
+        "public class Main {\n    public static void main(String[] args) {\n        int input = 4;\n        int result = input * 2;\n        System.out.println(result);\n    }\n}",
+        "8",
+      ),
+    },
+  },
+  {
+    id: "language-tools",
+    title: "JDK 17 & IntelliJ Setup · Language Tools",
+    lesson:
+      "The source plan covers JDK 17 and IntelliJ IDEA Ultimate. In CodeQuest, the compiler and editor are already in your browser. For local work, Java uses a JDK and an IDE; JavaScript uses a browser or Node.js; TypeScript adds a TypeScript compiler; Python uses Python 3 and an editor such as VS Code or PyCharm.",
+    idea: "Know which tool runs your language; this browser workspace needs no installation.",
+    tryIt: "Run the ready check, then find the Run button and output panel you will use for every lesson.",
+    examples: {
+      javascript: example('console.log("Editor ready");', "Editor ready"),
+      typescript: example('const ready: string = "Editor ready";\nconsole.log(ready);', "Editor ready"),
+      python: example('print("Editor ready")', "Editor ready"),
+      java: example(
+        'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Editor ready");\n    }\n}',
+        "Editor ready",
+      ),
+    },
+  },
+  {
+    id: "editor-hello-world",
+    title: "Introduction to IntelliJ & Hello World",
+    lesson:
+      "An editor is where you write source code. The Run action sends it to the language runner, and the output panel shows the result. Java starts from main; the other examples run from the file's top level.",
+    idea: "Edit → run → read the output → improve.",
+    tryIt: "Change the greeting and run it again.",
+    examples: {
+      javascript: example('console.log("Hello, world!");', "Hello, world!"),
+      typescript: example('const greeting: string = "Hello, world!";\nconsole.log(greeting);', "Hello, world!"),
+      python: example('print("Hello, world!")', "Hello, world!"),
+      java: example(
+        'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, world!");\n    }\n}',
+        "Hello, world!",
+      ),
+    },
+  },
+  {
+    id: "language-introduction",
+    title: "Introduction to Java Programming · Your Language",
+    lesson:
+      "Each language has its own syntax, but all can store values, make decisions, repeat work, and organize code into reusable parts. Learn the punctuation and conventions of the language you selected.",
+    idea: "Different syntax can express the same programming ideas.",
+    tryIt: "Change the message while keeping the statement valid in your language.",
+    examples: {
+      javascript: example('const message = "Language ready";\nconsole.log(message);', "Language ready"),
+      typescript: example('const message: string = "Language ready";\nconsole.log(message);', "Language ready"),
+      python: example('message = "Language ready"\nprint(message)', "Language ready"),
+      java: example(
+        'public class Main {\n    public static void main(String[] args) {\n        String message = "Language ready";\n        System.out.println(message);\n    }\n}',
+        "Language ready",
+      ),
+    },
+  },
+  {
+    id: "variables-types",
+    title: "Variables & Data Types",
+    lesson:
+      "A variable gives a value a name. Common types include text, whole numbers, decimals, and true/false values. TypeScript and Java declare types explicitly; JavaScript and Python can infer or determine types as values are used.",
+    idea: "Store a value once, then use it by name.",
+    tryIt: "Change one number and predict the total.",
+    examples: {
+      javascript: example("const battery = 4;\nconst cells = battery + 3;\nconsole.log(cells);", "7"),
+      typescript: example("const battery: number = 4;\nconst cells: number = battery + 3;\nconsole.log(cells);", "7"),
+      python: example("battery: int = 4\ncells = battery + 3\nprint(cells)", "7"),
+      java: example(
+        "public class Main {\n    public static void main(String[] args) {\n        int battery = 4;\n        int cells = battery + 3;\n        System.out.println(cells);\n    }\n}",
+        "7",
+      ),
+    },
+  },
+  {
+    id: "operators",
+    title: "Operators",
+    lesson:
+      "Operators calculate values and compare them. Arithmetic includes +, -, *, / and remainder (%). Comparison operators such as ==, < and >= produce a true/false result.",
+    idea: "An operator combines values into a new value.",
+    tryIt: "Change the dividend or divisor and inspect the remainder.",
+    examples: {
+      javascript: example("const remainder = 10 % 3;\nconsole.log(remainder);", "1"),
+      typescript: example("const remainder: number = 10 % 3;\nconsole.log(remainder);", "1"),
+      python: example("remainder = 10 % 3\nprint(remainder)", "1"),
+      java: example(
+        "public class Main {\n    public static void main(String[] args) {\n        int remainder = 10 % 3;\n        System.out.println(remainder);\n    }\n}",
+        "1",
+      ),
+    },
+  },
+  {
+    id: "decision-statements",
+    title: "Decision Statements",
+    lesson:
+      "An if statement runs a block only when its condition is true. Add else or else-if branches when the program needs another path. Use comparisons to make the condition meaningful.",
+    idea: "A condition chooses which path the program follows.",
+    tryIt: "Change the condition or value and see which message appears.",
+    examples: {
+      javascript: example(
+        'const hasKey = true;\nif (hasKey) {\n  console.log("Unlocked");\n} else {\n  console.log("Locked");\n}',
+        "Unlocked",
+      ),
+      typescript: example(
+        'const hasKey: boolean = true;\nif (hasKey) {\n  console.log("Unlocked");\n} else {\n  console.log("Locked");\n}',
+        "Unlocked",
+      ),
+      python: example('has_key = True\nif has_key:\n    print("Unlocked")\nelse:\n    print("Locked")', "Unlocked"),
+      java: example(
+        'public class Main {\n    public static void main(String[] args) {\n        boolean hasKey = true;\n        if (hasKey) {\n            System.out.println("Unlocked");\n        } else {\n            System.out.println("Locked");\n        }\n    }\n}',
+        "Unlocked",
+      ),
+    },
+  },
+  {
+    id: "loops",
+    title: "Loops",
+    lesson:
+      "A loop repeats a block of code. A counted for loop is useful when you know how many repetitions you need. Check the start, stop condition, and update so the loop eventually ends.",
+    idea: "Loops repeat work without copying the same statements.",
+    tryIt: "Change the loop limit and calculate the new sum.",
+    examples: {
+      javascript: example("let total = 0;\nfor (let i = 1; i <= 3; i++) {\n  total += i;\n}\nconsole.log(total);", "6"),
+      typescript: example(
+        "let total: number = 0;\nfor (let i = 1; i <= 3; i++) {\n  total += i;\n}\nconsole.log(total);",
+        "6",
+      ),
+      python: example("total = 0\nfor number in range(1, 4):\n    total += number\nprint(total)", "6"),
+      java: example(
+        "public class Main {\n    public static void main(String[] args) {\n        int total = 0;\n        for (int i = 1; i <= 3; i++) {\n            total += i;\n        }\n        System.out.println(total);\n    }\n}",
+        "6",
+      ),
+    },
+  },
+  {
+    id: "methods-functions",
+    title: "Methods & Functions",
+    lesson:
+      "A function or method names a reusable block of work. Parameters bring values in; a return value sends a result back. Java calls functions declared in a class methods.",
+    idea: "Give a reusable operation a name and clear inputs.",
+    tryIt: "Change one argument and verify the returned sum.",
+    examples: {
+      javascript: example("function add(a, b) { return a + b; }\nconsole.log(add(4, 3));", "7"),
+      typescript: example("function add(a: number, b: number): number { return a + b; }\nconsole.log(add(4, 3));", "7"),
+      python: example("def add(a, b):\n    return a + b\n\nprint(add(4, 3))", "7"),
+      java: example(
+        "public class Main {\n    static int add(int a, int b) { return a + b; }\n    public static void main(String[] args) {\n        System.out.println(add(4, 3));\n    }\n}",
+        "7",
+      ),
+    },
+  },
+  {
+    id: "classes-objects-one",
+    title: "Classes & Objects · Part 1",
+    lesson:
+      "A class describes a kind of object. An object is one instance with its own data. Create an instance with new in JavaScript, TypeScript and Java; Python calls the class like a function.",
+    idea: "Class = blueprint; object = one created instance.",
+    tryIt: "Change the character name and run the greeting again.",
+    examples: {
+      javascript: example(
+        'class Player {\n  constructor(name) { this.name = name; }\n  greet() { return "Hello, " + this.name; }\n}\nconsole.log(new Player("Nova").greet());',
+        "Hello, Nova",
+      ),
+      typescript: example(
+        'class Player {\n  constructor(public name: string) {}\n  greet(): string { return "Hello, " + this.name; }\n}\nconsole.log(new Player("Nova").greet());',
+        "Hello, Nova",
+      ),
+      python: example(
+        'class Player:\n    def __init__(self, name):\n        self.name = name\n    def greet(self):\n        return "Hello, " + self.name\n\nprint(Player("Nova").greet())',
+        "Hello, Nova",
+      ),
+      java: example(
+        'class Player {\n    private final String name;\n    Player(String name) { this.name = name; }\n    String greet() { return "Hello, " + name; }\n}\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(new Player("Nova").greet());\n    }\n}',
+        "Hello, Nova",
+      ),
+    },
+  },
+  {
+    id: "string-class",
+    title: "String Class",
+    lesson:
+      "Strings represent text and come with useful operations. You can measure their length, change case, search within them, and join them with other text. Strings are immutable in these examples: an operation returns a new string.",
+    idea: "Use string methods to inspect and transform text.",
+    tryIt: "Try a different phrase or change the case conversion.",
+    examples: {
+      javascript: example('const title = "code quest";\nconsole.log(title.toUpperCase());', "CODE QUEST"),
+      typescript: example('const title: string = "code quest";\nconsole.log(title.toUpperCase());', "CODE QUEST"),
+      python: example('title = "code quest"\nprint(title.upper())', "CODE QUEST"),
+      java: example(
+        'public class Main {\n    public static void main(String[] args) {\n        String title = "code quest";\n        System.out.println(title.toUpperCase());\n    }\n}',
+        "CODE QUEST",
+      ),
+    },
+  },
+  {
+    id: "arrays",
+    title: "Arrays",
+    lesson:
+      "An array stores values in an ordered sequence. Use an index to access an item; indexes start at zero. Java arrays have a fixed size, while JavaScript, TypeScript and Python use flexible list-like arrays in these examples.",
+    idea: "Keep related values together and access them by index.",
+    tryIt: "Change one element, then update the total you expect.",
+    examples: {
+      javascript: example("const values = [2, 4, 6];\nconsole.log(values[0] + values[1] + values[2]);", "12"),
+      typescript: example("const values: number[] = [2, 4, 6];\nconsole.log(values[0] + values[1] + values[2]);", "12"),
+      python: example("values = [2, 4, 6]\nprint(values[0] + values[1] + values[2])", "12"),
+      java: example(
+        "public class Main {\n    public static void main(String[] args) {\n        int[] values = {2, 4, 6};\n        System.out.println(values[0] + values[1] + values[2]);\n    }\n}",
+        "12",
+      ),
+    },
+  },
+  {
+    id: "array-list",
+    title: "ArrayList & Dynamic Lists",
+    lesson:
+      "A dynamic list can grow as items are added. Java's ArrayList provides add and size; JavaScript and TypeScript arrays use push and length; Python lists use append and len.",
+    idea: "Choose a collection that can grow when the number of values changes.",
+    tryIt: "Add another item and predict the new count.",
+    examples: {
+      javascript: example('const items = ["map", "key"];\nitems.push("badge");\nconsole.log(items.length);', "3"),
+      typescript: example(
+        'const items: string[] = ["map", "key"];\nitems.push("badge");\nconsole.log(items.length);',
+        "3",
+      ),
+      python: example('items = ["map", "key"]\nitems.append("badge")\nprint(len(items))', "3"),
+      java: example(
+        'import java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        ArrayList<String> items = new ArrayList<>();\n        items.add("map");\n        items.add("key");\n        items.add("badge");\n        System.out.println(items.size());\n    }\n}',
+        "3",
+      ),
+    },
+  },
+  {
+    id: "classes-objects-two",
+    title: "Classes & Objects · Part 2",
+    lesson:
+      "Larger programs split responsibilities across classes. One object can be passed to another object, allowing them to collaborate. The Badge uses a Player instead of duplicating player data.",
+    idea: "Compose objects to build larger features from smaller parts.",
+    tryIt: "Change the player or badge title and trace how the objects work together.",
+    examples: {
+      javascript: example(
+        'class Player { constructor(name) { this.name = name; } }\nclass Badge { constructor(player) { this.player = player; } award() { return this.player.name + ": Explorer"; } }\nconsole.log(new Badge(new Player("Ava")).award());',
+        "Ava: Explorer",
+      ),
+      typescript: example(
+        'class Player { constructor(public name: string) {} }\nclass Badge { constructor(private player: Player) {} award(): string { return this.player.name + ": Explorer"; } }\nconsole.log(new Badge(new Player("Ava")).award());',
+        "Ava: Explorer",
+      ),
+      python: example(
+        'class Player:\n    def __init__(self, name): self.name = name\nclass Badge:\n    def __init__(self, player): self.player = player\n    def award(self): return self.player.name + ": Explorer"\n\nprint(Badge(Player("Ava")).award())',
+        "Ava: Explorer",
+      ),
+      java: example(
+        'class Player {\n    String name;\n    Player(String name) { this.name = name; }\n}\nclass Badge {\n    Player player;\n    Badge(Player player) { this.player = player; }\n    String award() { return player.name + ": Explorer"; }\n}\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(new Badge(new Player("Ava")).award());\n    }\n}',
+        "Ava: Explorer",
+      ),
+    },
+  },
+  {
+    id: "encapsulation",
+    title: "OOP · Encapsulation",
+    lesson:
+      "Encapsulation keeps an object's internal state private and exposes safe operations. A caller asks an object to deposit or read a balance rather than changing the field directly.",
+    idea: "Protect state and control changes through methods.",
+    tryIt: "Change the deposit amount and inspect the balance.",
+    examples: {
+      javascript: example(
+        "class Wallet { #coins = 2; add(amount) { this.#coins += amount; } count() { return this.#coins; } }\nconst wallet = new Wallet();\nwallet.add(3);\nconsole.log(wallet.count());",
+        "5",
+      ),
+      typescript: example(
+        "class Wallet { private coins = 2; add(amount: number) { this.coins += amount; } count(): number { return this.coins; } }\nconst wallet = new Wallet();\nwallet.add(3);\nconsole.log(wallet.count());",
+        "5",
+      ),
+      python: example(
+        "class Wallet:\n    def __init__(self): self.__coins = 2\n    def add(self, amount): self.__coins += amount\n    def count(self): return self.__coins\n\nwallet = Wallet()\nwallet.add(3)\nprint(wallet.count())",
+        "5",
+      ),
+      java: example(
+        "class Wallet {\n    private int coins = 2;\n    void add(int amount) { coins += amount; }\n    int count() { return coins; }\n}\npublic class Main {\n    public static void main(String[] args) {\n        Wallet wallet = new Wallet();\n        wallet.add(3);\n        System.out.println(wallet.count());\n    }\n}",
+        "5",
+      ),
+    },
+  },
+  {
+    id: "inheritance",
+    title: "OOP · Inheritance",
+    lesson:
+      "Inheritance lets a specialized class reuse and extend a base class. Use it when the child really is a kind of the parent; prefer composition when objects merely collaborate.",
+    idea: "A child class can reuse behavior and add its own details.",
+    tryIt: "Change the developer name or override the message.",
+    examples: {
+      javascript: example(
+        'class Person { constructor(name) { this.name = name; } }\nclass Developer extends Person { label() { return "Coder: " + this.name; } }\nconsole.log(new Developer("Lee").label());',
+        "Coder: Lee",
+      ),
+      typescript: example(
+        'class Person { constructor(public name: string) {} }\nclass Developer extends Person { label(): string { return "Coder: " + this.name; } }\nconsole.log(new Developer("Lee").label());',
+        "Coder: Lee",
+      ),
+      python: example(
+        'class Person:\n    def __init__(self, name): self.name = name\nclass Developer(Person):\n    def label(self): return "Coder: " + self.name\n\nprint(Developer("Lee").label())',
+        "Coder: Lee",
+      ),
+      java: example(
+        'class Person {\n    String name;\n    Person(String name) { this.name = name; }\n}\nclass Developer extends Person {\n    Developer(String name) { super(name); }\n    String label() { return "Coder: " + name; }\n}\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(new Developer("Lee").label());\n    }\n}',
+        "Coder: Lee",
+      ),
+    },
+  },
+  {
+    id: "abstraction-polymorphism",
+    title: "OOP · Abstraction & Polymorphism",
+    lesson:
+      "Abstraction exposes the operation callers need while hiding its implementation. Polymorphism lets different object types respond to the same method call in their own way. Java can enforce this with abstract classes or interfaces; the other languages can use shared method shapes or protocols.",
+    idea: "Call the same operation on different implementations.",
+    tryIt: "Add another character class with its own ready message.",
+    examples: {
+      javascript: example(
+        'class Character { ready() { return "Ready"; } }\nclass Coder extends Character { ready() { return "Ready to code"; } }\nfunction start(character) { console.log(character.ready()); }\nstart(new Coder());',
+        "Ready to code",
+      ),
+      typescript: example(
+        'abstract class Character { abstract ready(): string; }\nclass Coder extends Character { ready(): string { return "Ready to code"; } }\nfunction start(character: Character): void { console.log(character.ready()); }\nstart(new Coder());',
+        "Ready to code",
+      ),
+      python: example(
+        'class Character:\n    def ready(self): raise NotImplementedError\nclass Coder(Character):\n    def ready(self): return "Ready to code"\n\ndef start(character): print(character.ready())\nstart(Coder())',
+        "Ready to code",
+      ),
+      java: example(
+        'abstract class Character {\n    abstract String ready();\n}\nclass Coder extends Character {\n    String ready() { return "Ready to code"; }\n}\npublic class Main {\n    static void start(Character character) { System.out.println(character.ready()); }\n    public static void main(String[] args) { start(new Coder()); }\n}',
+        "Ready to code",
+      ),
+    },
+  },
+  {
+    id: "exceptions-errors",
+    title: "Exceptions & Errors",
+    lesson:
+      "An exception reports a problem while a program runs. Use try/catch (try/except in Python) when you can handle the problem or explain it clearly. Do not hide errors you cannot recover from.",
+    idea: "Handle expected problems close to the operation that can fail.",
+    tryIt: "Change the thrown message and see where the handler catches it.",
+    examples: {
+      javascript: example(
+        'try {\n  throw new Error("offline");\n} catch (error) {\n  console.log("Recovered");\n}',
+        "Recovered",
+      ),
+      typescript: example(
+        'try {\n  throw new Error("offline");\n} catch (error) {\n  console.log("Recovered");\n}',
+        "Recovered",
+      ),
+      python: example('try:\n    raise ValueError("offline")\nexcept ValueError:\n    print("Recovered")', "Recovered"),
+      java: example(
+        'public class Main {\n    public static void main(String[] args) {\n        try {\n            throw new IllegalStateException("offline");\n        } catch (IllegalStateException error) {\n            System.out.println("Recovered");\n        }\n    }\n}',
+        "Recovered",
+      ),
+    },
+  },
+  {
+    id: "collections-framework",
+    title: "Collections Framework",
+    lesson:
+      "Collections provide standard ways to group and search data. Java's Collections Framework includes lists, sets and maps. Other languages provide similar built-in collection types with language-specific names and methods.",
+    idea: "Pick a data structure based on the operations you need.",
+    tryIt: "Add a unique item or a duplicate and observe the set size.",
+    examples: {
+      javascript: example('const areas = new Set(["hub", "park", "hub", "lab"]);\nconsole.log(areas.size);', "3"),
+      typescript: example(
+        'const areas: Set<string> = new Set(["hub", "park", "hub", "lab"]);\nconsole.log(areas.size);',
+        "3",
+      ),
+      python: example('areas = {"hub", "park", "hub", "lab"}\nprint(len(areas))', "3"),
+      java: example(
+        'import java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        Set<String> areas = new HashSet<>(List.of("hub", "park", "hub", "lab"));\n        System.out.println(areas.size());\n    }\n}',
+        "3",
+      ),
+    },
+  },
+  {
+    id: "maps",
+    title: "Maps & Dictionaries",
+    lesson:
+      "A map stores key/value pairs. Use a key to look up the value associated with it. Java uses Map, JavaScript and TypeScript use Map or objects, and Python commonly uses dict.",
+    idea: "Use a map when a value should be found by a meaningful key.",
+    tryIt: "Change the key or value and check the lookup result.",
+    examples: {
+      javascript: example('const players = new Map([["pilot", "Ada"]]);\nconsole.log(players.get("pilot"));', "Ada"),
+      typescript: example(
+        'const players: Map<string, string> = new Map([["pilot", "Ada"]]);\nconsole.log(players.get("pilot"));',
+        "Ada",
+      ),
+      python: example('players = {"pilot": "Ada"}\nprint(players["pilot"])', "Ada"),
+      java: example(
+        'import java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        Map<String, String> players = new HashMap<>();\n        players.put("pilot", "Ada");\n        System.out.println(players.get("pilot"));\n    }\n}',
+        "Ada",
+      ),
+    },
+  },
+  {
+    id: "extra-topics",
+    title: "Extra Topics",
+    lesson:
+      "After the core topics, explore language features such as enums, interfaces, generics, modules, testing, and asynchronous work. Their syntax differs, so read the selected language's documentation and build one small example at a time.",
+    idea: "Keep learning by testing one new language feature in a small program.",
+    tryIt: "Change the status or add another named state.",
+    examples: {
+      javascript: example(
+        'const Status = Object.freeze({ READY: "READY", BUSY: "BUSY" });\nconsole.log(Status.READY);',
+        "READY",
+      ),
+      typescript: example(
+        'type Status = "READY" | "BUSY";\nconst status: Status = "READY";\nconsole.log(status);',
+        "READY",
+      ),
+      python: example(
+        'from enum import Enum\nclass Status(Enum):\n    READY = "READY"\n    BUSY = "BUSY"\nprint(Status.READY.value)',
+        "READY",
+      ),
+      java: example(
+        "enum Status { READY, BUSY }\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(Status.READY);\n    }\n}",
+        "READY",
+      ),
+    },
+  },
+];
+
+const STUDY_IDS = new Set(STUDY_CURRICULUM.map(({ id }) => id));
+
+export function studyProgressKey(adventureId: string): string {
+  return `codequest:study-progress:v1:${adventureId}`;
+}
+
+export function readStudyProgress(adventureId: string): string[] {
+  try {
+    const value: unknown = JSON.parse(localStorage.getItem(studyProgressKey(adventureId)) ?? "[]");
+    return Array.isArray(value)
+      ? [...new Set(value.filter((id): id is string => typeof id === "string" && STUDY_IDS.has(id)))]
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveStudyTopic(adventureId: string, topicId: string): boolean {
+  if (!STUDY_IDS.has(topicId)) return false;
+  try {
+    localStorage.setItem(
+      studyProgressKey(adventureId),
+      JSON.stringify([...new Set([...readStudyProgress(adventureId), topicId])]),
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}

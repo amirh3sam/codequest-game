@@ -4,6 +4,7 @@ import { dronePilot } from "../content/drone-pilot";
 import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
 import { PROJECT_QUESTS, readProjectQuestProgress } from "../content/project-quests";
 import type { AreaContent, Boss, Task } from "../content/schema";
+import { readStudyProgress, STUDY_CURRICULUM } from "../content/study-curriculum";
 import village from "../content/village.json" with { type: "json" };
 import { loadAdventures, saveAdventure } from "../core/adventures";
 import { makeAdventureBackup, parseAdventureBackup } from "../core/backup";
@@ -713,7 +714,11 @@ export class GameApp {
     const footer = el("div", "game-footer");
     this.saved = el("span", "save-state");
     footer.append(
-      el("span", "", `${controlHint(this.controlScheme)} - Move | E / Space - Interact | T - Tablet | Esc - Menu`),
+      el(
+        "span",
+        "",
+        `${controlHint(this.controlScheme)} - Move · Click / drag - Mouse move · E / Space - Interact · T - Tablet · Esc - Menu`,
+      ),
       this.saved,
     );
     const onboarding = this.onboardingCard();
@@ -725,7 +730,10 @@ export class GameApp {
     const guide = el("aside", "field-guide");
     guide.setAttribute("aria-label", "First steps guide");
     const stages = [
-      ["1 / 3 · MOVE", "Move around the city. On a phone, hold a direction or tap the ground."],
+      [
+        "1 / 3 · MOVE",
+        "Use WASD or arrows. Click a destination to walk there, or hold the left mouse button and drag to steer. On a phone, hold a direction or tap the ground.",
+      ],
       ["2 / 3 · MEET YOUR COURIER", `Walk near ${this.courierName()} and press E / Space, or tap Interact.`],
       [
         "3 / 3 · TRY A MISSION",
@@ -1075,6 +1083,11 @@ export class GameApp {
         title: "Badge Builder",
         detail: "Finish the multi-file project quest",
         earned: PROJECT_QUESTS.some((quest) => readProjectQuestProgress(adventureKey, quest.id) >= quest.steps.length),
+      },
+      {
+        title: "Code Scholar",
+        detail: "Practice all 22 Study Path topics",
+        earned: readStudyProgress(adventureKey).length >= STUDY_CURRICULUM.length,
       },
       {
         title: "Skyline Sprinter",

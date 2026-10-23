@@ -7,6 +7,7 @@ import {
   readProjectQuestProgress,
   saveProjectQuestProgress,
 } from "../content/project-quests";
+import { readStudyProgress, STUDY_CURRICULUM, saveStudyTopic } from "../content/study-curriculum";
 import { executionError } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
 import { beginnerHint, diagnosticLine, focusEditorLine } from "./debug-guidance";
@@ -92,8 +93,9 @@ export function openTablet(host: TabletHost): () => void {
     missionsPane = el("div", "studio-missions"),
     guidePane = el("div", "studio-guide"),
     dailyPane = el("div", "studio-daily"),
-    projectsPane = el("div", "studio-projects");
-  const panes = [editorPane, examplesPane, consolePane, missionsPane, guidePane, dailyPane, projectsPane],
+    projectsPane = el("div", "studio-projects"),
+    studyPane = el("div", "studio-study");
+  const panes = [editorPane, examplesPane, consolePane, missionsPane, guidePane, dailyPane, studyPane, projectsPane],
     tabButtons: HTMLButtonElement[] = [];
   const select = (index: number, focus = false) => {
     for (const [i, pane] of panes.entries()) {
@@ -104,7 +106,16 @@ export function openTablet(host: TabletHost): () => void {
     }
     if (focus) tabButtons[index]?.focus();
   };
-  for (const [i, label] of ["Code", "Examples", "Console", "Missions", "Guide", "Daily Quest", "Projects"].entries()) {
+  for (const [i, label] of [
+    "Code",
+    "Examples",
+    "Console",
+    "Missions",
+    "Guide",
+    "Daily Quest",
+    "Study Path",
+    "Projects",
+  ].entries()) {
     const tab = button(label, () => select(i), "studio-tab");
     tab.id = `tablet-tab-${i}`;
     tab.setAttribute("role", "tab");
@@ -834,7 +845,7 @@ export function openTablet(host: TabletHost): () => void {
     renderTree();
     changed();
     renderProjectQuest();
-    select(6);
+    select(7);
   };
   const leaveProjectQuest = () => {
     if (!activeProjectQuest) return;
@@ -1146,6 +1157,124 @@ export function openTablet(host: TabletHost): () => void {
     dailyFeedback,
     solution,
   );
+  let activeStudyId = STUDY_CURRICULUM[0]?.id ?? "";
+  const studyAdventureKey = host.adventureId ?? `guest-${host.lang}`;
+  const renderStudyPath = () => {
+    const completed = readStudyProgress(studyAdventureKey);
+    const topic = STUDY_CURRICULUM.find(({ id }) => id === activeStudyId) ?? STUDY_CURRICULUM[0];
+    studyPane.replaceChildren();
+    studyPane.append(
+      el("span", "eyebrow", "YOUR CODING COURSE"),
+      el("h3", "", "Study Path"),
+      el(
+        "p",
+        "study-overview",
+        `${completed.length} / ${STUDY_CURRICULUM.length} topics practiced · progress saves with this adventure`,
+      ),
+    );
+    const layout = el("div", "study-layout"),
+      navigation = el("nav", "study-topic-nav"),
+      detail = el("section", "study-topic-detail");
+    navigation.setAttribute("aria-label", "Study topics");
+    for (const [index, item] of STUDY_CURRICULUM.entries()) {
+      const done = completed.includes(item.id);
+      const topicButton = button(
+        `${done ? "✓" : String(index + 1).padStart(2, "0")}  ${item.title}`,
+        () => {
+          activeStudyId = item.id;
+          renderStudyPath();
+        },
+        `study-topic-button${item.id === topic?.id ? " active" : ""}${done ? " complete" : ""}`,
+      );
+      topicButton.setAttribute("aria-current", String(item.id === topic?.id));
+      navigation.append(topicButton);
+    }
+    if (topic) {
+      const studyDraftKey = `codequest:study-draft:v1:${studyAdventureKey}:${host.lang}:${topic.id}`;
+      const lesson = el("p", "", topic.lesson),
+        idea = el("aside", "study-key-idea", topic.idea),
+        prompt = el("p", "study-try-it", topic.tryIt),
+        editorLabel = el("label", "editor-label", `${host.lang} example · edit and run it`),
+        sample = el("textarea", "study-example-editor"),
+        resultOutput = el("pre", "studio-output study-result-output", "Run this topic's example to see the result."),
+        resultFeedback = el("p", "studio-feedback"),
+        runExample = button("Run study example", () => void runStudyExample(), "button primary");
+      sample.rows = 7;
+      sample.spellcheck = false;
+      sample.autocapitalize = "off";
+      sample.id = `study-example-${topic.id}`;
+      sample.setAttribute("aria-label", `${topic.title} ${host.lang} example code`);
+      editorLabel.htmlFor = sample.id;
+      try {
+        sample.value = localStorage.getItem(studyDraftKey) ?? topic.examples[host.lang].code;
+      } catch {
+        sample.value = topic.examples[host.lang].code;
+      }
+      sample.addEventListener("input", () => {
+        try {
+          localStorage.setItem(studyDraftKey, sample.value);
+        } catch {
+          resultFeedback.textContent = "This example stays available for the current session.";
+        }
+      });
+      resultFeedback.setAttribute("role", "status");
+      const runStudyExample = async () => {
+        runExample.disabled = true;
+        sample.disabled = true;
+        resultFeedback.textContent = `Running ${host.lang} · no hearts or gems are used.`;
+        try {
+          const result = await host.run(sample.value);
+          const error = executionError(result);
+          resultOutput.textContent = [result.stdout || "(No output)", result.stderr, error?.message]
+            .filter(Boolean)
+            .join("\n");
+          if (error) {
+            resultFeedback.textContent = `${beginnerHint(error.message, host.lang)} Practice is free; fix it and try again.`;
+          } else if (result.stdout.trim() === topic.examples[host.lang].output) {
+            saveStudyTopic(studyAdventureKey, topic.id);
+            const topicCount = readStudyProgress(studyAdventureKey).length;
+            resultFeedback.textContent = `Checkpoint complete · ${topicCount} / ${STUDY_CURRICULUM.length} topics practiced. Your progress is saved.`;
+            const overview = studyPane.querySelector<HTMLElement>(".study-overview"),
+              activeTopic = studyPane.querySelector<HTMLButtonElement>(".study-topic-button.active");
+            if (overview)
+              overview.textContent = `${topicCount} / ${STUDY_CURRICULUM.length} topics practiced · progress saves with this adventure`;
+            if (activeTopic) {
+              activeTopic.classList.add("complete");
+              activeTopic.textContent = `✓  ${topic.title}`;
+            }
+          } else {
+            resultFeedback.textContent = `It ran successfully. Compare your output with the goal: ${topic.examples[host.lang].output}`;
+          }
+        } catch {
+          resultFeedback.textContent =
+            "The runner could not start. Try again; no progress or game resources were spent.";
+        } finally {
+          runExample.disabled = false;
+          sample.disabled = false;
+        }
+      };
+      detail.append(
+        el(
+          "span",
+          "eyebrow",
+          `TOPIC ${String(STUDY_CURRICULUM.indexOf(topic) + 1).padStart(2, "0")} / ${STUDY_CURRICULUM.length}`,
+        ),
+        el("h4", "", topic.title),
+        lesson,
+        idea,
+        prompt,
+        editorLabel,
+        sample,
+        el("p", "study-goal", `Goal output: ${topic.examples[host.lang].output}`),
+        runExample,
+        resultOutput,
+        resultFeedback,
+      );
+    }
+    layout.append(navigation, detail);
+    studyPane.append(layout);
+  };
+  renderStudyPath();
   body.append(...panes);
   const bottom = el("div", "studio-status");
   bottom.append(status, el("span", "", "FREE PRACTICE · AUTO SAVE"));
