@@ -4,7 +4,8 @@
 - Expanded all 22 study topics to eight sequential checkpoints each: 176 per language, with separate saved progress and editable drafts for each adventure. Each checkpoint requires both a correct program output and a correct prediction; finishing a topic marks that level mastered. Existing one-checkpoint topic completions migrate as task 1.
 - Added progress counts for tasks and mastered levels. The Code Scholar badge now requires all 176 tasks. Java's exception example uses a custom message field supported by the browser Java runtime.
 - **Checks:** all 88 topic starters ran successfully across Java, JavaScript, TypeScript and Python. The eight-task completion flow passed in Chromium; old progress migration and task ordering passed unit tests. Tablet practice and Explorer resize regressions passed. All 246 unit tests, lint, TypeScript and production dependency audit passed (zero vulnerabilities); production build passed.
-- **Next:** publish this course expansion, then add another arcade challenge to make free play more rewarding.
+- **Release:** source commit `09bc5e3` is public on `main`. Production deployment `dpl_C1JLZJYZGFvpRheuPTQB2fAVMpP6` is READY at https://codequest-game-inky.vercel.app/; the production alias returned the new build.
+- **Next:** add another arcade challenge to make free play more rewarding.
 - **Blockers:** none.
 
 ## 2026-10-23 (22-topic study path and mouse steering)
