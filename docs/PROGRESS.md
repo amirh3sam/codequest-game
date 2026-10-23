@@ -3,7 +3,8 @@
 ## 2026-10-23 (Study Path added to the world map)
 - The world map now shows all 22 coding categories as clickable skill levels with per-adventure task progress. Selecting a category opens that exact level in the tablet Study Path. The seven city districts remain in a separate Story Districts section and retain their existing travel/unlock behavior.
 - **Checks:** Chromium confirmed 22 skill levels, 7 story districts and navigation from the map to the selected level. All 248 unit tests, TypeScript and lint passed.
-- **Next:** publish the updated map and verify the public release.
+- **Release:** source commit `1f80c9c` is public on `main`. Production deployment `dpl_AhBgDrZdb3JZRnW1msrJzjmGqfJR` is READY at https://codequest-game-inky.vercel.app/; the production alias returned the updated build.
+- **Next:** continue improving optional play activities.
 - **Blockers:** none.
 
 ## 2026-10-23 (Packet Dash data combos)
