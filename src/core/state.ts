@@ -15,7 +15,7 @@ import {
 
 export type Hero = Readonly<{ kind: "boy" | "girl"; name: string }>;
 export type Position = Readonly<{ x: number; y: number }>;
-export type GameExtras = Readonly<{ packetDashBest: number }>;
+export type GameExtras = Readonly<{ packetDashBest: number; signalStackBest?: number }>;
 
 export type AreaState = Readonly<{
   solved: readonly string[];

@@ -27,16 +27,17 @@ import {
 } from "../core/state";
 import { SPRITES } from "../game/assets";
 import { gameAudio } from "../game/audio";
+import { type ControlScheme, controlHint } from "../game/control-scheme";
 import type { BootScene, VillageCallbacks } from "../game/scenes/BootScene";
 import { executionError, grade } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
 import { WorkerHost } from "../runners/worker-host";
+import { openArcade } from "./arcade";
 import { openCommunityBeacon } from "./community-beacon";
 import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
 import { openHubFinale } from "./hub-finale";
 import { mobileControls } from "./mobile-controls";
-import { openPacketDash } from "./packet-dash";
 import { openTablet } from "./tablet";
 import { presentTaskConsoleOpening } from "./task-console-opening";
 
@@ -49,6 +50,7 @@ const LANGUAGES: { id: Lang; name: string; badge: string; description: string }[
 ];
 
 export class GameApp {
+  private root: HTMLElement;
   private scene: BootScene;
   private state: GameState | null = null;
   private area: AreaContent = loadVariables("javascript");
@@ -73,6 +75,9 @@ export class GameApp {
   private tabletNavigation = false;
   private onboardingStage = 3;
   private onboardingOrigin: Position | null = null;
+  private controlScheme: ControlScheme = "wasd";
+  private largeText = false;
+  private highContrast = false;
   private callbacks: VillageCallbacks = {
     interact: (id) => this.interact(id),
     position: (position) => this.storePosition(position),
@@ -80,7 +85,14 @@ export class GameApp {
   };
   constructor(root: HTMLElement, scene: BootScene) {
     gameAudio.init();
+    this.root = root;
     this.scene = scene;
+    const preferences = this.readAccessibilitySettings();
+    this.controlScheme = preferences.controlScheme;
+    this.largeText = preferences.largeText;
+    this.highContrast = preferences.highContrast;
+    this.scene.setControlScheme(this.controlScheme);
+    this.applyAccessibilitySettings();
     this.notice.setAttribute("role", "status");
     this.notice.setAttribute("aria-live", "polite");
     this.mobile.hidden = true;
@@ -427,6 +439,41 @@ export class GameApp {
       return 3;
     }
   }
+  private readAccessibilitySettings(): {
+    controlScheme: ControlScheme;
+    largeText: boolean;
+    highContrast: boolean;
+  } {
+    try {
+      const saved = JSON.parse(localStorage.getItem("codequest:accessibility:v1") ?? "{}") as Record<string, unknown>;
+      return {
+        controlScheme:
+          saved.controlScheme === "arrows" || saved.controlScheme === "ijkl" ? saved.controlScheme : "wasd",
+        largeText: saved.largeText === true,
+        highContrast: saved.highContrast === true,
+      };
+    } catch {
+      return { controlScheme: "wasd", largeText: false, highContrast: false };
+    }
+  }
+  private applyAccessibilitySettings(): void {
+    this.root.dataset.largeText = String(this.largeText);
+    this.root.dataset.highContrast = String(this.highContrast);
+  }
+  private saveAccessibilitySettings(): void {
+    try {
+      localStorage.setItem(
+        "codequest:accessibility:v1",
+        JSON.stringify({
+          controlScheme: this.controlScheme,
+          largeText: this.largeText,
+          highContrast: this.highContrast,
+        }),
+      );
+    } catch {
+      this.toast("Accessibility changes apply for this session; browser storage is unavailable.");
+    }
+  }
   private saveOnboarding(stage: number, state = this.state): void {
     try {
       const key = this.onboardingKey(state);
@@ -662,7 +709,7 @@ export class GameApp {
     const footer = el("div", "game-footer");
     this.saved = el("span", "save-state");
     footer.append(
-      el("span", "", "WASD / Arrows · Move     E / Space · Interact     T · Tablet     Esc · Menu"),
+      el("span", "", `${controlHint(this.controlScheme)} - Move | E / Space - Interact | T - Tablet | Esc - Menu`),
       this.saved,
     );
     const onboarding = this.onboardingCard();
@@ -674,7 +721,7 @@ export class GameApp {
     const guide = el("aside", "field-guide");
     guide.setAttribute("aria-label", "First steps guide");
     const stages = [
-      ["1 / 3 · MOVE", "Use WASD or arrow keys. On a phone, hold a direction or tap the ground."],
+      ["1 / 3 · MOVE", "Move around the city. On a phone, hold a direction or tap the ground."],
       ["2 / 3 · MEET YOUR COURIER", `Walk near ${this.courierName()} and press E / Space, or tap Interact.`],
       [
         "3 / 3 · TRY A MISSION",
@@ -683,7 +730,9 @@ export class GameApp {
     ] as const;
     const [title, description] = stages[this.onboardingStage] ?? stages[2];
     guide.append(el("span", "eyebrow", "FIELD GUIDE"), el("strong", "field-guide-title", title));
-    guide.append(el("p", "", description));
+    guide.append(
+      el("p", "", this.onboardingStage === 0 ? `${controlHint(this.controlScheme)} · ${description}` : description),
+    );
     const skip = button("Skip guide", () => this.advanceOnboarding(3), "field-guide-skip");
     guide.append(skip);
     return guide;
@@ -740,18 +789,32 @@ export class GameApp {
     if (!this.state) return;
     const adventureId = this.state.adventureId;
     const runner = this.scene.textures.get(`hero-walk-${this.state.hero.kind}`).getSourceImage() as HTMLCanvasElement;
-    openPacketDash({
-      name: this.state.hero.name,
-      best: this.state.games?.packetDashBest ?? 0,
+    const name = this.state.hero.name,
+      packetDashBest = this.state.games?.packetDashBest ?? 0,
+      signalStackBest = this.state.games?.signalStackBest ?? 0;
+    openArcade({
+      name,
       runner,
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
-      record: (score) => {
+      packetDashBest,
+      signalStackBest,
+      recordPacketDash: (score) => {
         if (!this.state || this.state.adventureId !== adventureId || score <= (this.state.games?.packetDashBest ?? 0))
           return;
         this.state = {
           ...this.state,
           updatedAt: now(),
           games: { ...this.state.games, packetDashBest: score },
+        };
+        this.persist();
+      },
+      recordSignalStack: (score) => {
+        if (!this.state || this.state.adventureId !== adventureId || score <= (this.state.games?.signalStackBest ?? 0))
+          return;
+        this.state = {
+          ...this.state,
+          updatedAt: now(),
+          games: { packetDashBest: this.state.games?.packetDashBest ?? 0, signalStackBest: score },
         };
         this.persist();
       },
@@ -1075,6 +1138,7 @@ export class GameApp {
       button("Save backup file", () => this.exportAdventure()),
       button("Load backup file", () => this.importAdventure()),
       button("World map", () => this.worldMap()),
+      button("Accessibility & controls", () => this.accessibility()),
       button("Read the lesson", () => this.lesson()),
       button("Title screen", () => this.intro()),
     );
@@ -1097,6 +1161,97 @@ export class GameApp {
     volume.addEventListener("change", () => gameAudio.play("tap"));
     audio.append(label, volume, value, this.soundToggle());
     panel.append(audio);
+  }
+  private accessibility(): void {
+    const panel = this.panel(
+      "Accessibility & controls",
+      "Choose comfortable text and movement settings for this device.",
+      true,
+    );
+    const controls = el("div", "accessibility-setting"),
+      label = el("label", "", "Movement keys");
+    const select = el("select") as HTMLSelectElement;
+    select.id = "movement-controls";
+    select.setAttribute("aria-label", "Movement keys");
+    for (const [value, title] of [
+      ["wasd", "WASD + arrow keys"],
+      ["arrows", "Arrow keys only"],
+      ["ijkl", "IJKL + arrow keys"],
+    ] as const) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = title;
+      select.append(option);
+    }
+    select.value = this.controlScheme;
+    label.htmlFor = select.id;
+    select.addEventListener("change", () => {
+      if (select.value !== "wasd" && select.value !== "arrows" && select.value !== "ijkl") return;
+      this.controlScheme = select.value;
+      this.scene.setControlScheme(this.controlScheme);
+      this.saveAccessibilitySettings();
+      this.renderHud();
+    });
+    controls.append(label, select);
+
+    const largerText = button(
+      this.largeText ? "Large text: on" : "Large text: off",
+      () => {
+        this.largeText = !this.largeText;
+        largerText.textContent = this.largeText ? "Large text: on" : "Large text: off";
+        largerText.setAttribute("aria-pressed", String(this.largeText));
+        this.applyAccessibilitySettings();
+        this.saveAccessibilitySettings();
+      },
+      "button accessibility-toggle",
+    );
+    largerText.setAttribute("aria-pressed", String(this.largeText));
+    largerText.setAttribute("aria-label", "Large text");
+    const contrast = button(
+      this.highContrast ? "High contrast: on" : "High contrast: off",
+      () => {
+        this.highContrast = !this.highContrast;
+        contrast.textContent = this.highContrast ? "High contrast: on" : "High contrast: off";
+        contrast.setAttribute("aria-pressed", String(this.highContrast));
+        this.applyAccessibilitySettings();
+        this.saveAccessibilitySettings();
+      },
+      "button accessibility-toggle",
+    );
+    contrast.setAttribute("aria-pressed", String(this.highContrast));
+    contrast.setAttribute("aria-label", "High contrast");
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const motionNote = el(
+      "p",
+      "accessibility-note",
+      motion
+        ? "Reduced motion is active. The game has shortened its camera and decorative animations."
+        : "The game follows your device's Reduce Motion setting for camera and decorative animations.",
+    );
+    const audio = el("div", "accessibility-setting"),
+      audioLabel = el("label", "", "Effects volume"),
+      volume = el("input"),
+      value = el("output", "", `${Math.round(gameAudio.volume * 100)}%`);
+    volume.type = "range";
+    volume.id = "accessibility-volume";
+    volume.min = "0";
+    volume.max = "100";
+    volume.step = "5";
+    volume.value = String(Math.round(gameAudio.volume * 100));
+    audioLabel.htmlFor = volume.id;
+    volume.addEventListener("input", () => {
+      gameAudio.setVolume(Number(volume.value) / 100);
+      value.textContent = `${volume.value}%`;
+    });
+    audio.append(audioLabel, volume, value, this.soundToggle());
+    panel.append(
+      controls,
+      largerText,
+      contrast,
+      motionNote,
+      audio,
+      button("Back to menu", () => this.pause()),
+    );
   }
   private worldMap(): void {
     if (!this.state) return;

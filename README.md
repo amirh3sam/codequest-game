@@ -16,15 +16,15 @@ Progress saves in this browser profile and survives refreshes. Use **Menu → Sa
 
 ![CodeQuest gameplay: hoodie developer, Kai the courier and coding terminals in the modern tech city](docs/screenshots/tech-city.png)
 
-Start with **Mission** to meet Kai. The guided drone lesson lets you predict, run, investigate and change a battery value before writing your own repair. Practice previews are free; accepted repairs earn progress and change the city.
+Choose from color-coded JavaScript, Python, TypeScript or Java, then start a personal adventure. A step-by-step field guide explains keyboard or mobile movement, meeting your courier and opening your first coding task; you can skip it at any time. Open **Progress** to see mission counts, the next skill and the story chapter. **Accessibility & controls** offers larger text, high contrast and remappable movement keys. The guided drone lesson lets you predict, run, investigate and change a battery value before writing your own repair. Practice previews are free; accepted repairs earn progress and change the city.
 
 After repairing the drone, find the **community beacon** beside the courier lane, or open **Tasks → Optional discovery**. Help Mina choose **Garden night** or **Arcade night**, use a text variable to announce it, then light the courtyard in your event's colors. Free previews keep your hearts and gems safe. The saved choice earns the **Signal Maker** badge in your tablet mission log; you can change the event later.
 
-The city also has **Packet Dash**, a standalone 2D runner at the glowing arcade cabinet. Jump the signal glitches, collect data bits and chase a personal best. It has its own shields and score, so arcade runs never cost coding hearts or gems; best scores save with that adventure. On touchscreens, use the Jump button.
+The **City Arcade** now offers Packet Dash, a 2D runner where you jump signal glitches and collect data bits, and Signal Stack, a timing game where you build a tower of relays. Both are optional, cost no coding hearts or gems, and save separate personal bests with each adventure. Touchscreens have dedicated game controls.
 
 <table align="center" width="100%">
   <tr>
-    <td width="33%"><img src="docs/screenshots/arcade-map.png" alt="The hoodie developer beside the glowing Packet Dash cabinet in CodeQuest's modern city." width="100%"></td>
+    <td width="33%"><img src="docs/screenshots/arcade-map.png" alt="The hoodie developer beside the glowing City Arcade cabinet in CodeQuest's modern city." width="100%"></td>
     <td width="33%"><img src="docs/screenshots/packet-dash.png" alt="Packet Dash runner gameplay with a side-facing developer, city skyline, score and jump controls." width="100%"></td>
     <td width="33%"><img src="docs/screenshots/task-console.png" alt="A task-specific city console opening with a coding mission prompt." width="100%"></td>
   </tr>

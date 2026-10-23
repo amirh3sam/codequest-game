@@ -76,6 +76,46 @@ test("language colors are distinct and the first-run guide follows play", async 
   );
 });
 
+test("accessibility settings remap movement and persist on this device", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Start adventure", exact: true }).click();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Accessibility & controls", exact: true }).click();
+  await page.getByLabel("Movement keys", { exact: true }).selectOption("ijkl");
+  await page.getByRole("button", { name: "Large text", exact: true }).click();
+  await page.getByRole("button", { name: "High contrast", exact: true }).click();
+  await expect(page.locator("#ui")).toHaveAttribute("data-large-text", "true");
+  await expect(page.locator("#ui")).toHaveAttribute("data-high-contrast", "true");
+  await page.keyboard.press("Escape");
+  const before = await page.evaluate(() => {
+    const scene = (
+      window as unknown as { __codequest: { game: { scene: { getScene(key: string): unknown } } } }
+    ).__codequest.game.scene.getScene("boot") as { getPosition(): { x: number; y: number } };
+    return scene.getPosition();
+  });
+  await page.keyboard.down("i");
+  await page.waitForTimeout(300);
+  await page.keyboard.up("i");
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const scene = (
+          window as unknown as { __codequest: { game: { scene: { getScene(key: string): unknown } } } }
+        ).__codequest.game.scene.getScene("boot") as { getPosition(): { x: number; y: number } };
+        return scene.getPosition().y;
+      }),
+    )
+    .toBeLessThan(before.y - 15);
+  await page.reload();
+  await expect(page.locator("#ui")).toHaveAttribute("data-large-text", "true");
+  await expect(page.locator("#ui")).toHaveAttribute("data-high-contrast", "true");
+  await expect
+    .poll(() =>
+      page.evaluate(() => JSON.parse(localStorage.getItem("codequest:accessibility:v1") ?? "{}").controlScheme),
+    )
+    .toBe("ijkl");
+});
+
 test("boy developer selection survives walking and reloading", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Boy hero", exact: true }).click();

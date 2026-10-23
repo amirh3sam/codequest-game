@@ -7,6 +7,7 @@ import { SPRITES, TILESETS } from "../assets";
 import { gameAudio } from "../audio";
 import { canStandAt, moveWithCollisions, type Solid } from "../collision";
 import { CommunityBeacon } from "../community-beacon";
+import { type ControlScheme, directionKeys } from "../control-scheme";
 import { districtLayout } from "../district-layout";
 import { DroneQuest } from "../drone-quest";
 import { createHeroTextures, type Facing, heroFrame } from "../hero-sprites";
@@ -56,6 +57,7 @@ export class BootScene extends Phaser.Scene {
   private walked = 0;
   private touchAxis = { x: 0, y: 0 };
   private tapTarget: Position | null = null;
+  private controlScheme: ControlScheme = "wasd";
   private hubTour?: Phaser.Time.TimerEvent;
   private reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   constructor() {
@@ -87,7 +89,7 @@ export class BootScene extends Phaser.Scene {
     for (const [index, spot] of village.tasks.entries())
       this.marker(`variables-${index + 1}`, spot.x, spot.y, { texture: "tech-props", frame: 0 }, `${index + 1}`);
     this.marker("boss", village.boss.x, village.boss.y, SPRITES.boss, "Firewall");
-    this.marker("arcade", village.arcade.x, village.arcade.y, { texture: "packet-arcade", frame: 0 }, "Packet Dash");
+    this.marker("arcade", village.arcade.x, village.arcade.y, { texture: "packet-arcade", frame: 0 }, "Arcade");
     this.districtLabel = this.add
       .text(768, 382, "VALUES / DATA HUB", { fontFamily: "Consolas", fontSize: "15px", color: "#9ae9ff" })
       .setOrigin(0.5)
@@ -134,7 +136,7 @@ export class BootScene extends Phaser.Scene {
       .setDepth(1000)
       .setVisible(false);
     if (this.input.keyboard)
-      this.keys = this.input.keyboard.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,E,SPACE", false) as Record<
+      this.keys = this.input.keyboard.addKeys("W,A,S,D,I,J,K,L,UP,DOWN,LEFT,RIGHT,E,SPACE", false) as Record<
         string,
         Phaser.Input.Keyboard.Key
       >;
@@ -353,6 +355,10 @@ export class BootScene extends Phaser.Scene {
     this.touchAxis = { x, y };
     if (x || y) this.tapTarget = null;
   }
+  setControlScheme(scheme: ControlScheme): void {
+    this.controlScheme = scheme;
+    this.input.keyboard?.resetKeys();
+  }
   touchStep(x: -1 | 0 | 1, y: -1 | 0 | 1): void {
     this.tapTarget = null;
     if (this.blocked || !this.state || !this.area) return;
@@ -478,7 +484,7 @@ export class BootScene extends Phaser.Scene {
           : marker.id === "boss"
             ? `Inspect ${this.area?.boss.name}`
             : marker.id === "arcade"
-              ? "Play Packet Dash, a free city runner"
+              ? "Play free city arcade games"
               : `Task ${marker.id.split("-")[1]}`,
     }));
     const courier = this.droneQuest.nearby(this.position),
@@ -493,12 +499,14 @@ export class BootScene extends Phaser.Scene {
   update(time: number, delta: number): void {
     if (this.blocked || !this.state || !this.area || document.activeElement?.matches("input, textarea, select")) return;
     const pressed = (key: string) => this.keys[key]?.isDown;
+    const movement = directionKeys(this.controlScheme);
+    const arrowAlternate = this.controlScheme !== "arrows";
     let dx =
-      Number(pressed("D") || pressed("RIGHT") || this.touchAxis.x > 0) -
-      Number(pressed("A") || pressed("LEFT") || this.touchAxis.x < 0);
+      Number(pressed(movement.right) || (arrowAlternate && pressed("RIGHT")) || this.touchAxis.x > 0) -
+      Number(pressed(movement.left) || (arrowAlternate && pressed("LEFT")) || this.touchAxis.x < 0);
     let dy =
-      Number(pressed("S") || pressed("DOWN") || this.touchAxis.y > 0) -
-      Number(pressed("W") || pressed("UP") || this.touchAxis.y < 0);
+      Number(pressed(movement.down) || (arrowAlternate && pressed("DOWN")) || this.touchAxis.y > 0) -
+      Number(pressed(movement.up) || (arrowAlternate && pressed("UP")) || this.touchAxis.y < 0);
     if (!dx && !dy && this.tapTarget) {
       const tx = this.tapTarget.x - this.position.x,
         ty = this.tapTarget.y - this.position.y;

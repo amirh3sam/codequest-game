@@ -70,6 +70,31 @@ textarea:focus-visible {
   inset: 0;
   pointer-events: none;
 }
+#ui[data-large-text="true"]
+  :is(
+    .subtitle,
+    .section-label,
+    .lesson-body,
+    .task-prompt,
+    .feedback,
+    .panel p,
+    .panel h3,
+    .panel h4,
+    .choice,
+    .language-name,
+    .language-description,
+    .hero-label,
+    .hud-actions .button,
+    .objective strong,
+    .field-guide p,
+    .game-footer,
+    .skill-track p,
+    .skill-track-count,
+    .task-row,
+    .world-node
+  ) {
+  font-size: 1.14em;
+}
 .overlay {
   position: absolute;
   inset: 0;
@@ -328,6 +353,60 @@ textarea:focus-visible {
   font-size: 12px;
   letter-spacing: 0.06em;
 }
+.city-arcade {
+  border-color: #50c9e977;
+  background: radial-gradient(ellipse at 50% 0%, #22516d88, transparent 55%), #091526f7;
+}
+.arcade-game-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.arcade-game-card {
+  padding: 18px;
+  border: 1px solid #5298b966;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #17324e, #101a2b);
+}
+.arcade-game-card p {
+  min-height: 48px;
+  color: #b3c9dc;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.arcade-game-art {
+  display: grid;
+  min-height: 72px;
+  place-items: center;
+  border: 1px solid #64dff055;
+  border-radius: 9px;
+  background:
+    linear-gradient(0deg, #102239cc, #10223933),
+    repeating-linear-gradient(90deg, #58dcf322 0 2px, transparent 2px 25px), linear-gradient(145deg, #1a5875, #36245f);
+  color: #c7f6ff;
+  font: 700 11px monospace;
+  letter-spacing: 1.4px;
+}
+.stack-card .arcade-game-art {
+  background:
+    linear-gradient(0deg, #102239cc, #10223933), repeating-linear-gradient(0deg, #77f2d522 0 2px, transparent 2px 18px),
+    linear-gradient(145deg, #155d63, #334071);
+}
+.signal-stack-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 24 / 9.5;
+  border: 1px solid #5ccde655;
+  border-radius: 12px;
+  background: #091427;
+  box-shadow:
+    0 12px 40px #0005,
+    0 0 28px #39d5ff18;
+}
+.signal-stack > .arcade-controls {
+  margin: 8px 0;
+}
 .panel-heading {
   display: flex;
   align-items: center;
@@ -344,6 +423,10 @@ h2 {
 }
 h3 {
   color: #edf6ff;
+}
+.arcade-game-card h3 {
+  margin: 12px 0 5px;
+  color: #e6f6ff;
 }
 .subtitle {
   color: #9db0ca;
@@ -707,6 +790,42 @@ small {
   font-size: 30px;
   padding: 0 7px;
   line-height: 1;
+}
+.accessibility-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 12px 0;
+  padding: 13px 15px;
+  border: 1px solid #55739288;
+  border-radius: 9px;
+  background: #142439;
+  color: #e6f2ff;
+}
+.accessibility-setting select {
+  min-width: 190px;
+  padding: 9px 11px;
+  border: 1px solid #78b7d6;
+  border-radius: 6px;
+  background: #0b1827;
+  color: #f1f8ff;
+}
+.accessibility-setting input[type="range"] {
+  width: min(240px, 45vw);
+  accent-color: #7de6ce;
+}
+.accessibility-note {
+  padding: 12px 15px;
+  border-left: 3px solid #c9d8ff;
+  background: #1b2940;
+  color: #e4ebff;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.accessibility-toggle[aria-pressed="true"] {
+  border-color: #83e5c4;
+  background: #164d46;
 }
 .hud {
   position: absolute;
@@ -2326,4 +2445,28 @@ small {
 .sound-settings input {
   width: 100%;
   accent-color: #81d8e8;
+}
+
+@media (max-width: 620px) {
+  .arcade-game-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+#ui[data-high-contrast="true"] .panel,
+#ui[data-high-contrast="true"] .hud,
+#ui[data-high-contrast="true"] .field-guide,
+#ui[data-high-contrast="true"] .objective {
+  border-color: #d8f5ff;
+  background-color: #050a12;
+  box-shadow:
+    0 0 0 1px #d8f5ff66,
+    0 8px 28px #000b;
+}
+#ui[data-high-contrast="true"] .arcade-game-card {
+  border-color: #d8f5ff;
+  background: #050a12;
+}
+#ui[data-high-contrast="true"] :is(.subtitle, .panel p, .skill-track p, .game-footer, .field-guide p) {
+  color: #fff;
 }

@@ -187,6 +187,7 @@ describe("version and corruption handling", () => {
     ["a missing coordinate", (state) => ({ ...state, position: { x: 0 } })],
     ["a negative arcade record", (state) => ({ ...state, games: { packetDashBest: -1 } })],
     ["a fractional arcade record", (state) => ({ ...state, games: { packetDashBest: 4.5 } })],
+    ["a fractional tower record", (state) => ({ ...state, games: { packetDashBest: 0, signalStackBest: 4.5 } })],
     ["an oversized arcade record", (state) => ({ ...state, games: { packetDashBest: 1_000_001 } })],
     ["progress in a locked area", (state) => changedArea(state, { lessonsFound: true }, "conditions")],
   ];

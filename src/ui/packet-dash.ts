@@ -1,11 +1,12 @@
 import { button, el } from "./dom";
 
-type PacketDashHost = {
+export type PacketDashHost = {
   name: string;
   best: number;
   runner: HTMLCanvasElement;
   panel(title: string, subtitle: string, wide?: boolean): HTMLElement;
   record(score: number): void;
+  lobby(): void;
 };
 
 const WIDTH = 960;
@@ -73,7 +74,7 @@ export function openPacketDash(host: PacketDashHost): void {
   jump.setAttribute("aria-label", "Jump over the signal glitches");
   controls.append(start, jump);
   const best = el("p", "arcade-best", `PERSONAL BEST · ${host.best}`);
-  panel.append(intro, scoreStrip, canvas, feedback, controls, best);
+  panel.append(intro, scoreStrip, canvas, feedback, controls, best, button("Arcade lobby", host.lobby));
 
   let frameId = 0;
   let lastFrame = 0;

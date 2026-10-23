@@ -124,7 +124,12 @@ export function isGameState(value: unknown): value is GameState {
   }
 
   if (Object.hasOwn(value, "games") && value.games !== undefined) {
-    if (!isRecord(value.games) || !isInteger(value.games.packetDashBest, 0, 1_000_000)) return false;
+    if (
+      !isRecord(value.games) ||
+      !isInteger(value.games.packetDashBest, 0, 1_000_000) ||
+      (Object.hasOwn(value.games, "signalStackBest") && !isInteger(value.games.signalStackBest, 0, 1_000_000))
+    )
+      return false;
   }
 
   if (Object.hasOwn(value, "adventureId") && !isAdventureId(value.adventureId)) return false;

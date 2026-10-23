@@ -26,6 +26,8 @@ test("finds the city arcade and plays a round of Packet Dash", async ({ page }, 
   await page.screenshot({ path: testInfo.outputPath("codequest-arcade-map.png") });
   await page.keyboard.press("e");
 
+  await expect(page.getByRole("heading", { name: "City Arcade" })).toBeVisible();
+  await page.getByRole("button", { name: "Play Packet Dash" }).click();
   await expect(page.getByRole("heading", { name: "Packet Dash" })).toBeVisible();
   await expect(page.getByLabel(/Packet Dash runner/)).toBeVisible();
   await page.getByRole("button", { name: "Start 60-second run" }).click();
@@ -34,4 +36,15 @@ test("finds the city arcade and plays a round of Packet Dash", async ({ page }, 
   await page.keyboard.press("Space");
   await expect(page.locator(".arcade-feedback")).toContainText("jump");
   await expect(page.locator(".arcade-score")).toContainText("SCORE");
+  await page.getByRole("button", { name: "Arcade lobby", exact: true }).click();
+  await page.getByRole("button", { name: "Play Signal Stack" }).click();
+  await expect(page.getByRole("heading", { name: "Signal Stack" })).toBeVisible();
+  await page.getByRole("button", { name: "Start a tower" }).click();
+  await page.getByRole("button", { name: "Drop relay" }).click();
+  await expect(page.locator(".arcade-score")).toHaveText("LEVEL 1");
+  await expect
+    .poll(() =>
+      page.evaluate(() => JSON.parse(localStorage.getItem("codequest:v1:javascript") ?? "{}").games?.signalStackBest),
+    )
+    .toBe(1);
 });

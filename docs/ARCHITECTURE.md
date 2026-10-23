@@ -116,7 +116,7 @@ type Save = {
   hero: { kind: "boy" | "girl"; name: string };
   currentArea: string; position?: { x: number; y: number };
   discoveries?: { beacon?: "garden" | "arcade" };
-  games?: { packetDashBest: number }; // optional per-adventure city arcade record
+  games?: { packetDashBest: number; signalStackBest?: number }; // optional per-adventure arcade records
   areas: Record<string, {
     solved: string[]; lessonsFound: boolean; gems: number; hearts: number;
     hintsBought: number; bossDefeated: boolean; finaleStage?: 0 | 1 | 2;
