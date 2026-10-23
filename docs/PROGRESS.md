@@ -4,7 +4,8 @@
 
 - **Done:** replaced the bulky 3D arms and illuminated casing with fitted woven hoodie sleeves, shaped hands, continuous curled fingers, a slim metal tablet, small bezel controls, a rear cradle and two bands around the forearm. The supporting arm now follows the bezel through a joint-length-preserving pose. Softened lighting keeps skin and cloth readable. The approved camera movement, three-second timing and editor/output layout retain their behavior.
 - **Checks:** 211 unit tests and five focused Chromium cases passed, including both character openings, walking/camera restoration, reduced-motion phone layout, skip/early close and unavailable WebGL. Lint, type checking and production build passed; production test hooks are absent. Inspected actual model captures and refreshed the opening screenshot/video without page errors. No dependencies or save changes.
-- **Release:** publishing and public verification follow this implementation entry.
+- **Release:** source commit `cfc5f0b` is public and deployed to the separate game project as `dpl_AoQKxivCZshcNK6xKDj9LbqguSSS` (READY), aliased at https://codequest-game-inky.vercel.app/. GitHub CI run `39887220519` passed lint, types, 211 unit tests and all 90 Chromium cases.
+- **Public verification:** inspected a fresh browser capture of the new slim model from the public URL. Both developers completed the opening and ran code printing 42 while the editor and output remained visible, displayed a syntax error and returned to the city. HTTP 200, no page errors and no production test hooks. An initial error assertion exceeded its five-second wait; both profiles passed when the UI check allowed 30 seconds.
 
 ## 2026-10-22 (first-person wrist view and inline practice results)
 
