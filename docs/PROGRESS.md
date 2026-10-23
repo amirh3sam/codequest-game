@@ -3,7 +3,7 @@
 ## 2026-10-23 (close editor tabs)
 - Each open file tab now has an × button at its right edge. Closing the active tab switches to a neighboring tab; closed files stay in the Explorer and can be reopened. The workspace keeps one tab open at all times.
 - **Checks:** Java browser flow passed through opening, closing and reopening tabs plus folder collapse/selection, rename and delete. Lint, TypeScript, all 241 unit tests and production build passed.
-- **Release:** pending public commit and Vercel deployment.
+- **Release:** commit `ea5cba1` is public on `main`. Deployment `dpl_BUyPkgRHoh7aRQRfKZTCVTqhd4Zj` is READY at https://codequest-game-inky.vercel.app/; `vercel curl` confirmed the production alias serves the app.
 
 ## 2026-10-23 (clear folder selection and expand controls)
 - Folder names now select the destination for new items without collapsing the folder. A separate chevron expands or collapses contents; the selected folder is highlighted, nested items show a guide line, and controls remain keyboard and touch accessible.
