@@ -3,7 +3,8 @@
 ## 2026-10-23 (Packet Dash data combos)
 - Added a visible 0/3 data combo to each runner round. Every three pickups awards 100 bonus points and restores one arcade shield, up to the normal three-shield cap. The mechanic stays separate from coding hearts and gems.
 - **Checks:** two unit tests cover combo rewards and the shield cap; the City Arcade / Packet Dash browser flow passed. All 248 unit tests, lint, TypeScript and production build passed.
-- **Next:** publish the arcade update, then continue improving optional play activities.
+- **Release:** source commit `850b169` is public on `main`. Production deployment `dpl_AnDPxrXPn6AiAZ5wGmmx9TCQwqbB` is READY at https://codequest-game-inky.vercel.app/; the production alias returned the new build.
+- **Next:** continue improving optional play activities.
 - **Blockers:** none.
 
 ## 2026-10-23 (176-task Study Path)
