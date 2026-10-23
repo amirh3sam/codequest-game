@@ -6,6 +6,7 @@ type AudioProbe = {
   ended: number;
   textures: number;
   texturesEnded: number;
+  envelopePeaks: number[];
 };
 type ProbeWindow = Window & { audioProbe: AudioProbe };
 test.use({ reducedMotion: "reduce" });
@@ -14,13 +15,29 @@ test("effects unlock on interaction, follow walking, stop when muted and remembe
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.addInitScript(() => {
-    const probe: AudioProbe = { contexts: 0, starts: [], ended: 0, textures: 0, texturesEnded: 0 };
+    const probe: AudioProbe = {
+      contexts: 0,
+      starts: [],
+      ended: 0,
+      textures: 0,
+      texturesEnded: 0,
+      envelopePeaks: [],
+    };
     (window as unknown as ProbeWindow).audioProbe = probe;
     const NativeAudioContext = window.AudioContext;
     window.AudioContext = class extends NativeAudioContext {
       constructor(options?: AudioContextOptions) {
         super(options);
         probe.contexts++;
+      }
+      override createGain(): GainNode {
+        const node = super.createGain();
+        const ramp = node.gain.linearRampToValueAtTime.bind(node.gain);
+        node.gain.linearRampToValueAtTime = (value, time) => {
+          probe.envelopePeaks.push(value);
+          return ramp(value, time);
+        };
+        return node;
       }
       override createOscillator(): OscillatorNode {
         const node = super.createOscillator(),
@@ -55,6 +72,7 @@ test("effects unlock on interaction, follow walking, stop when muted and remembe
   expect((await probe()).contexts).toBe(1);
   expect((await probe()).starts.some((note) => note.type === "sine")).toBe(true);
   expect((await probe()).textures).toBeGreaterThan(0);
+  expect(Math.max(...(await probe()).envelopePeaks)).toBeGreaterThan(0.07);
   await page.getByRole("button", { name: "Tablet", exact: true }).click();
   await page.getByLabel("Practice code", { exact: true }).fill("console.log(42);");
   await page.getByRole("button", { name: "Run practice code", exact: true }).click();

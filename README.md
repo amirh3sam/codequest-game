@@ -22,6 +22,19 @@ After repairing the drone, find the **community beacon** beside the courier lane
 
 The city also has **Packet Dash**, a standalone 2D runner at the glowing arcade cabinet. Jump the signal glitches, collect data bits and chase a personal best. It has its own shields and score, so arcade runs never cost coding hearts or gems; best scores save with that adventure. On touchscreens, use the Jump button.
 
+<table align="center" width="100%">
+  <tr>
+    <td width="33%"><img src="docs/screenshots/arcade-map.png" alt="The hoodie developer beside the glowing Packet Dash cabinet in CodeQuest's modern city." width="100%"></td>
+    <td width="33%"><img src="docs/screenshots/packet-dash.png" alt="Packet Dash runner gameplay with a side-facing developer, city skyline, score and jump controls." width="100%"></td>
+    <td width="33%"><img src="docs/screenshots/task-console.png" alt="A task-specific city console opening with a coding mission prompt." width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub><b>Explore the arcade</b></sub></td>
+    <td align="center"><sub><b>Play Packet Dash</b></sub></td>
+    <td align="center"><sub><b>Open a coding mission</b></sub></td>
+  </tr>
+</table>
+
 ![Mina's optional community beacon with a chosen event, working code and live preview](docs/screenshots/community-beacon.png)
 
 Sound effects include textured footsteps, tactile clicks, tablet swishes, soft error knocks and layered completion chimes. Set **Effects volume** in **Menu**, or use **Sound on/off** on the title screen or toolbar. Both settings stay on this device. Audio starts after an interaction and stops when the tab is hidden.
@@ -30,7 +43,7 @@ Sound effects include textured footsteps, tactile clicks, tablet swishes, soft e
 
 Press **T** or click **Tablet**: the city camera zooms toward your developer, then an illustrated **2D wrist tablet** lifts into view, settles and zooms into its screen. The opening takes three seconds. Press **T** or **Skip animation** to jump ahead. Reduced motion opens it instantly.
 
-Opening any coding task uses that same illustrated wrist-tablet sequence. Run code in the full-screen task workspace and its console output animates into view below the editor.
+Coding tasks use a separate mission-console boot animation: the city node and task prompt load into a glowing terminal before the full-screen editor opens. Run code there and its output animates into the console below the editor. The wrist tablet remains its own practice space.
 
 ![The illustrated 2D wrist tablet during its opening animation](docs/screenshots/tablet-cinematic.png)
 

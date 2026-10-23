@@ -191,14 +191,14 @@ test("missing illustration opens the workspace, and late image loading never reo
   ).toBe(1);
 });
 
-test("missions and guides are usable inside the device and graded tasks retain its frame", async ({ page }) => {
+test("missions and guides are usable inside the device and tasks open their own console", async ({ page }) => {
   await start(page);
   await page.keyboard.press("t");
   await page.getByRole("tab", { name: "Guide", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Variables are named containers", exact: true })).toBeVisible();
   await page.getByRole("tab", { name: "Missions", exact: true }).click();
   await page.getByRole("button", { name: "Work on Set your display name", exact: true }).click();
-  await expect(page.locator(".tablet-task-view")).toBeVisible();
+  await expect(page.locator(".task-console-view")).toBeVisible();
   await page.getByLabel("Your code", { exact: true }).fill('const heroName = "Ada";\nconsole.log(heroName);');
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();
   await expect(page.locator(".feedback")).toContainText("Correct!");

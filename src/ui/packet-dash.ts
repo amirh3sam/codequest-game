@@ -3,7 +3,7 @@ import { button, el } from "./dom";
 type PacketDashHost = {
   name: string;
   best: number;
-  avatar: HTMLCanvasElement;
+  runner: HTMLCanvasElement;
   panel(title: string, subtitle: string, wide?: boolean): HTMLElement;
   record(score: number): void;
 };
@@ -235,21 +235,16 @@ export function openPacketDash(host: PacketDashHost): void {
     }
 
     const playerX = 126;
-    const playerW = 47;
-    const playerH = 57;
+    const playerW = 72;
+    const playerH = 78;
     const playerY = GROUND - playerH - jumpHeight;
-    if (host.avatar.width > 0 && host.avatar.height > 0) {
+    if (host.runner.width >= 96 * 6 && host.runner.height >= 112 * 3) {
       ctx.save();
       ctx.globalAlpha = invulnerable > 0 && Math.floor(invulnerable * 13) % 2 === 0 ? 0.5 : 1;
       ctx.shadowColor = "#54e0ff";
       ctx.shadowBlur = 12;
-      ctx.drawImage(
-        host.avatar,
-        playerX - 6,
-        playerY - 2 + (playing && jumpHeight < 1 ? Math.sin(scroll * 0.03) * 2 : 0),
-        playerW,
-        playerH,
-      );
+      const runFrame = Math.floor(scroll / 24) % 6;
+      ctx.drawImage(host.runner, runFrame * 96, 2 * 112, 96, 112, playerX - 10, playerY - 7, playerW, playerH);
       ctx.restore();
     } else {
       ctx.fillStyle = "#73daf2";

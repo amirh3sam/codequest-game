@@ -13,6 +13,9 @@ real game and working code, rather than concept art or interface mockups.
 - `community-courtyard.png`: the solid beacon and mint courtyard lights after activating Garden night, with the sound toggle in the toolbar.
 - `adventure-library.png`: the title screen grouping three named adventures beneath their languages, each with task progress.
 - `logic-junction.png`: the distinct skyrail plaza with its transparent routing hub, solid props and relocated terminals.
+- `arcade-map.png`: the real developer, glowing Packet Dash cabinet and interaction prompt in the Variable District.
+- `packet-dash.png`: the responsive runner panel with its animated side-running character, skyline, score and Jump control.
+- `task-console.png`: the task-specific console boot screen showing the live mission title and prompt.
 
 Regenerate with the local game running at `http://127.0.0.1:5173`:
 

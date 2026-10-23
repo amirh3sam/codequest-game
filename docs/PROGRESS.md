@@ -1,12 +1,15 @@
 # Progress log (newest on top)
 
-## 2026-10-23 (Packet Dash and task wrist tablet)
+## 2026-10-23 (Packet Dash, task consoles and audible footsteps)
 
 - **Free arcade game:** added Packet Dash, an original 2D city runner reachable at a solid arcade cabinet. Players jump glitches, collect data bits and keep a personal high score with each adventure. Arcade shields and points are separate from coding hearts and gems. Keyboard and touch Jump controls are supported.
-- **Footsteps:** softened the synth further with lower filtered noise, less volume and a longer attack/fade to remove the sharp gunshot-like edge.
-- **Coding tablet:** every coding task now opens through the same illustrated 2D wrist-tablet sequence as the practice tablet. The full-screen task editor keeps the console under the code; each run animates new output into view. T and Skip animation work, and reduced-motion preferences open instantly.
-- **Checks:** 231 unit tests, Biome lint, TypeScript and focused Chromium checks for city travel into Packet Dash, runner controls, tablet opening/skip, animated console output and full eight-task progression passed. A simultaneous full E2E run and production build overloaded the browser workers and timed out unrelated suites; the touched flows were rerun successfully on one worker.
-- **Release:** source commit `8649462` is public on `main`. Vercel deployment `dpl_9bDumTgsnKdHoYFHaoCTqU2DqSoh` is READY at https://codequest-game-inky.vercel.app/; the live alias returned HTTP 200.
+- **Footsteps:** raised the filtered shoe layers and added a browser check for a clearly audible step envelope while keeping the slower attack that removes the sharp transient.
+- **Task console:** task openings now use their own mission-terminal boot sequence with the task prompt and city node; they no longer reuse the wrist-tablet animation. Running code animates its output into the console. The practice tablet keeps its illustrated wrist opening.
+- **Runner character:** Packet Dash now animates the developer's six right-facing walk frames instead of showing a front-facing portrait.
+- **Audio review:** `agent-sounds` is for Codex/Claude CLI session events and its README restricts the included game voice packs to personal, non-commercial use. Tone.js is a browser audio framework rather than a game sound pack, so the game keeps its original local Web Audio effects without another dependency.
+- **Screenshots:** added live captures of the arcade map, Packet Dash gameplay and task console to the game README and screenshot notes.
+- **Checks:** 231 unit tests, lint, TypeScript, production build and focused Chromium flows for footsteps, Packet Dash, the console opening/output and tablet missions passed.
+- **Release:** follow-up deployment pending; previous production version is `dpl_9bDumTgsnKdHoYFHaoCTqU2DqSoh` at https://codequest-game-inky.vercel.app/.
 
 ## 2026-10-23 (touch controls, portable saves and staged hub repair)
 

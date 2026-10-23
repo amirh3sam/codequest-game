@@ -55,7 +55,7 @@ class GameAudio {
         this.master.gain.value = this.level * 0.55;
         this.master.connect(this.context.destination);
       }
-      if (this.context.state === "suspended") void this.context.resume().catch(() => {});
+      if (this.context.state !== "running") void this.context.resume().catch(() => {});
     } catch {
       /* Browsers without audio support keep full gameplay. */
     }
@@ -102,9 +102,9 @@ class GameAudio {
         this.foot = 1 - this.foot;
         const variation = (0.9 + Math.random() * 0.16) * (this.foot ? 1 : 0.82);
         // A padded, slow attack keeps the sole from sounding like a sharp pop.
-        this.noise(0.28, 0.042 * variation, 210 + Math.random() * 65, 0, "lowpass", 0.075);
-        this.noise(0.19, 0.009 * variation, 520 + Math.random() * 100, 0.045, "lowpass", 0.085);
-        this.tone(78 + Math.random() * 9, 0.23, 0.016 * variation, 0.02, undefined, 0.08);
+        this.noise(0.25, 0.11 * variation, 250 + Math.random() * 90, 0, "lowpass", 0.05);
+        this.noise(0.2, 0.028 * variation, 760 + Math.random() * 150, 0.035, "lowpass", 0.06);
+        this.tone(92 + Math.random() * 12, 0.22, 0.032 * variation, 0.018, undefined, 0.055);
         break;
       }
       case "tap":

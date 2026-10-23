@@ -37,7 +37,7 @@ import { openHubFinale } from "./hub-finale";
 import { mobileControls } from "./mobile-controls";
 import { openPacketDash } from "./packet-dash";
 import { openTablet } from "./tablet";
-import { presentTabletOpening } from "./tablet-opening";
+import { presentTaskConsoleOpening } from "./task-console-opening";
 
 const now = () => new Date().toISOString();
 const LANGUAGES: { id: Lang; name: string; badge: string; description: string }[] = [
@@ -673,10 +673,11 @@ export class GameApp {
   private packetDash(): void {
     if (!this.state) return;
     const adventureId = this.state.adventureId;
+    const runner = this.scene.textures.get(`hero-walk-${this.state.hero.kind}`).getSourceImage() as HTMLCanvasElement;
     openPacketDash({
       name: this.state.hero.name,
       best: this.state.games?.packetDashBest ?? 0,
-      avatar: this.icon(this.state.hero.kind === "girl" ? "heroGirl" : "heroBoy"),
+      runner,
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
       record: (score) => {
         if (!this.state || this.state.adventureId !== adventureId || score <= (this.state.games?.packetDashBest ?? 0))
@@ -996,7 +997,9 @@ export class GameApp {
           : `${"difficulty" in task ? task.difficulty.toUpperCase() : "BOSS"} · +${"difficulty" in task ? GEM_REWARD[task.difficulty] : 0} gems`,
         true,
       );
-    panel.classList.add("tablet-shell", "tablet-task-view");
+    panel.classList.remove("tablet-shell", "tablet-task-view");
+    this.overlay.classList.remove("tablet-overlay");
+    panel.classList.add("task-console-shell", "task-console-view");
     const columns = el("div", "editor-columns"),
       instructions = el("div", "instructions"),
       work = el("div", "code-workspace");
@@ -1192,9 +1195,7 @@ export class GameApp {
     work.append(label, code, actions, el("span", "section-label", "OUTPUT"), output, feedback);
     columns.append(instructions, work);
     panel.append(columns);
-    this.tabletCleanup = presentTabletOpening(panel, this.state.hero.kind, this.state.hero.name, () =>
-      this.scene.focusTablet(),
-    );
+    this.tabletCleanup = presentTaskConsoleOpening(panel, task, this.state.hero.name);
   }
   private victory(): void {
     const next = village.worldAreas[this.area.order];

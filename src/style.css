@@ -100,6 +100,179 @@ textarea:focus-visible {
 .panel-wide {
   width: min(100%, 940px);
 }
+.task-console-shell {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 1180px);
+  height: 100dvh;
+  max-height: 100dvh;
+  padding: clamp(14px, 2vw, 28px);
+  border: 1px solid #3c9eac77;
+  border-radius: 0;
+  background: radial-gradient(ellipse at 50% 0%, #103b4b99, transparent 58%), #09131ff7;
+  overflow: auto;
+  animation: none;
+}
+.task-console-shell :where(h2) {
+  font-size: clamp(22px, 2.5vw, 30px);
+}
+.task-console-shell :where(.subtitle) {
+  margin: 7px 0 16px;
+  font-size: 12px;
+}
+.task-console-view > :where(.editor-columns) {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+}
+.task-console-waiting {
+  visibility: hidden;
+}
+.task-console-overlay {
+  padding: 0;
+  background: #030a14d9;
+  backdrop-filter: blur(5px);
+}
+.task-console-opening {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 24px;
+  background:
+    linear-gradient(#152b3830 1px, transparent 1px), linear-gradient(90deg, #152b3830 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 45%, #0b394b99, #030a14f0 70%);
+  background-size:
+    34px 34px,
+    34px 34px,
+    auto;
+  animation: task-console-backdrop 420ms ease-out both;
+}
+.task-console-frame {
+  width: min(100%, 760px);
+  overflow: hidden;
+  border: 1px solid #3dd7df99;
+  border-radius: 15px;
+  background: #071522;
+  box-shadow:
+    0 0 14px #36ddec4d,
+    0 28px 90px #000a,
+    inset 0 0 0 5px #0b2130;
+  animation: task-console-open 700ms cubic-bezier(0.16, 0.84, 0.27, 1) both;
+}
+.task-console-topbar,
+.task-console-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 18px;
+  color: #86aabd;
+  font:
+    10px Consolas,
+    monospace;
+  letter-spacing: 0.09em;
+  background: #102432;
+}
+.task-console-lights {
+  color: #51d6c0;
+  letter-spacing: 0.16em;
+}
+.task-console-live {
+  color: #72edc2;
+}
+.task-console-screen {
+  position: relative;
+  min-height: 245px;
+  padding: clamp(25px, 6vw, 54px);
+  overflow: hidden;
+  background: radial-gradient(ellipse at 20% 0%, #16445488, transparent 66%), #081722;
+}
+.task-console-screen::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background: repeating-linear-gradient(transparent 0 4px, #7fe8f008 5px 6px);
+}
+.task-console-screen :where(.eyebrow) {
+  color: #55d9d1;
+  font:
+    10px Consolas,
+    monospace;
+  letter-spacing: 0.14em;
+}
+.task-console-screen :where(h2) {
+  margin: 13px 0;
+  color: #e5faff;
+}
+.task-console-prompt {
+  max-width: 590px;
+  color: #b0c8d4;
+  line-height: 1.65;
+}
+.task-console-command {
+  margin: 22px 0 10px;
+  color: #83e8b7;
+  font:
+    12px Consolas,
+    monospace;
+}
+.task-console-command::after {
+  content: "_";
+  animation: task-console-cursor 720ms steps(2, end) infinite;
+}
+.task-console-progress {
+  height: 3px;
+  overflow: hidden;
+  background: #163344;
+}
+.task-console-progress::after {
+  display: block;
+  width: 100%;
+  height: 100%;
+  content: "";
+  background: linear-gradient(90deg, #39d7cb, #a5f5bf);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: task-console-load 1250ms ease-out both;
+}
+.task-console-controls :where(.button) {
+  min-height: 40px;
+  white-space: nowrap;
+}
+@keyframes task-console-backdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes task-console-open {
+  from {
+    opacity: 0;
+    transform: perspective(900px) translateY(28px) scale(0.82) rotateX(8deg);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(900px) translateY(0) scale(1) rotateX(0);
+    filter: none;
+  }
+}
+@keyframes task-console-load {
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes task-console-cursor {
+  50% {
+    opacity: 0;
+  }
+}
 .packet-dash {
   width: min(100%, 1040px);
   padding: clamp(18px, 3vw, 30px);
@@ -738,7 +911,7 @@ small {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.tablet-task-view .output.console-reveal {
+.task-console-view .output.console-reveal {
   animation: console-reveal 360ms ease-out both;
 }
 @keyframes console-reveal {
@@ -1508,14 +1681,6 @@ small {
 .mission-status.complete {
   color: #7de5b2;
 }
-.tablet-task-view {
-  overflow: auto;
-}
-.tablet-task-view > .editor-columns {
-  min-height: 0;
-  flex: 1;
-  overflow: auto;
-}
 .studio-example {
   padding: 4px 0 20px;
 }
@@ -1658,6 +1823,18 @@ small {
   .tablet-shell {
     padding: 12px;
     border-width: 6px;
+  }
+  .task-console-shell {
+    padding: 12px;
+    border-width: 6px;
+  }
+  .task-console-screen {
+    min-height: 210px;
+    padding: 22px 18px;
+  }
+  .task-console-controls {
+    align-items: stretch;
+    flex-direction: column;
   }
   .studio-explorer {
     display: none;
