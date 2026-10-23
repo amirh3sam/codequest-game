@@ -60,7 +60,7 @@ async function run({ id, code, files }: RunRequest): Promise<RunResult> {
   compiler.addSourceFile("Main.java", code);
   for (const [path, source] of Object.entries(files ?? {})) {
     if (/^[\w./-]+\.java$/.test(path) && !path.split("/").some((part) => part === "..") && path !== "Main.java") {
-      compiler.addSourceFile(path, source);
+      compiler.addSourceFile(path.split("/").at(-1) ?? path, source);
     }
   }
 

@@ -256,7 +256,9 @@ files appear as tabs above the Monaco editor with individual close controls.
 Closing a tab preserves its file in the project tree; at least one file remains
 open, and the active tab moves to a neighbor when closed. Folder rows separate selecting a
 creation destination from expanding or collapsing its contents. The selected Java entry file plus
-every other `.java` file goes to the Java worker. JavaScript and TypeScript local named/default imports and Python
+every other `.java` file goes to the Java worker. New Java files get a
+`public class` scaffold matching the filename, `import java.util.*;`, and a
+package derived from their folder under `src/`. JavaScript and TypeScript local named/default imports and Python
 `from module import Name` statements are bundled from project files before
 running. External packages are not downloaded. The field guide is hidden while
 modal pages are open so it cannot cover tablet or arcade content.

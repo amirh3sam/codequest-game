@@ -89,7 +89,22 @@ test("Java tablet builds and runs a project split across class files", async ({ 
   await page.getByRole("button", { name: "+ File", exact: true }).click();
   await page.getByLabel("New file name").fill("Badge.java");
   await page.getByRole("button", { name: "Create", exact: true }).click();
-  await expect(page.getByLabel("Code editor: src/models/Badge.java")).toBeVisible();
+  const badgeEditor = page.getByLabel("Code editor: src/models/Badge.java");
+  await expect(badgeEditor).toHaveValue(/package models;[\s\S]*import java\.util\.\*;[\s\S]*public class Badge/);
+  await badgeEditor.fill(
+    'package models;\n\nimport java.util.*;\n\npublic class Badge {\n    public static String greeting() { return "Hello from a package!"; }\n}',
+  );
+  await page.locator(".studio-file[title='src/Main.java']").click();
+  await page
+    .getByLabel("Code editor: src/Main.java")
+    .fill(
+      "import models.Badge;\n\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(Badge.greeting());\n    }\n}",
+    );
+  await page.getByRole("button", { name: "Run practice code", exact: true }).click();
+  await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("Hello from a package!\n", {
+    timeout: 60_000,
+  });
+  await page.locator(".studio-open-file-tab", { hasText: "Badge.java" }).click();
   await expect(page.locator(".studio-open-file-tab", { hasText: "Badge.java" })).toBeVisible();
   await page.getByRole("button", { name: "Close src/models/Badge.java", exact: true }).click();
   await expect(page.locator(".studio-open-file-tab", { hasText: "Badge.java" })).toHaveCount(0);

@@ -1,5 +1,10 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (Java class scaffolds)
+- Creating a `.java` file now pre-fills its package based on its folder under `src/`, a `java.util.*` import, and a public class whose name matches the file. Java source files are passed to the browser compiler by basename so packaged classes compile correctly.
+- **Checks:** the Java tablet browser flow created a class under `src/models`, verified the generated package/import/class scaffold, imported it from `Main`, and ran it. All 242 unit tests, lint and TypeScript passed.
+- **Release:** pending public commit and Vercel deployment.
+
 ## 2026-10-23 (close editor tabs)
 - Each open file tab now has an × button at its right edge. Closing the active tab switches to a neighboring tab; closed files stay in the Explorer and can be reopened. The workspace keeps one tab open at all times.
 - **Checks:** Java browser flow passed through opening, closing and reopening tabs plus folder collapse/selection, rename and delete. Lint, TypeScript, all 241 unit tests and production build passed.

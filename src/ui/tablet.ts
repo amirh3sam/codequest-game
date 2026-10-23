@@ -8,6 +8,7 @@ import {
   createLocalFolder,
   createWorkspace,
   deleteWorkspaceEntry,
+  javaClassTemplate,
   type LocalDirectoryHandle,
   readWorkspace,
   removeLocalEntry,
@@ -605,9 +606,9 @@ export function openTablet(host: TabletHost): () => void {
               .map((_, index, parents) => parents.slice(0, index + 1).join("/")),
           ]),
         ];
-        project.files[filePath] = "";
+        project.files[filePath] = host.lang === "java" && filePath.endsWith(".java") ? javaClassTemplate(filePath) : "";
         if (connectedFolder)
-          void writeLocalFile(connectedFolder, filePath, "").catch(() => {
+          void writeLocalFile(connectedFolder, filePath, project.files[filePath] ?? "").catch(() => {
             status.textContent = "Could not create that file on your computer.";
           });
         openFile(filePath);

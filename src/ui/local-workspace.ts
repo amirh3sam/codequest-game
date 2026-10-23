@@ -47,6 +47,90 @@ export function createWorkspace(mainFile: string, starter: string): WorkspaceDat
   };
 }
 
+export function javaClassTemplate(path: string): string {
+  const parts = path.split("/");
+  const filename = parts.pop() ?? "Class.java";
+  const sourceRoot = parts[0] === "src" ? parts.slice(1) : parts;
+  const packageName = sourceRoot.map(javaIdentifier).join(".");
+  const className = javaIdentifier(filename.replace(/\.java$/i, "")) || "NewClass";
+  return `${packageName ? `package ${packageName};\n\n` : ""}import java.util.*;\n\npublic class ${className} {\n}\n`;
+}
+
+function javaIdentifier(value: string): string {
+  const identifier = value.replace(/[^\w$]/g, "_").replace(/^\d/, "_$&");
+  const reserved = new Set([
+    "abstract",
+    "assert",
+    "boolean",
+    "break",
+    "byte",
+    "case",
+    "catch",
+    "char",
+    "class",
+    "const",
+    "continue",
+    "default",
+    "do",
+    "double",
+    "else",
+    "enum",
+    "exports",
+    "extends",
+    "final",
+    "finally",
+    "float",
+    "for",
+    "goto",
+    "if",
+    "implements",
+    "import",
+    "instanceof",
+    "int",
+    "interface",
+    "long",
+    "module",
+    "native",
+    "new",
+    "open",
+    "opens",
+    "package",
+    "private",
+    "protected",
+    "provides",
+    "public",
+    "record",
+    "requires",
+    "return",
+    "sealed",
+    "short",
+    "static",
+    "strictfp",
+    "super",
+    "switch",
+    "synchronized",
+    "this",
+    "throw",
+    "throws",
+    "to",
+    "transient",
+    "transitive",
+    "try",
+    "uses",
+    "var",
+    "void",
+    "volatile",
+    "while",
+    "with",
+    "yield",
+    "true",
+    "false",
+    "null",
+    "_",
+  ]);
+  return /^[A-Za-z_$][\w$]*$/.test(identifier) ? `${identifier}${reserved.has(identifier) ? "_" : ""}` : "NewClass";
+}
+
 export function readWorkspace(key: string, fallback: WorkspaceData): WorkspaceData {
   try {
     const value: unknown = JSON.parse(localStorage.getItem(key) ?? "null");

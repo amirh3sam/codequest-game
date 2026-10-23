@@ -3,6 +3,7 @@ import { combineProjectSources } from "../../src/runners/project-source";
 import {
   createWorkspace,
   deleteWorkspaceEntry,
+  javaClassTemplate,
   readWorkspace,
   renameWorkspaceEntry,
   writeWorkspace,
@@ -24,6 +25,13 @@ describe("per-adventure project workspace", () => {
     const workspace = createWorkspace("src/Main.java", "public class Main {}");
     expect(workspace.files["src/Player.java"]).toContain("class Player");
     expect(workspace.files["src/Main.java"]).toContain("public class Main");
+  });
+
+  it("creates Java class scaffolds from the folder package and file name", () => {
+    expect(javaClassTemplate("src/claude/Test4.java")).toBe(
+      "package claude;\n\nimport java.util.*;\n\npublic class Test4 {\n}\n",
+    );
+    expect(javaClassTemplate("src/Helper.java")).toBe("import java.util.*;\n\npublic class Helper {\n}\n");
   });
 
   it("persists and reloads a nested file tree while rejecting unsafe paths", () => {
