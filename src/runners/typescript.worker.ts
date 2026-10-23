@@ -4,6 +4,7 @@
 // Library .d.ts files are bundled into public/runtimes/typescript/libs.json by scripts/copy-runtimes.mjs.
 import type * as TS from "typescript-js";
 import { runJs } from "./js-exec";
+import { combineProjectSources } from "./project-source";
 import { lineMapper } from "./source-map";
 import type { Diagnostic, RunRequest, RunResult, WorkerMessage } from "./types";
 
@@ -134,10 +135,10 @@ function moduleSyntaxErrors(ts: typeof TS, file: TS.SourceFile): Diagnostic[] {
   return errors;
 }
 
-async function run({ id, code, stdin }: RunRequest): Promise<RunResult> {
+async function run({ id, code, stdin, files, entryPath }: RunRequest): Promise<RunResult> {
   const compiler = await init();
   const t0 = performance.now();
-  const compiled = compile(compiler, code);
+  const compiled = compile(compiler, combineProjectSources(code, files, "typescript", entryPath));
   const compileMs = performance.now() - t0;
   if ("errors" in compiled) {
     return { id, stdout: "", stderr: "", compileErrors: compiled.errors, compileMs, runMs: 0 };

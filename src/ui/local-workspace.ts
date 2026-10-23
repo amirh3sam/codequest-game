@@ -30,8 +30,8 @@ export function createWorkspace(mainFile: string, starter: string): WorkspaceDat
   const extension = baseName.includes(".") ? baseName.slice(baseName.lastIndexOf(".")) : ".txt";
   const files: WorkspaceFiles = {
     [mainFile]: starter,
-    "README.md": `# CodeQuest project\n\nA small ${extension.slice(1)} project for ${new Date().getFullYear()}.\n\nEdit files in the Explorer. Run the active file to see its output.\n`,
-    [`src/helpers${extension}`]: "// Add reusable code here.\n",
+    "README.md": `# CodeQuest project\n\nA small ${extension.slice(1)} project for ${new Date().getFullYear()}.\n\nEdit files in the Explorer. Run the project entry with its local source files.\n`,
+    [`src/helpers${extension}`]: `${extension === ".py" ? "#" : "//"} Add reusable code here.\n`,
     "notes/ideas.md": "# Project ideas\n\n- What should this program do next?\n",
   };
   if (mainFile.endsWith("/Main.java")) {

@@ -20,18 +20,19 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
   test(`${lang}: tablet runs code, has useful tabs and saves a separate free-practice draft`, async ({ page }) => {
     test.setTimeout(150_000);
     const errors: string[] = [];
-    page.on("pageerror", (e) => errors.push(e.message));
+    page.on("pageerror", (e) => errors.push(e.stack ?? e.message));
     await start(page, lang);
     const before = await progress(page, lang);
     await page.keyboard.press("t");
     await expect(page.getByRole("dialog", { name: "Developer tablet", exact: true })).toBeVisible();
-    await expect(page.getByRole("tab", { name: FILES[lang], exact: true })).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("tab", { name: "Code", exact: true })).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator(".monaco-editor")).toBeVisible({ timeout: 15_000 });
     await page.evaluate(() => (window as unknown as Harness).__codequest.game.loop.sleep());
     const code = batteryExample(lang, 4, 3);
     await page.getByLabel("Practice code", { exact: true }).fill(code);
     await page.getByRole("button", { name: "Run practice code", exact: true }).click();
     await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("7\n", { timeout: 40_000 });
-    await expect(page.getByRole("tab", { name: FILES[lang], exact: true })).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("tab", { name: "Code", exact: true })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByLabel("Practice code", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Practice output", { exact: true })).toBeVisible();
     await page.getByRole("tab", { name: "Console", exact: true }).click();
@@ -75,13 +76,14 @@ test("Java tablet builds and runs a project split across class files", async ({ 
   });
 
   await page.getByRole("button", { name: "+ Folder", exact: true }).click();
-  await page.getByLabel("New folder path").fill("src/models");
+  await page.getByLabel("New folder name").fill("models");
   await page.getByRole("button", { name: "Create", exact: true }).click();
   await expect(page.locator(".studio-folder", { hasText: "models" })).toBeVisible();
   await page.getByRole("button", { name: "+ File", exact: true }).click();
-  await page.getByLabel("New file path").fill("src/models/Badge.java");
+  await page.getByLabel("New file name").fill("Badge.java");
   await page.getByRole("button", { name: "Create", exact: true }).click();
   await expect(page.getByLabel("Code editor: src/models/Badge.java")).toBeVisible();
+  await expect(page.locator(".studio-open-file-tab", { hasText: "Badge.java" })).toBeVisible();
   await page.reload();
   await page.locator(".title-adventure-row").first().click();
   await page.getByRole("button", { name: "Tablet", exact: true }).click();
@@ -90,6 +92,35 @@ test("Java tablet builds and runs a project split across class files", async ({ 
   await page.getByRole("button", { name: /Player\.java/ }).click();
   await expect(page.getByLabel("Code editor: src/Player.java")).toHaveValue(/Hello from Player!/);
 });
+
+for (const lang of ["javascript", "typescript", "python"] as const) {
+  test(`${lang}: local class imports run from files in the project tree`, async ({ page }) => {
+    test.setTimeout(150_000);
+    const extension = lang === "javascript" ? "js" : lang === "typescript" ? "ts" : "py";
+    const classCode = {
+      javascript: 'export class Player { greeting() { return "Hello from a file!"; } }',
+      typescript: 'export class Player { greeting(): string { return "Hello from a file!"; } }',
+      python: 'class Player:\n    def greeting(self):\n        return "Hello from a file!"',
+    }[lang];
+    const mainCode = {
+      javascript: 'import { Player } from "./Player.js";\nconsole.log(new Player().greeting());',
+      typescript: 'import { Player } from "./Player.ts";\nconsole.log(new Player().greeting());',
+      python: "from player import Player\nprint(Player().greeting())",
+    }[lang];
+    await start(page, lang);
+    await page.keyboard.press("t");
+    await page.getByRole("button", { name: "+ File", exact: true }).click();
+    await page.getByLabel("New file name").fill(`Player.${extension}`);
+    await page.getByRole("button", { name: "Create", exact: true }).click();
+    await page.getByLabel(`Code editor: src/Player.${extension}`).fill(classCode);
+    await page.locator(".studio-file").filter({ hasText: FILES[lang] }).click();
+    await page.getByLabel(`Code editor: src/${FILES[lang]}`).fill(mainCode);
+    await page.getByRole("button", { name: "Run practice code", exact: true }).click();
+    await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("Hello from a file!\n", {
+      timeout: 60_000,
+    });
+  });
+}
 
 test("closing a running tablet program cancels it and permits another run", async ({ page }) => {
   await start(page);
@@ -103,7 +134,7 @@ test("closing a running tablet program cancels it and permits another run", asyn
   await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("21\n");
   await expect(page.getByTestId("hearts")).toHaveAttribute("aria-label", "3 hearts");
   await expect(page.getByTestId("gems")).toContainText("0");
-  await page.getByRole("tab", { name: "practice.js", exact: true }).click();
+  await page.getByRole("tab", { name: "Code", exact: true }).click();
   await page.getByLabel("Practice code", { exact: true }).fill("");
   await page.getByLabel("Practice code", { exact: true }).press("t");
   await expect(page.getByLabel("Practice code", { exact: true })).toHaveValue("t");
@@ -135,7 +166,7 @@ for (const kind of ["boy", "girl"] as const) {
     const panel = await page.getByRole("dialog", { name: "Developer tablet", exact: true }).boundingBox();
     expect(panel?.width).toBe(page.viewportSize()?.width);
     expect(panel?.height).toBe(page.viewportSize()?.height);
-    await page.getByRole("tab", { name: "practice.js", exact: true }).focus();
+    await page.getByRole("tab", { name: "Code", exact: true }).focus();
     await page.keyboard.press("ArrowRight");
     await expect(page.getByRole("tab", { name: "Examples", exact: true })).toBeFocused();
     await page.keyboard.press("Escape");
@@ -157,7 +188,7 @@ test("tablet and HUD fit a narrow viewport with reduced motion", async ({ page }
   expect((panel?.x ?? 0) + (panel?.width ?? 0)).toBeLessThanOrEqual(390);
   await expect(page.locator(".tablet-cinematic-canvas")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Run practice code", exact: true })).toBeVisible();
-  const editor = await page.getByLabel("Practice code", { exact: true }).boundingBox();
+  const editor = await page.locator(".studio-monaco-host").boundingBox();
   const output = await page.getByLabel("Practice output", { exact: true }).boundingBox();
   expect(editor).not.toBeNull();
   expect(output).not.toBeNull();

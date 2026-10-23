@@ -75,14 +75,20 @@ export class WorkerHost {
   }
 
   /** Queues a run. Never rejects: runner problems come back as `runnerError`. */
-  run(code: string, stdin?: string, files?: Record<string, string>): Promise<RunResult> {
+  run(code: string, stdin?: string, files?: Record<string, string>, entryPath?: string): Promise<RunResult> {
     const id = this.nextId++;
-    const result = this.queue.then(() => this.runNow(id, code, stdin, files));
+    const result = this.queue.then(() => this.runNow(id, code, stdin, files, entryPath));
     this.queue = result;
     return result;
   }
 
-  private async runNow(id: number, code: string, stdin?: string, files?: Record<string, string>): Promise<RunResult> {
+  private async runNow(
+    id: number,
+    code: string,
+    stdin?: string,
+    files?: Record<string, string>,
+    entryPath?: string,
+  ): Promise<RunResult> {
     try {
       await this.warmup();
     } catch (e) {
@@ -131,7 +137,7 @@ export class WorkerHost {
       this.abortRun = () => finish(runnerFailure(id, "Runner was restarted"));
       w.addEventListener("message", onMsg);
       w.addEventListener("error", onError);
-      w.postMessage({ id, code, stdin, files });
+      w.postMessage({ id, code, stdin, files, entryPath });
     });
   }
 

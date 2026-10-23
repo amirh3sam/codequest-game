@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import { runJs } from "./js-exec";
+import { combineProjectSources } from "./project-source";
 import type { RunRequest, RunResult, WorkerMessage } from "./types";
 
 function post(message: WorkerMessage): void {
@@ -14,7 +15,8 @@ self.onmessage = async ({ data }: MessageEvent<RunRequest | { warmup: true }>) =
   try {
     post({ id: data.id, phase: "running" });
     const started = performance.now();
-    const result = await runJs(data.code, data.stdin);
+    const source = combineProjectSources(data.code, data.files, "javascript", data.entryPath);
+    const result = await runJs(source, data.stdin);
     const syntaxError = result.runtimeError?.startsWith("SyntaxError:");
     const response: RunResult = {
       id: data.id,

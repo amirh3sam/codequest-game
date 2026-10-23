@@ -925,12 +925,12 @@ export class GameApp {
       close: () => this.close(),
     });
   }
-  private async practice(code: string, files?: Record<string, string>): Promise<RunResult> {
+  private async practice(code: string, files?: Record<string, string>, entryPath?: string): Promise<RunResult> {
     if (!this.runner || this.busy) throw new Error("A program is already running.");
     this.busy = true;
     const token = ++this.runToken;
     try {
-      const result = await this.runner.run(code, undefined, files);
+      const result = await this.runner.run(code, undefined, files, entryPath);
       if (token === this.runToken) gameAudio.play(executionError(result) ? "error" : "success");
       return result;
     } finally {
@@ -951,7 +951,7 @@ export class GameApp {
       animate,
       focusCamera: () => this.scene.focusTablet(),
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
-      run: (code, files) => this.practice(code, files),
+      run: (code, files, entryPath) => this.practice(code, files, entryPath),
       district: this.area.name,
       hearts: progress.hearts,
       gems: progress.gems,

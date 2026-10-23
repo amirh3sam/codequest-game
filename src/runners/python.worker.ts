@@ -1,6 +1,8 @@
 /// <reference lib="webworker" />
 // Runs player Python fully in the browser with Pyodide (CPython compiled to WebAssembly).
 // Files are copied into public/runtimes/python by scripts/copy-runtimes.mjs.
+
+import { combineProjectSources } from "./project-source";
 import { MAX_OUTPUT_CHARS, type RunRequest, type RunResult, type WorkerMessage } from "./types";
 
 // Only the small part of the Pyodide API we use (its own .d.ts pulls in Node types).
@@ -86,7 +88,7 @@ function init(): Promise<Helpers> {
 
 class OutputLimitError extends Error {}
 
-async function run({ id, code, stdin }: RunRequest): Promise<RunResult> {
+async function run({ id, code, stdin, files, entryPath }: RunRequest): Promise<RunResult> {
   const { pyodide, check, exec } = await init();
 
   let stdout = "";
@@ -113,7 +115,8 @@ async function run({ id, code, stdin }: RunRequest): Promise<RunResult> {
   pyodide.setStderr(writer("err"));
 
   const t0 = performance.now();
-  const syntaxError = JSON.parse(check(code)) as { line: number; column?: number; message: string } | null;
+  const source = combineProjectSources(code, files, "python", entryPath);
+  const syntaxError = JSON.parse(check(source)) as { line: number; column?: number; message: string } | null;
   const compileMs = performance.now() - t0;
   if (syntaxError) {
     return { id, stdout: "", stderr: "", compileErrors: [syntaxError], compileMs, runMs: 0 };

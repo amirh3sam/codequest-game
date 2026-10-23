@@ -13,6 +13,7 @@ import {
   writeLocalFile,
   writeWorkspace,
 } from "./local-workspace";
+import type { ProjectEditor } from "./monaco-studio";
 import { presentTabletOpening } from "./tablet-opening";
 
 type TabletHost = {
@@ -24,7 +25,7 @@ type TabletHost = {
   animate: boolean;
   focusCamera(): () => void;
   panel(title: string, subtitle: string, wide: boolean): HTMLElement;
-  run(code: string, files?: Record<string, string>): Promise<RunResult>;
+  run(code: string, files?: Record<string, string>, entryPath?: string): Promise<RunResult>;
   district: string;
   gems: number;
   hearts: number;
@@ -86,7 +87,7 @@ export function openTablet(host: TabletHost): () => void {
     }
     if (focus) tabButtons[index]?.focus();
   };
-  for (const [i, label] of [FILES[host.lang], "Examples", "Console", "Missions", "Guide", "Daily Quest"].entries()) {
+  for (const [i, label] of ["Code", "Examples", "Console", "Missions", "Guide", "Daily Quest"].entries()) {
     const tab = button(label, () => select(i), "studio-tab");
     tab.id = `tablet-tab-${i}`;
     tab.setAttribute("role", "tab");
@@ -120,7 +121,8 @@ export function openTablet(host: TabletHost): () => void {
   const workspace = el("div", "studio-workspace"),
     codeGrid = el("div", "studio-code-grid");
   const lines = el("pre", "studio-lines"),
-    code = el("textarea", "studio-code");
+    code = el("textarea", "studio-code studio-code-sync"),
+    monacoHost = el("div", "studio-monaco-host");
   lines.setAttribute("aria-hidden", "true");
   code.setAttribute("aria-label", "Practice code");
   code.spellcheck = false;
@@ -144,38 +146,93 @@ export function openTablet(host: TabletHost): () => void {
   let project: WorkspaceData = readWorkspace(workspaceKey, createWorkspace(mainPath, initialCode));
   if (!project.files[mainPath]) project.files[mainPath] = initialCode;
   let activePath = mainPath;
+  let selectedFolder = project.folders.includes("src") ? "src" : "";
+  const expandedFolders = new Set(project.folders);
   let connectedFolder: LocalDirectoryHandle | null = null;
   let saveTimer = 0;
-  const activeFile = el("span", "studio-active-file", activePath);
+  const editorHeader = el("div", "studio-editor-header");
+  const openFiles = [mainPath];
+  let monacoEditor: ProjectEditor | null = null;
+  const focusCode = () => (monacoEditor ? monacoEditor.focus() : code.focus());
   const fileActions = el("div", "studio-file-actions");
+  const folderTarget = el("span", "studio-folder-target");
+  const parentPath = (path: string) => path.split("/").slice(0, -1).join("/");
+  const renderEditorTabs = () => {
+    editorHeader.replaceChildren(
+      ...openFiles.map((path) => {
+        const basename = path.split("/").at(-1) ?? path;
+        const tab = button(
+          basename,
+          () => openFile(path),
+          `studio-open-file-tab${activePath === path ? " active" : ""}`,
+        );
+        tab.title = path;
+        return tab;
+      }),
+    );
+  };
   const renderTree = () => {
+    folderTarget.textContent = selectedFolder ? `${selectedFolder}/` : "Project root";
     fileTree.replaceChildren(
       el("div", "studio-explorer-heading", "EXPLORER"),
-      el("strong", "studio-project-name", "CODEQUEST PROJECT"),
+      button(
+        "⌄ CODEQUEST PROJECT",
+        () => {
+          selectedFolder = "";
+          renderTree();
+        },
+        `studio-tree-root${selectedFolder === "" ? " selected" : ""}`,
+      ),
       fileActions,
     );
     const tree = el("div", "studio-file-tree");
-    const paths = [...new Set([...project.folders, ...Object.keys(project.files)])].sort((a, b) => a.localeCompare(b));
-    for (const path of paths) {
-      const depth = path.split("/").length - 1;
-      const item =
-        project.files[path] !== undefined
-          ? button(
-              `▤ ${path.split("/").at(-1)}`,
-              () => openFile(path),
-              `studio-file${activePath === path ? " active" : ""}`,
-            )
-          : el("div", "studio-folder", `▾ ${path.split("/").at(-1)}`);
-      item.style.setProperty("--tree-depth", String(depth));
-      item.setAttribute("title", path);
-      tree.append(item);
+    const allFolders = new Set(project.folders);
+    for (const path of Object.keys(project.files)) {
+      const parts = path.split("/");
+      for (let i = 1; i < parts.length; i++) allFolders.add(parts.slice(0, i).join("/"));
     }
+    const children = (folder: string, depth: number): HTMLElement[] => {
+      const folders = [...allFolders].filter((path) => parentPath(path) === folder).sort((a, b) => a.localeCompare(b));
+      const files = Object.keys(project.files)
+        .filter((path) => parentPath(path) === folder)
+        .sort((a, b) => a.localeCompare(b));
+      return [
+        ...folders.map((path) => {
+          const details = el("details", `studio-tree-folder${selectedFolder === path ? " selected" : ""}`);
+          details.open = expandedFolders.has(path);
+          const summary = el("summary", "studio-folder", `📁 ${path.split("/").at(-1)}`);
+          summary.style.setProperty("--tree-depth", String(depth));
+          summary.title = path;
+          summary.addEventListener("click", (event) => {
+            event.preventDefault();
+            selectedFolder = path;
+            if (details.open) expandedFolders.delete(path);
+            else expandedFolders.add(path);
+            renderTree();
+          });
+          details.append(summary, ...children(path, depth + 1));
+          return details;
+        }),
+        ...files.map((path) => {
+          const icon = path.endsWith(".java") ? "J" : path.endsWith(".py") ? "Py" : path.endsWith(".ts") ? "TS" : "JS";
+          const item = button(
+            `${icon}  ${path.split("/").at(-1)}`,
+            () => openFile(path),
+            `studio-file${activePath === path ? " active" : ""}`,
+          );
+          item.style.setProperty("--tree-depth", String(depth));
+          item.title = path;
+          return item;
+        }),
+      ];
+    };
+    tree.append(...children("", 0));
     fileTree.append(
       tree,
       el(
         "p",
         "studio-explorer-note",
-        "Files save separately for each adventure. Java projects compile every .java file together.",
+        "Local class imports use files in this project. Java compiles every .java file together.",
       ),
     );
   };
@@ -203,17 +260,25 @@ export function openTablet(host: TabletHost): () => void {
     project.files[activePath] = code.value;
     if (project.files[path] === undefined) return;
     activePath = path;
+    if (!openFiles.includes(path)) openFiles.push(path);
+    let folder = parentPath(path);
+    while (folder) {
+      expandedFolders.add(folder);
+      folder = parentPath(folder);
+    }
     code.value = project.files[path] ?? "";
-    activeFile.textContent = path;
+    monacoEditor?.setModel(path, code.value);
     code.setAttribute("aria-label", `Code editor: ${path}`);
     lines.textContent = Array.from({ length: code.value.split("\n").length }, (_, i) => i + 1).join("\n");
+    renderEditorTabs();
     renderTree();
-    code.focus();
+    focusCode();
   };
   code.value = project.files[activePath] ?? initialCode;
   const status = el("span", "studio-save", "Draft stays on this device");
   const changed = () => {
     lines.textContent = Array.from({ length: code.value.split("\n").length }, (_, i) => i + 1).join("\n");
+    if (monacoEditor && monacoEditor.value() !== code.value) monacoEditor.setValue(code.value);
     status.textContent = connectedFolder ? "Saving to your folder…" : "Project saved on this device";
     persistProject();
   };
@@ -253,17 +318,15 @@ export function openTablet(host: TabletHost): () => void {
     running = true;
     run.disabled = true;
     code.disabled = true;
+    monacoEditor?.setReadOnly(true);
     feedback.textContent = `Running ${host.lang}…`;
     try {
       project.files[activePath] = code.value;
-      const javaSources =
-        host.lang === "java"
-          ? Object.fromEntries(
-              Object.entries(project.files).filter(([path]) => path.endsWith(".java") && path !== mainPath),
-            )
-          : undefined;
-      const entryCode = host.lang === "java" ? (project.files[mainPath] ?? code.value) : code.value;
-      const result = await host.run(entryCode, javaSources);
+      const extension = { javascript: ".js", typescript: ".ts", python: ".py", java: ".java" }[host.lang];
+      const projectSources = Object.fromEntries(
+        Object.entries(project.files).filter(([path]) => path.endsWith(extension) && path !== mainPath),
+      );
+      const result = await host.run(project.files[mainPath] ?? code.value, projectSources, mainPath);
       if (!panel.isConnected) return;
       const error = executionError(result);
       output.textContent = [result.stdout || "(No output)", result.stderr, error?.message].filter(Boolean).join("\n");
@@ -279,9 +342,38 @@ export function openTablet(host: TabletHost): () => void {
         running = false;
         run.disabled = false;
         code.disabled = false;
+        monacoEditor?.setReadOnly(false);
       }
     }
   };
+  status.textContent = "Loading VS Code editor…";
+  void import("./monaco-studio")
+    .then(({ createProjectEditor }) => {
+      if (!panel.isConnected) return;
+      monacoHost.replaceChildren();
+      monacoEditor = createProjectEditor(
+        monacoHost,
+        host.lang,
+        host.adventureId ?? `guest-${host.lang}`,
+        activePath,
+        code.value,
+        (value) => {
+          if (code.value !== value) {
+            code.value = value;
+            changed();
+          }
+        },
+        () => void execute(),
+      );
+      codeGrid.classList.add("has-monaco");
+      status.textContent = "VS Code editor ready · project auto-saved";
+    })
+    .catch(() => {
+      monacoHost.hidden = true;
+      code.classList.remove("studio-code-sync");
+      code.classList.add("studio-code-fallback");
+      status.textContent = "Using the built-in editor; Monaco could not load.";
+    });
   const toolbar = el("div", "studio-toolbar");
   const addFile = button("+ File", () => createEntry("file"), "studio-small-action");
   const addFolder = button("+ Folder", () => createEntry("folder"), "studio-small-action");
@@ -292,11 +384,14 @@ export function openTablet(host: TabletHost): () => void {
         .then(({ handle, workspace: localProject }) => {
           connectedFolder = handle;
           project = localProject;
+          openFiles.splice(0, openFiles.length, mainPath);
           if (!Object.keys(project.files).length) project = createWorkspace(mainPath, code.value);
           if (!project.files[mainPath]) project.files[mainPath] = HELLO[host.lang];
           activePath = mainPath;
           code.value = project.files[activePath] ?? "";
-          activeFile.textContent = activePath;
+          if (!openFiles.includes(activePath)) openFiles.push(activePath);
+          monacoEditor?.setModel(activePath, code.value);
+          renderEditorTabs();
           changed();
           status.textContent = `Connected to ${handle.name}`;
         })
@@ -311,8 +406,8 @@ export function openTablet(host: TabletHost): () => void {
   const createEntry = (kind: "file" | "folder") => {
     const form = el("form", "studio-create-form");
     const input = el("input", "studio-create-input");
-    input.placeholder = kind === "file" ? "src/Player.java" : "src/models";
-    input.setAttribute("aria-label", kind === "file" ? "New file path" : "New folder path");
+    input.placeholder = kind === "file" ? "Player" : "models";
+    input.setAttribute("aria-label", kind === "file" ? "New file name" : "New folder name");
     const submit = button("Create", () => {}, "studio-small-action");
     submit.type = "submit";
     form.append(
@@ -322,41 +417,46 @@ export function openTablet(host: TabletHost): () => void {
     );
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      const raw = input.value.trim().replace(/^\/+|\/+$/g, "");
-      if (!raw || raw.split("/").some((part) => !/^[\w.-]+$/.test(part) || part === "." || part === "..")) {
-        status.textContent = "Use a simple relative path, such as src/Player.java.";
+      const name = input.value.trim();
+      if (!/^[\w.-]+$/.test(name) || name === "." || name === "..") {
+        status.textContent = "Use a simple name without a slash.";
         return;
       }
+      const raw = [selectedFolder, name].filter(Boolean).join("/");
       if (kind === "folder") {
         project.folders = [...new Set([...project.folders, raw])];
+        selectedFolder = raw;
+        let folder = raw;
+        while (folder) {
+          expandedFolders.add(folder);
+          folder = parentPath(folder);
+        }
         if (connectedFolder)
           void createLocalFolder(connectedFolder, raw).catch(() => {
             status.textContent = "Could not create that folder on your computer.";
           });
       } else {
-        if (!raw.includes(".")) {
-          status.textContent = "Add a file extension, such as .java or .js.";
-          return;
-        }
-        if (project.files[raw] !== undefined) {
+        const extension = { javascript: ".js", typescript: ".ts", python: ".py", java: ".java" }[host.lang];
+        const filePath = name.includes(".") ? raw : `${raw}${extension}`;
+        if (project.files[filePath] !== undefined) {
           status.textContent = "That file already exists.";
           return;
         }
         project.folders = [
           ...new Set([
             ...project.folders,
-            ...raw
+            ...filePath
               .split("/")
               .slice(0, -1)
               .map((_, index, parents) => parents.slice(0, index + 1).join("/")),
           ]),
         ];
-        project.files[raw] = "";
+        project.files[filePath] = "";
         if (connectedFolder)
-          void writeLocalFile(connectedFolder, raw, "").catch(() => {
+          void writeLocalFile(connectedFolder, filePath, "").catch(() => {
             status.textContent = "Could not create that file on your computer.";
           });
-        openFile(raw);
+        openFile(filePath);
       }
       form.remove();
       persistProject();
@@ -364,11 +464,10 @@ export function openTablet(host: TabletHost): () => void {
     fileTree.append(form);
     input.focus();
   };
-  fileActions.append(addFile, addFolder);
+  fileActions.append(folderTarget, addFile, addFolder);
   renderTree();
-  const editorHeader = el("div", "studio-editor-header");
-  editorHeader.append(activeFile);
-  codeGrid.append(lines, code);
+  renderEditorTabs();
+  codeGrid.append(lines, monacoHost, code);
   const inlineConsole = el("section", "studio-inline-console");
   inlineConsole.setAttribute("aria-label", "Run results");
   inlineConsole.append(el("div", "studio-output-title", "OUTPUT"), output);
@@ -391,7 +490,7 @@ export function openTablet(host: TabletHost): () => void {
         code.value = example;
         changed();
         select(0);
-        code.focus();
+        focusCode();
       }),
     );
     examplesPane.append(card);
@@ -406,7 +505,7 @@ export function openTablet(host: TabletHost): () => void {
       code.value = DEBUG_GREETING[host.lang];
       changed();
       select(0);
-      code.focus();
+      focusCode();
     }),
   );
   examplesPane.append(debug);
@@ -437,7 +536,7 @@ export function openTablet(host: TabletHost): () => void {
       code.value = batteryExample(host.lang, 4, 3);
       changed();
       select(0);
-      code.focus();
+      focusCode();
     }),
   );
   examplesPane.append(prediction);
@@ -446,7 +545,7 @@ export function openTablet(host: TabletHost): () => void {
     consoleOutput,
     button("Back to editor", () => {
       select(0);
-      code.focus();
+      focusCode();
     }),
   );
   missionsPane.append(
@@ -597,6 +696,9 @@ export function openTablet(host: TabletHost): () => void {
   return () => {
     window.clearTimeout(saveTimer);
     if (connectedFolder) void writeLocalFile(connectedFolder, activePath, code.value);
+    const closingEditor = monacoEditor;
+    monacoEditor = null;
+    window.setTimeout(() => closingEditor?.dispose(), 250);
     close();
   };
 }

@@ -250,12 +250,13 @@ Tiled and the remaining five areas remain follow-up work.
 The developer tablet keeps a per-adventure project (`codequest:workspace:v1:<adventureId>`)
 with relative file paths and folder names in browser storage. It can also import a
 player-selected local folder through the File System Access API and write edits
-back to that folder while connected. Java practice sends the active `Main.java`
-entry plus every other `.java` file to the Java worker, so classes can be split
-across files and compiled together. JavaScript, TypeScript and Python currently
-run the selected file; their project files still save independently. The field
-guide is hidden while modal pages are open so it cannot cover tablet or arcade
-content.
+back to that folder while connected. Its Explorer selects a target folder, so new
+items need only a name; open files appear as tabs above the Monaco editor. Java
+practice sends the active `Main.java` entry plus every other `.java` file to the
+Java worker. JavaScript and TypeScript local named/default imports and Python
+`from module import Name` statements are bundled from project files before
+running. External packages are not downloaded. The field guide is hidden while
+modal pages are open so it cannot cover tablet or arcade content.
 
 ## 5. Screens (no URL routes — single page)
 Title (New / Continue) → Language → Hero → Name → World Map ↔ Area (HUD + panels: Scroll, Task, Boss, Pause, Out of hearts, Victory).
