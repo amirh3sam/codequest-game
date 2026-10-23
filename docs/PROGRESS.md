@@ -8,7 +8,9 @@
 - **Audio:** lowered and varied shoe/fabric/grit footsteps, reducing the hard synthetic impact while retaining local Web Audio generation.
 - **Hub finale:** added two free worker-backed checkpoints (power arithmetic, then a name-built signal) before the existing graded Firewall boss. Checkpoints persist in the version-1 state, inlaid hub lights reflect them, tablet Missions offers the log, and completed players can watch the hub boot. Existing save records remain compatible.
 - **Checks:** 227 unit tests passed; Biome lint, TypeScript and production build passed. All 106 Chromium cases passed with one worker; a fresh six-case run also passed against the final hub lesson checks and backup/mobile changes. The adventure title capture and narrow library had no browser errors or overflow.
-- **Next:** beginner playtesting of the teaching loop and touch controls.
+- **Release:** public source commit `1d6534c`; production deployment `dpl_6CNeKVDxLVWxzoi2PHnazfgZeN6R` is READY at https://codequest-game-inky.vercel.app/.
+- **Live verification:** the canonical game returned HTTP 200. The adventure/library walkthrough also passed against production with no browser errors and no overflow in the narrow manager.
+- **Next:** run beginner sessions using the [playtest plan](BEGINNER-PLAYTEST.md); no participant observations have been collected yet.
 
 ## 2026-10-23 (multiple adventures, distinct districts and revised audio)
 
