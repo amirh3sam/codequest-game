@@ -1,7 +1,7 @@
 ## 2026-10-23 (locked category level badges)
 - Locked Study Path categories now show a lock icon in the badge instead of a level number. Once a category unlocks, it shows its level number; completed categories show a check mark. Kept the seven existing story districts and all 17 Study Path categories in the map.
 - **Checks:** 251 unit tests passed; lint, typecheck and production build passed. Chromium passed the sequential category unlock and story-district map tests.
-- **Release:** pending publication.
+- **Release:** source commit `18f064d` is public on `main`. Production deployment `dpl_8CGqrkenGe1rfJUVBmZfPEZwmWTV` is READY at https://codequest-game-inky.vercel.app/; `vercel curl` confirmed the production alias serves the updated build.
 - **Next:** confirm whether “remove 3–8” means remove story-level cards or only their displayed numbers; earlier map instructions said to preserve the seven story districts and category levels 8–24.
 - **Blockers:** clarification needed before changing map content.
 # Progress log (newest on top)
