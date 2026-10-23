@@ -44,7 +44,9 @@ sequential, free checkpoints that ask learners to predict output and run an
 editable example: 176 tasks per language. Progress and code drafts save per
 adventure; existing one-task topic completions carry forward as task one. The
 JDK/IntelliJ setup topic explains the browser
-workflow and equivalent local tools for each language. On the map, players can
+workflow and equivalent local tools for each language. The world map lists these
+22 skill levels as well as a separate section for the seven story districts;
+choosing a skill opens its matching Study Path lesson. On the map, players can
 click a destination to walk or hold the left mouse button and drag to steer.
 
 ## 1. Problem

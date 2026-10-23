@@ -4,7 +4,14 @@ import { dronePilot } from "../content/drone-pilot";
 import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
 import { PROJECT_QUESTS, readProjectQuestProgress } from "../content/project-quests";
 import type { AreaContent, Boss, Task } from "../content/schema";
-import { readStudyProgress, STUDY_CURRICULUM } from "../content/study-curriculum";
+import {
+  readCompletedStudyTasks,
+  readStudyProgress,
+  readStudyTaskProgress,
+  STUDY_CURRICULUM,
+  STUDY_TASKS_PER_TOPIC,
+  STUDY_TOTAL_TASKS,
+} from "../content/study-curriculum";
 import village from "../content/village.json" with { type: "json" };
 import { loadAdventures, saveAdventure } from "../core/adventures";
 import { makeAdventureBackup, parseAdventureBackup } from "../core/backup";
@@ -947,7 +954,7 @@ export class GameApp {
       if (token === this.runToken) this.busy = false;
     }
   }
-  private tablet(animate = true): void {
+  private tablet(animate = true, studyTopicId?: string): void {
     if (!this.state) return;
     gameAudio.play("open");
     this.tabletNavigation = false;
@@ -967,6 +974,7 @@ export class GameApp {
       gems: progress.gems,
       guide: this.area.lesson.pages,
       adventureId: this.state.adventureId,
+      initialStudyTopicId: studyTopicId,
       discovery:
         this.area.id === "variables"
           ? {
@@ -1308,8 +1316,44 @@ export class GameApp {
   }
   private worldMap(): void {
     if (!this.state) return;
-    const panel = this.panel("Your journey", "Bring Variable District online to open the network ahead.", true),
+    const panel = this.panel(
+        "Your journey",
+        "Explore all 22 coding skill levels, then follow your story through the city districts.",
+        true,
+      ),
+      adventureKey = this.state.adventureId ?? `guest-${this.state.lang}`,
+      skillNodes = el("div", "world-nodes world-skill-nodes"),
       nodes = el("div", "world-nodes");
+    const completedSkillTasks = readCompletedStudyTasks(adventureKey);
+    panel.append(
+      el("span", "eyebrow", `STUDY PATH · ${STUDY_CURRICULUM.length} SKILL LEVELS`),
+      el("h3", "world-map-section-title", `${completedSkillTasks} / ${STUDY_TOTAL_TASKS} tasks complete`),
+      el("p", "world-map-hint", "Choose any category to open its lesson and eight coding tasks."),
+    );
+    for (const [index, topic] of STUDY_CURRICULUM.entries()) {
+      const completed = readStudyTaskProgress(adventureKey, topic.id),
+        isComplete = completed >= STUDY_TASKS_PER_TOPIC,
+        skill = button(
+          "",
+          () => this.tablet(false, topic.id),
+          `world-skill-node${isComplete ? " complete" : completed > 0 ? " in-progress" : ""}`,
+        );
+      skill.append(
+        el("span", "world-number", isComplete ? "✓" : String(index + 1).padStart(2, "0")),
+        el("strong", "", topic.title),
+        el(
+          "small",
+          "",
+          isComplete
+            ? "Level mastered · 8/8 tasks"
+            : completed
+              ? `Continue · ${completed}/8 tasks`
+              : "Start level · 8 tasks",
+        ),
+      );
+      skillNodes.append(skill);
+    }
+    panel.append(skillNodes, el("h3", "world-map-section-title", "Story districts · 7 regions"));
     for (const [index, area] of village.worldAreas.entries()) {
       const id = area.id as GameState["currentArea"],
         unlocked = isAreaUnlocked(this.state, id),

@@ -48,6 +48,7 @@ type TabletHost = {
   kind: "boy" | "girl";
   courierName: string;
   adventureId?: string;
+  initialStudyTopicId?: string;
   animate: boolean;
   focusCamera(): () => void;
   panel(title: string, subtitle: string, wide: boolean): HTMLElement;
@@ -1166,7 +1167,8 @@ export function openTablet(host: TabletHost): () => void {
     dailyFeedback,
     solution,
   );
-  let activeStudyId = STUDY_CURRICULUM[0]?.id ?? "";
+  let activeStudyId =
+    STUDY_CURRICULUM.find(({ id }) => id === host.initialStudyTopicId)?.id ?? STUDY_CURRICULUM[0]?.id ?? "";
   const studyAdventureKey = host.adventureId ?? `guest-${host.lang}`;
   const renderStudyPath = () => {
     const completedTopics = readStudyProgress(studyAdventureKey);
@@ -1362,7 +1364,7 @@ export function openTablet(host: TabletHost): () => void {
   bottom.append(status, el("span", "", "FREE PRACTICE · AUTO SAVE"));
   studio.append(title, tabs, body, bottom);
   panel.append(studio);
-  select(0);
+  select(host.initialStudyTopicId ? 6 : 0);
   const close = presentTabletOpening(panel, host.kind, host.name, host.focusCamera, host.animate);
   return () => {
     window.clearTimeout(saveTimer);

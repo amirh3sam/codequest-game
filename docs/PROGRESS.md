@@ -1,5 +1,11 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (Study Path added to the world map)
+- The world map now shows all 22 coding categories as clickable skill levels with per-adventure task progress. Selecting a category opens that exact level in the tablet Study Path. The seven city districts remain in a separate Story Districts section and retain their existing travel/unlock behavior.
+- **Checks:** Chromium confirmed 22 skill levels, 7 story districts and navigation from the map to the selected level. All 248 unit tests, TypeScript and lint passed.
+- **Next:** publish the updated map and verify the public release.
+- **Blockers:** none.
+
 ## 2026-10-23 (Packet Dash data combos)
 - Added a visible 0/3 data combo to each runner round. Every three pickups awards 100 bonus points and restores one arcade shield, up to the normal three-shield cap. The mechanic stays separate from coding hearts and gems.
 - **Checks:** two unit tests cover combo rewards and the shield cap; the City Arcade / Packet Dash browser flow passed. All 248 unit tests, lint, TypeScript and production build passed.

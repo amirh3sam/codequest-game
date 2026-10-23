@@ -1307,6 +1307,24 @@ small {
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
+.world-map-section-title {
+  margin: 18px 0 8px;
+  color: #d7e7fa;
+}
+.world-map-hint {
+  margin: 0 0 12px;
+  color: #a9c0dd;
+}
+.world-skill-node {
+  background:
+    radial-gradient(ellipse at 50% 30%, #2d88ad44, transparent 72%), linear-gradient(155deg, #1c4258, #10283a);
+}
+.world-skill-node.complete {
+  border-color: #54ddb2;
+}
+.world-skill-node.in-progress {
+  border-color: #ffd77e;
+}
 .world-node {
   position: relative;
   display: grid;
