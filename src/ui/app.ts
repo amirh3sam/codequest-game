@@ -954,7 +954,7 @@ export class GameApp {
       if (token === this.runToken) this.busy = false;
     }
   }
-  private tablet(animate = true, studyTopicId?: string): void {
+  private tablet(animate = true, studyTopicId?: string, studyLevelOffset = 0): void {
     if (!this.state) return;
     gameAudio.play("open");
     this.tabletNavigation = false;
@@ -975,6 +975,7 @@ export class GameApp {
       guide: this.area.lesson.pages,
       adventureId: this.state.adventureId,
       initialStudyTopicId: studyTopicId,
+      studyLevelOffset,
       discovery:
         this.area.id === "variables"
           ? {
@@ -1094,7 +1095,7 @@ export class GameApp {
       },
       {
         title: "Code Scholar",
-        detail: "Practice all 22 Study Path topics",
+        detail: `Practice all ${STUDY_CURRICULUM.length} Study Path topics`,
         earned: readStudyProgress(adventureKey).length >= STUDY_CURRICULUM.length,
       },
       {
@@ -1318,42 +1319,25 @@ export class GameApp {
     if (!this.state) return;
     const panel = this.panel(
         "Your journey",
-        "Explore all 22 coding skill levels, then follow your story through the city districts.",
+        `Follow the seven city districts, then continue into ${STUDY_CURRICULUM.length} Java category levels beside Abstraction Cloud.`,
         true,
       ),
       adventureKey = this.state.adventureId ?? `guest-${this.state.lang}`,
-      skillNodes = el("div", "world-nodes world-skill-nodes"),
-      nodes = el("div", "world-nodes");
+      nodes = el("div", "world-nodes level-map-nodes");
     const completedSkillTasks = readCompletedStudyTasks(adventureKey);
     panel.append(
-      el("span", "eyebrow", `STUDY PATH · ${STUDY_CURRICULUM.length} SKILL LEVELS`),
-      el("h3", "world-map-section-title", `${completedSkillTasks} / ${STUDY_TOTAL_TASKS} tasks complete`),
-      el("p", "world-map-hint", "Choose any category to open its lesson and eight coding tasks."),
+      el("span", "eyebrow", `LEVEL MAP · 7 CITY LEVELS + ${STUDY_CURRICULUM.length} JAVA CATEGORIES`),
+      el(
+        "h3",
+        "world-map-section-title",
+        `${completedSkillTasks} / ${STUDY_TOTAL_TASKS} category tasks · ${readStudyProgress(adventureKey).length} / ${STUDY_CURRICULUM.length} bosses defeated`,
+      ),
+      el(
+        "p",
+        "world-map-hint",
+        "The Java category levels continue after Abstraction Cloud. Each has eight coding tasks followed by a boss challenge.",
+      ),
     );
-    for (const [index, topic] of STUDY_CURRICULUM.entries()) {
-      const completed = readStudyTaskProgress(adventureKey, topic.id),
-        isComplete = completed >= STUDY_TASKS_PER_TOPIC,
-        skill = button(
-          "",
-          () => this.tablet(false, topic.id),
-          `world-skill-node${isComplete ? " complete" : completed > 0 ? " in-progress" : ""}`,
-        );
-      skill.append(
-        el("span", "world-number", isComplete ? "✓" : String(index + 1).padStart(2, "0")),
-        el("strong", "", topic.title),
-        el(
-          "small",
-          "",
-          isComplete
-            ? "Level mastered · 8/8 tasks"
-            : completed
-              ? `Continue · ${completed}/8 tasks`
-              : "Start level · 8 tasks",
-        ),
-      );
-      skillNodes.append(skill);
-    }
-    panel.append(skillNodes, el("h3", "world-map-section-title", "Story districts · 7 regions"));
     for (const [index, area] of village.worldAreas.entries()) {
       const id = area.id as GameState["currentArea"],
         unlocked = isAreaUnlocked(this.state, id),
@@ -1379,6 +1363,31 @@ export class GameApp {
         ),
       );
       nodes.append(node);
+    }
+    for (const [index, topic] of STUDY_CURRICULUM.entries()) {
+      const taskProgress = readStudyTaskProgress(adventureKey, topic.id),
+        isComplete = readStudyProgress(adventureKey).includes(topic.id),
+        skill = button(
+          "",
+          () => this.tablet(false, topic.id, village.worldAreas.length),
+          `world-skill-node${isComplete ? " complete" : taskProgress > 0 ? " in-progress" : ""}`,
+        );
+      skill.append(
+        el("span", "world-number", isComplete ? "✓" : String(village.worldAreas.length + index + 1).padStart(2, "0")),
+        el("strong", "", topic.title),
+        el(
+          "small",
+          "",
+          isComplete
+            ? "Boss defeated · level complete"
+            : taskProgress >= STUDY_TASKS_PER_TOPIC
+              ? "8/8 tasks · boss ready"
+              : taskProgress
+                ? `Continue · ${taskProgress}/8 tasks`
+                : "Start level · 8 tasks + boss",
+        ),
+      );
+      nodes.append(skill);
     }
     panel.append(nodes);
   }

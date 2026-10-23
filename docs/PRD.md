@@ -38,15 +38,16 @@ player exports a backup; this does not add accounts, cloud saves or multiplayer.
 Packet Dash adds a repeatable data-bit combo: every third pickup awards bonus
 points and recharges an arcade shield, with its meter visible during the run.
 
-The tablet's Study Path now covers all 22 categories in the supplied Java study
-list, adapted for JavaScript, TypeScript, Python and Java. Each topic has eight
-sequential, free checkpoints that ask learners to predict output and run an
-editable example: 176 tasks per language. Progress and code drafts save per
-adventure; existing one-task topic completions carry forward as task one. The
-JDK/IntelliJ setup topic explains the browser
-workflow and equivalent local tools for each language. The world map lists these
-22 skill levels as well as a separate section for the seven story districts;
-choosing a skill opens its matching Study Path lesson. On the map, players can
+The tablet's Study Path covers the 17 Java programming categories from the
+supplied study list, adapted for JavaScript, TypeScript, Python and Java. The
+first five entries (review, general computer/programming introduction, tool
+setup and Hello World) are introductory material rather than Java categories,
+so they are not levels. Each category has eight free coding tasks and one boss
+challenge: 136 tasks and 17 bosses per language. Progress and code
+drafts save per adventure; existing one-task topic completions carry forward
+as task one. The world map shows the seven city districts first, followed by
+the 17 category levels directly after Abstraction Cloud in the same continuous
+level grid. Choosing a category opens its matching Study Path lesson. On the map, players can
 click a destination to walk or hold the left mouse button and drag to steer.
 
 ## 1. Problem

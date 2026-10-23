@@ -1,10 +1,16 @@
 import { expect, test } from "@playwright/test";
-import { STUDY_CURRICULUM, STUDY_TASKS_PER_TOPIC, studyTaskFor } from "../../src/content/study-curriculum";
+import {
+  STUDY_CURRICULUM,
+  STUDY_TASKS_PER_TOPIC,
+  STUDY_TOTAL_TASKS,
+  studyBossFor,
+  studyTaskFor,
+} from "../../src/content/study-curriculum";
 import type { Lang } from "../../src/runners/types";
 
 test.use({ reducedMotion: "reduce" });
 
-test("all 22 Study Path level starters run in all four languages", async ({ page }) => {
+test("all Java study categories run in all four languages", async ({ page }) => {
   test.setTimeout(360_000);
   for (const [languageIndex, lang] of (["javascript", "typescript", "python", "java"] as const).entries()) {
     if (languageIndex > 0) {
@@ -29,7 +35,9 @@ test("all 22 Study Path level starters run in all four languages", async ({ page
         .toBe(topic.examples[lang].output);
       await expect(page.locator(".study-topic-button").nth(index)).toContainText("1/8");
     }
-    await expect(page.locator(".study-overview")).toContainText("22 / 176 tasks complete");
+    await expect(page.locator(".study-overview")).toContainText(
+      `${STUDY_CURRICULUM.length} / ${STUDY_TOTAL_TASKS} category tasks complete`,
+    );
     const progressCount = await page.evaluate(() => {
       const key = Object.keys(localStorage).find((item) => item.startsWith("codequest:study-progress:v2:"));
       return key
@@ -39,7 +47,7 @@ test("all 22 Study Path level starters run in all four languages", async ({ page
           )
         : 0;
     });
-    expect(progressCount).toBe(22);
+    expect(progressCount).toBe(STUDY_CURRICULUM.length);
   }
 });
 
@@ -60,11 +68,50 @@ test("a Study Path level requires and saves all eight task predictions", async (
     await expect(page.locator(".study-task-feedback")).toContainText(`Task ${taskIndex + 1}/8 complete`, {
       timeout: 30_000,
     });
-    await page.getByRole("button", { name: taskIndex === 7 ? "Finish level" : "Next task", exact: true }).click();
+    await page
+      .getByRole("button", { name: taskIndex === 7 ? "Challenge level boss" : "Next task", exact: true })
+      .click();
   }
-  await expect(page.locator(".study-level-complete")).toHaveText("Level mastered · 8/8 tasks");
+  const boss = studyBossFor(topic, "javascript");
+  await page.getByLabel(`${topic.title} boss code`).fill(boss.solution);
+  await page.getByLabel(`Boss predicted output for ${topic.title}`).fill(boss.output);
+  await page.getByRole("button", { name: "Run and challenge boss", exact: true }).click();
+  await expect(page.locator(".study-task-feedback")).toContainText("Boss defeated", { timeout: 30_000 });
+  await page.getByRole("button", { name: "Finish level", exact: true }).click();
+  await expect(page.locator(".study-level-complete")).toHaveText("Level cleared · 8/8 tasks + boss");
   await expect(page.locator(".study-topic-button").first()).toHaveClass(/complete/);
-  await expect(page.locator(".study-overview")).toContainText("8 / 176 tasks complete");
+  await expect(page.locator(".study-overview")).toContainText(`8 / ${STUDY_TOTAL_TASKS} category tasks complete`);
+});
+
+test("every Java category boss can be solved and saved after its eight tasks", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto("/");
+  await page.locator('[data-language="javascript"]').first().click();
+  await page.getByRole("button", { name: "Start adventure", exact: true }).click();
+  const adventureId = await page.evaluate(() => {
+    const library = JSON.parse(localStorage.getItem("codequest:adventures:v1") ?? "{}");
+    return library.adventures[0].adventureId as string;
+  });
+  await page.evaluate(
+    ({ adventureId, topicIds }) =>
+      localStorage.setItem(
+        `codequest:study-progress:v2:${adventureId}`,
+        JSON.stringify(Object.fromEntries(topicIds.map((id) => [id, 8]))),
+      ),
+    { adventureId, topicIds: STUDY_CURRICULUM.map(({ id }) => id) },
+  );
+  await page.keyboard.press("t");
+  await page.getByRole("tab", { name: "Study Path", exact: true }).click();
+  for (const topic of STUDY_CURRICULUM) {
+    const boss = studyBossFor(topic, "javascript");
+    await page.locator(".study-topic-button").filter({ hasText: topic.title }).click();
+    await page.getByLabel(`${topic.title} boss code`).fill(boss.solution);
+    await page.getByLabel(`Boss predicted output for ${topic.title}`).fill(boss.output);
+    await page.getByRole("button", { name: "Run and challenge boss", exact: true }).click();
+    await expect(page.locator(".study-task-feedback")).toContainText("Boss defeated", { timeout: 30_000 });
+    await page.getByRole("button", { name: "Finish level", exact: true }).click();
+  }
+  await expect(page.locator(".study-overview")).toContainText("17 / 17 bosses defeated");
 });
 
 test("Study Path provides the language-appropriate course and saves independent progress", async ({ page }) => {
@@ -75,8 +122,6 @@ test("Study Path provides the language-appropriate course and saves independent 
   await page.keyboard.press("t");
   await page.getByRole("tab", { name: "Study Path", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Study Path", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: /JDK 17 & IntelliJ Setup · Language Tools/ }).click();
-  await expect(page.getByLabel("JDK 17 & IntelliJ Setup · Language Tools java task 1 code")).toHaveValue(
-    /public class Main/,
-  );
+  await page.getByRole("button", { name: /Variables & Data Types/ }).click();
+  await expect(page.getByLabel("Variables & Data Types java task 1 code")).toHaveValue(/public class Main/);
 });

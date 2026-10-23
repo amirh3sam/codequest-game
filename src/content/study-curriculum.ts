@@ -13,6 +13,7 @@ export type StudyTopic = {
     token: Record<Lang, string>;
     action: string;
     variations: readonly StudyTaskVariation[];
+    boss: StudyTaskVariation;
   };
 };
 
@@ -20,100 +21,6 @@ const example = (code: string, output: string): StudyExample => ({ code, output 
 
 /** The complete topic list adapted from the player's study-plan screenshot. */
 const TOPICS: Omit<StudyTopic, "practice">[] = [
-  {
-    id: "review-sessions",
-    title: "Live Review Sessions",
-    lesson:
-      "Review means explaining an idea from memory, running a small example, then fixing one variation. Revisit a topic after a break so you practice recalling it, not only recognizing it.",
-    idea: "Trace the flow: input → process → output.",
-    tryIt: "Run this tiny review example, then change one word and run it again.",
-    examples: {
-      javascript: example(
-        'const steps = ["input", "process", "output"];\nconsole.log(steps.join(" -> "));',
-        "input -> process -> output",
-      ),
-      typescript: example(
-        'const steps: string[] = ["input", "process", "output"];\nconsole.log(steps.join(" -> "));',
-        "input -> process -> output",
-      ),
-      python: example(
-        'steps = ["input", "process", "output"]\nprint(" -> ".join(steps))',
-        "input -> process -> output",
-      ),
-      java: example(
-        'import java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(String.join(" -> ", List.of("input", "process", "output")));\n    }\n}',
-        "input -> process -> output",
-      ),
-    },
-  },
-  {
-    id: "computer-programming",
-    title: "Introduction to Computers & Programming",
-    lesson:
-      "A program is a set of instructions. It can receive input, process data, and produce output. Start with a tiny change and observe what the computer does.",
-    idea: "A program turns instructions into a result.",
-    tryIt: "Change the input value and predict the new result before running.",
-    examples: {
-      javascript: example("const input = 4;\nconst result = input * 2;\nconsole.log(result);", "8"),
-      typescript: example("const input: number = 4;\nconst result: number = input * 2;\nconsole.log(result);", "8"),
-      python: example("input_value = 4\nresult = input_value * 2\nprint(result)", "8"),
-      java: example(
-        "public class Main {\n    public static void main(String[] args) {\n        int input = 4;\n        int result = input * 2;\n        System.out.println(result);\n    }\n}",
-        "8",
-      ),
-    },
-  },
-  {
-    id: "language-tools",
-    title: "JDK 17 & IntelliJ Setup · Language Tools",
-    lesson:
-      "The source plan covers JDK 17 and IntelliJ IDEA Ultimate. In CodeQuest, the compiler and editor are already in your browser. For local work, Java uses a JDK and an IDE; JavaScript uses a browser or Node.js; TypeScript adds a TypeScript compiler; Python uses Python 3 and an editor such as VS Code or PyCharm.",
-    idea: "Know which tool runs your language; this browser workspace needs no installation.",
-    tryIt: "Run the ready check, then find the Run button and output panel you will use for every lesson.",
-    examples: {
-      javascript: example('console.log("Editor ready");', "Editor ready"),
-      typescript: example('const ready: string = "Editor ready";\nconsole.log(ready);', "Editor ready"),
-      python: example('print("Editor ready")', "Editor ready"),
-      java: example(
-        'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Editor ready");\n    }\n}',
-        "Editor ready",
-      ),
-    },
-  },
-  {
-    id: "editor-hello-world",
-    title: "Introduction to IntelliJ & Hello World",
-    lesson:
-      "An editor is where you write source code. The Run action sends it to the language runner, and the output panel shows the result. Java starts from main; the other examples run from the file's top level.",
-    idea: "Edit → run → read the output → improve.",
-    tryIt: "Change the greeting and run it again.",
-    examples: {
-      javascript: example('console.log("Hello, world!");', "Hello, world!"),
-      typescript: example('const greeting: string = "Hello, world!";\nconsole.log(greeting);', "Hello, world!"),
-      python: example('print("Hello, world!")', "Hello, world!"),
-      java: example(
-        'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, world!");\n    }\n}',
-        "Hello, world!",
-      ),
-    },
-  },
-  {
-    id: "language-introduction",
-    title: "Introduction to Java Programming · Your Language",
-    lesson:
-      "Each language has its own syntax, but all can store values, make decisions, repeat work, and organize code into reusable parts. Learn the punctuation and conventions of the language you selected.",
-    idea: "Different syntax can express the same programming ideas.",
-    tryIt: "Change the message while keeping the statement valid in your language.",
-    examples: {
-      javascript: example('const message = "Language ready";\nconsole.log(message);', "Language ready"),
-      typescript: example('const message: string = "Language ready";\nconsole.log(message);', "Language ready"),
-      python: example('message = "Language ready"\nprint(message)', "Language ready"),
-      java: example(
-        'public class Main {\n    public static void main(String[] args) {\n        String message = "Language ready";\n        System.out.println(message);\n    }\n}',
-        "Language ready",
-      ),
-    },
-  },
   {
     id: "variables-types",
     title: "Variables & Data Types",
@@ -476,7 +383,7 @@ const TOPICS: Omit<StudyTopic, "practice">[] = [
     tryIt: "Change the status or add another named state.",
     examples: {
       javascript: example(
-        'const Status = Object.freeze({ READY: "READY", BUSY: "BUSY" });\nconsole.log(Status.READY);',
+        'const Status = Object.freeze({ READY: "READY", BUSY: "BUSY", TESTING: "TESTING", PAUSED: "PAUSED", OFFLINE: "OFFLINE", LOADING: "LOADING", SAVED: "SAVED", DONE: "DONE" });\nconsole.log(Status.READY);',
         "READY",
       ),
       typescript: example(
@@ -495,7 +402,7 @@ const TOPICS: Omit<StudyTopic, "practice">[] = [
   },
 ];
 
-type PracticeConfig = StudyTopic["practice"];
+type PracticeConfig = Omit<StudyTopic["practice"], "boss">;
 const allLanguages = (token: string): Record<Lang, string> => ({
   java: token,
   javascript: token,
@@ -508,56 +415,6 @@ const practice = (token: string, action: string, pairs: [string, string][]): Pra
   variations: pairs.map(([value, output]) => ({ value, output })),
 });
 const PRACTICE: Record<string, PracticeConfig> = {
-  "review-sessions": practice("input", "word in the review sequence", [
-    ["input", "input -> process -> output"],
-    ["data", "data -> process -> output"],
-    ["event", "event -> process -> output"],
-    ["signal", "signal -> process -> output"],
-    ["question", "question -> process -> output"],
-    ["player", "player -> process -> output"],
-    ["message", "message -> process -> output"],
-    ["result", "result -> process -> output"],
-  ]),
-  "computer-programming": practice("4", "input number", [
-    ["4", "8"],
-    ["1", "2"],
-    ["2", "4"],
-    ["3", "6"],
-    ["5", "10"],
-    ["6", "12"],
-    ["7", "14"],
-    ["8", "16"],
-  ]),
-  "language-tools": practice("Editor ready", "ready-check message", [
-    ["Editor ready", "Editor ready"],
-    ["Workspace ready", "Workspace ready"],
-    ["Tools ready", "Tools ready"],
-    ["Runner ready", "Runner ready"],
-    ["IDE ready", "IDE ready"],
-    ["Project ready", "Project ready"],
-    ["Course ready", "Course ready"],
-    ["Game ready", "Game ready"],
-  ]),
-  "editor-hello-world": practice("world", "word in the greeting", [
-    ["world", "Hello, world!"],
-    ["CodeQuest", "Hello, CodeQuest!"],
-    ["Nova", "Hello, Nova!"],
-    ["Ava", "Hello, Ava!"],
-    ["developer", "Hello, developer!"],
-    ["student", "Hello, student!"],
-    ["programmer", "Hello, programmer!"],
-    ["friend", "Hello, friend!"],
-  ]),
-  "language-introduction": practice("Language ready", "status message", [
-    ["Language ready", "Language ready"],
-    ["Java ready", "Java ready"],
-    ["Web ready", "Web ready"],
-    ["Python ready", "Python ready"],
-    ["Types ready", "Types ready"],
-    ["Code ready", "Code ready"],
-    ["Build ready", "Build ready"],
-    ["Quest ready", "Quest ready"],
-  ]),
   "variables-types": practice("4", "starting battery value", [
     ["4", "7"],
     ["1", "4"],
@@ -730,13 +587,39 @@ const PRACTICE: Record<string, PracticeConfig> = {
   ]),
 };
 
+const BOSSES: Record<string, StudyTaskVariation> = {
+  "variables-types": { value: "10", output: "13" },
+  operators: { value: "20", output: "2" },
+  "decision-statements": { value: "0", output: "Locked" },
+  loops: { value: "8", output: "36" },
+  "methods-functions": { value: "9", output: "13" },
+  "classes-objects-one": { value: "Rae", output: "Hello, Rae" },
+  "string-class": { value: "adventure map", output: "ADVENTURE MAP" },
+  arrays: { value: "10", output: "16" },
+  "array-list": { value: "5", output: "6" },
+  "classes-objects-two": { value: "Rae", output: "Rae: Explorer" },
+  encapsulation: { value: "10", output: "12" },
+  inheritance: { value: "Maya", output: "Coder: Maya" },
+  "abstraction-polymorphism": { value: "Ready to explore", output: "Ready to explore" },
+  "exceptions-errors": { value: "power lost", output: "Recovered: power lost" },
+  "collections-framework": { value: "5", output: "5" },
+  maps: { value: "Zuri", output: "Zuri" },
+  "extra-topics": { value: "Status.DONE", output: "DONE" },
+};
+
 export const STUDY_CURRICULUM: readonly StudyTopic[] = TOPICS.map((topic) => ({
   ...topic,
-  practice:
-    PRACTICE[topic.id] ??
-    (() => {
-      throw new Error(`Missing eight-task practice for ${topic.id}`);
-    })(),
+  practice: {
+    ...(PRACTICE[topic.id] ??
+      (() => {
+        throw new Error(`Missing eight-task practice for ${topic.id}`);
+      })()),
+    boss:
+      BOSSES[topic.id] ??
+      (() => {
+        throw new Error(`Missing boss challenge for ${topic.id}`);
+      })(),
+  },
 }));
 
 const STUDY_IDS = new Set(STUDY_CURRICULUM.map(({ id }) => id));
@@ -760,6 +643,19 @@ export function studyTaskFor(topic: StudyTopic, lang: Lang, index: number): Stud
       ? "Trace the starter, enter the output you predict, then run it to check your answer."
       : `Change the ${topic.practice.action} to ${variation.value}. Predict the output, enter your prediction, then run the code.`;
   return { ...variation, index, prompt, starter, solution };
+}
+
+export function studyBossFor(topic: StudyTopic, lang: Lang): StudyTask {
+  const token = topic.practice.token[lang];
+  const starter = topic.examples[lang].code;
+  if (!starter.includes(token)) throw new Error(`The ${lang} example for ${topic.title} is missing its boss value.`);
+  return {
+    ...topic.practice.boss,
+    index: STUDY_TASKS_PER_TOPIC,
+    prompt: `Level boss: change the ${topic.practice.action} to ${topic.practice.boss.value}, predict the result, then run your code to defeat the boss.`,
+    starter,
+    solution: starter.replace(token, topic.practice.boss.value),
+  };
 }
 
 export function studyProgressKey(adventureId: string): string {
@@ -802,7 +698,39 @@ export function readCompletedStudyTasks(adventureId: string): number {
 
 export function readStudyProgress(adventureId: string): string[] {
   const progress = readStudyCounts(adventureId);
-  return STUDY_CURRICULUM.filter(({ id }) => (progress[id] ?? 0) >= STUDY_TASKS_PER_TOPIC).map(({ id }) => id);
+  const bosses = new Set(readCompletedStudyBosses(adventureId));
+  return STUDY_CURRICULUM.filter(({ id }) => (progress[id] ?? 0) >= STUDY_TASKS_PER_TOPIC && bosses.has(id)).map(
+    ({ id }) => id,
+  );
+}
+
+export function studyBossProgressKey(adventureId: string): string {
+  return `codequest:study-bosses:v1:${adventureId}`;
+}
+
+export function readCompletedStudyBosses(adventureId: string): string[] {
+  try {
+    const stored: unknown = JSON.parse(localStorage.getItem(studyBossProgressKey(adventureId)) ?? "[]");
+    if (!Array.isArray(stored)) return [];
+    return stored.filter(
+      (id): id is string => typeof id === "string" && STUDY_IDS.has(id) && readStudyTaskProgress(adventureId, id) >= 8,
+    );
+  } catch {
+    return [];
+  }
+}
+
+export function saveStudyBossProgress(adventureId: string, topicId: string): boolean {
+  if (!STUDY_IDS.has(topicId) || readStudyTaskProgress(adventureId, topicId) < STUDY_TASKS_PER_TOPIC) return false;
+  try {
+    const bosses = new Set(readCompletedStudyBosses(adventureId));
+    if (bosses.has(topicId)) return false;
+    bosses.add(topicId);
+    localStorage.setItem(studyBossProgressKey(adventureId), JSON.stringify([...bosses]));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function saveStudyTaskProgress(adventureId: string, topicId: string, completedTasks: number): boolean {
