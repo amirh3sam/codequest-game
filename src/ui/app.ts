@@ -189,6 +189,7 @@ export class GameApp {
     this.scene.setBlocked(true);
     this.overlay.classList.remove("title-overlay", "tablet-overlay");
     this.overlay.hidden = false;
+    this.hud.classList.add("hud-overlay-open");
     const panel = el("section", `panel${wide ? " panel-wide" : ""}`);
     panel.setAttribute("role", "dialog");
     panel.setAttribute("aria-modal", "true");
@@ -284,6 +285,7 @@ export class GameApp {
         group.append(el("h4", "", language.name));
         for (const state of saves) {
           const row = button("", () => this.begin(state), "title-adventure-row");
+          row.dataset.language = language.id;
           row.append(
             el("strong", "", `${state.hero.name}'s ${language.name} adventure`),
             el("span", "", `${state.areas[state.currentArea].solved.length}/8 tasks`),
@@ -748,6 +750,7 @@ export class GameApp {
       this.busy = false;
     }
     this.overlay.hidden = true;
+    this.hud.classList.remove("hud-overlay-open");
     this.overlay.replaceChildren();
     this.scene.previewDrone();
     this.scene.setBlocked(false);
@@ -922,12 +925,12 @@ export class GameApp {
       close: () => this.close(),
     });
   }
-  private async practice(code: string): Promise<RunResult> {
+  private async practice(code: string, files?: Record<string, string>): Promise<RunResult> {
     if (!this.runner || this.busy) throw new Error("A program is already running.");
     this.busy = true;
     const token = ++this.runToken;
     try {
-      const result = await this.runner.run(code);
+      const result = await this.runner.run(code, undefined, files);
       if (token === this.runToken) gameAudio.play(executionError(result) ? "error" : "success");
       return result;
     } finally {
@@ -948,7 +951,7 @@ export class GameApp {
       animate,
       focusCamera: () => this.scene.focusTablet(),
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
-      run: (code) => this.practice(code),
+      run: (code, files) => this.practice(code, files),
       district: this.area.name,
       hearts: progress.hearts,
       gems: progress.gems,

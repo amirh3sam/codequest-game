@@ -1,5 +1,13 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (project workspace, daily quest and modal guide fix)
+- **VS Code-style tablet:** replaced the decorative Explorer with a per-adventure project tree. Players can create nested folders and files, switch files, edit them, run code into the panel below the editor and keep the whole project across reloads. Chromium browsers with the File System Access API can open a chosen computer folder and write changes back. Java practice compiles `Main.java` and all project `.java` files together; its starter calls a real `Player` class in a separate file.
+- **More to practice:** added four rotating free Daily Quest puzzles covering arithmetic, conditions, loops and strings in all four languages. Drafts and daily completions are saved separately for each adventure. Solving them never changes hearts or gems.
+- **Polish:** saved adventures and tablet tabs now use each language's first-screen accent color. The field guide hides while any modal page is open, including the tablet and mini-games, so it cannot cover their content.
+- **Checks:** 239 unit tests passed. All 14 tablet Chromium cases passed serially, including every language runner, Java classes across files, nested file/folder creation, project reload, mobile layout and field-guide dismissal. The new Daily Quest solve/save Chromium flow passed. Lint, TypeScript and production build passed.
+- **Next:** extend module-aware multi-file execution to JavaScript, TypeScript and Python.
+- **Release:** pending public commit and Vercel deployment.
+
 ## 2026-10-23 (accessibility settings and Signal Stack arcade)
 
 - **Accessibility:** added persistent larger-text and high-contrast settings, adjustable effects volume and selectable WASD, arrow-only or IJKL keyboard movement. HUD instructions and the first-run guide reflect the chosen keys. Camera and decorative motion continue to respect the device's Reduce Motion preference; touch movement remains available.

@@ -1,5 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import type Phaser from "phaser";
+import { dailyChallengeFor } from "../../src/content/daily-challenge";
 import { batteryExample } from "../../src/content/drone-pilot";
 import type { Lang } from "../../src/runners/types";
 
@@ -51,6 +52,44 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     expect(errors).toEqual([]);
   });
 }
+
+test("Java tablet builds and runs a project split across class files", async ({ page }) => {
+  test.setTimeout(150_000);
+  await start(page, "java");
+  await page.keyboard.press("t");
+  await expect(page.getByRole("dialog", { name: "Developer tablet", exact: true })).toBeVisible();
+  await expect(page.locator(".field-guide")).toBeHidden();
+  await expect(page.getByRole("button", { name: /Player\.java/ })).toBeVisible();
+  await page.getByRole("button", { name: "Run practice code", exact: true }).click();
+  await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("Hello, Ada!\n", { timeout: 60_000 });
+
+  await page.getByRole("button", { name: /Player\.java/ }).click();
+  const editor = page.getByLabel("Code editor: src/Player.java");
+  await expect(editor).toHaveValue(/greeting/);
+  await editor.fill(
+    'class Player {\n    private final String name;\n    Player(String name) { this.name = name; }\n    String greeting() {\n        return "Hello from Player!";\n    }\n}',
+  );
+  await page.getByRole("button", { name: "Run practice code", exact: true }).click();
+  await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("Hello from Player!\n", {
+    timeout: 60_000,
+  });
+
+  await page.getByRole("button", { name: "+ Folder", exact: true }).click();
+  await page.getByLabel("New folder path").fill("src/models");
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await expect(page.locator(".studio-folder", { hasText: "models" })).toBeVisible();
+  await page.getByRole("button", { name: "+ File", exact: true }).click();
+  await page.getByLabel("New file path").fill("src/models/Badge.java");
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await expect(page.getByLabel("Code editor: src/models/Badge.java")).toBeVisible();
+  await page.reload();
+  await page.locator(".title-adventure-row").first().click();
+  await page.getByRole("button", { name: "Tablet", exact: true }).click();
+  await expect(page.getByRole("button", { name: /Badge\.java/ })).toBeVisible();
+  await expect(page.locator(".tablet-studio")).toHaveAttribute("data-language", "java");
+  await page.getByRole("button", { name: /Player\.java/ }).click();
+  await expect(page.getByLabel("Code editor: src/Player.java")).toHaveValue(/Hello from Player!/);
+});
 
 test("closing a running tablet program cancels it and permits another run", async ({ page }) => {
   await start(page);
@@ -227,4 +266,24 @@ test("practice examples include a free debugging task and predict-before-run act
   await page.getByRole("button", { name: "Check prediction", exact: true }).click();
   await expect(page.locator(".prediction-challenge .studio-feedback")).toContainText("Correct!");
   expect(await progress(page, "javascript")).toEqual(before);
+});
+
+test("daily quest is free, saves its draft and records a solved challenge", async ({ page }) => {
+  const lang = "javascript" as const;
+  const date = new Date().toISOString().slice(0, 10);
+  const challenge = dailyChallengeFor(date, lang);
+  await start(page, lang);
+  await page.keyboard.press("t");
+  await page.getByRole("tab", { name: "Daily Quest", exact: true }).click();
+  await page.getByLabel("Daily challenge code", { exact: true }).fill(challenge.solution);
+  await page.getByRole("button", { name: "Run daily challenge", exact: true }).click();
+  await expect(page.getByLabel("Daily challenge output", { exact: true })).toHaveText(`${challenge.expected}\n`);
+  await expect(page.locator(".daily-feedback")).toContainText("Solved!");
+  await expect(page.getByTestId("hearts")).toHaveAttribute("aria-label", "3 hearts");
+  await expect(page.getByTestId("gems")).toContainText("0");
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("t");
+  await page.getByRole("tab", { name: "Daily Quest", exact: true }).click();
+  await expect(page.getByLabel("Daily challenge code", { exact: true })).toHaveValue(challenge.solution);
+  await expect(page.locator(".daily-feedback")).toContainText("Already solved today");
 });

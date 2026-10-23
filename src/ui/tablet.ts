@@ -1,7 +1,18 @@
+import { dailyChallengeFor } from "../content/daily-challenge";
 import { batteryExample } from "../content/drone-pilot";
 import { executionError } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
 import { button, el } from "./dom";
+import {
+  chooseLocalFolder,
+  createLocalFolder,
+  createWorkspace,
+  type LocalDirectoryHandle,
+  readWorkspace,
+  type WorkspaceData,
+  writeLocalFile,
+  writeWorkspace,
+} from "./local-workspace";
 import { presentTabletOpening } from "./tablet-opening";
 
 type TabletHost = {
@@ -13,7 +24,7 @@ type TabletHost = {
   animate: boolean;
   focusCamera(): () => void;
   panel(title: string, subtitle: string, wide: boolean): HTMLElement;
-  run(code: string): Promise<RunResult>;
+  run(code: string, files?: Record<string, string>): Promise<RunResult>;
   district: string;
   gems: number;
   hearts: number;
@@ -33,7 +44,7 @@ const HELLO: Record<Lang, string> = {
   javascript: 'const message = "Hello, CodeQuest!";\nconsole.log(message);',
   typescript: 'const message: string = "Hello, CodeQuest!";\nconsole.log(message);',
   python: 'message = "Hello, CodeQuest!"\nprint(message)',
-  java: 'public class Main {\n    public static void main(String[] args) {\n        String message = "Hello, CodeQuest!";\n        System.out.println(message);\n    }\n}',
+  java: 'public class Main {\n    public static void main(String[] args) {\n        // Player is a separate class. This starter prints Hello, CodeQuest! when you change its name.\n        Player player = new Player("Ada");\n        System.out.println(player.greeting());\n    }\n}',
 };
 const DEBUG_GREETING: Record<Lang, string> = {
   javascript: 'const message = "Ready";\nconsole.log(mesage);',
@@ -47,6 +58,7 @@ export function openTablet(host: TabletHost): () => void {
   const panel = host.panel("Developer tablet", "Your own coding space · T to open · Esc to put away", true);
   panel.classList.add("tablet-shell");
   const studio = el("div", "tablet-studio");
+  studio.dataset.language = host.lang;
   const title = el("div", "studio-title");
   title.append(
     el("span", "studio-led"),
@@ -61,8 +73,9 @@ export function openTablet(host: TabletHost): () => void {
     examplesPane = el("div", "studio-examples"),
     consolePane = el("div", "studio-console"),
     missionsPane = el("div", "studio-missions"),
-    guidePane = el("div", "studio-guide");
-  const panes = [editorPane, examplesPane, consolePane, missionsPane, guidePane],
+    guidePane = el("div", "studio-guide"),
+    dailyPane = el("div", "studio-daily");
+  const panes = [editorPane, examplesPane, consolePane, missionsPane, guidePane, dailyPane],
     tabButtons: HTMLButtonElement[] = [];
   const select = (index: number, focus = false) => {
     for (const [i, pane] of panes.entries()) {
@@ -73,7 +86,7 @@ export function openTablet(host: TabletHost): () => void {
     }
     if (focus) tabButtons[index]?.focus();
   };
-  for (const [i, label] of [FILES[host.lang], "Examples", "Console", "Missions", "Guide"].entries()) {
+  for (const [i, label] of [FILES[host.lang], "Examples", "Console", "Missions", "Guide", "Daily Quest"].entries()) {
     const tab = button(label, () => select(i), "studio-tab");
     tab.id = `tablet-tab-${i}`;
     tab.setAttribute("role", "tab");
@@ -104,12 +117,6 @@ export function openTablet(host: TabletHost): () => void {
     }
   }
   const fileTree = el("aside", "studio-explorer");
-  fileTree.append(
-    el("span", "eyebrow", "EXPLORER"),
-    el("strong", "", "YOUR PLAYGROUND"),
-    el("span", "studio-file", `{ } ${FILES[host.lang]}`),
-    el("p", "", "Experiment here. Your missions, hearts and gems stay safe."),
-  );
   const workspace = el("div", "studio-workspace"),
     codeGrid = el("div", "studio-code-grid");
   const lines = el("pre", "studio-lines"),
@@ -121,23 +128,94 @@ export function openTablet(host: TabletHost): () => void {
   code.maxLength = 64000;
   const legacyKey = `codequest:tablet:v1:${host.lang}`;
   const key = host.adventureId ? `codequest:tablet:v2:${host.adventureId}` : legacyKey;
-  try {
-    code.value =
-      localStorage.getItem(key) ??
-      (host.adventureId?.startsWith("legacy-") ? localStorage.getItem(legacyKey) : null) ??
-      HELLO[host.lang];
-  } catch {
-    code.value = HELLO[host.lang];
-  }
+  const workspaceKey = `codequest:workspace:v1:${host.adventureId ?? `guest-${host.lang}`}`;
+  const initialCode = (() => {
+    try {
+      return (
+        localStorage.getItem(key) ??
+        (host.adventureId?.startsWith("legacy-") ? localStorage.getItem(legacyKey) : null) ??
+        HELLO[host.lang]
+      );
+    } catch {
+      return HELLO[host.lang];
+    }
+  })();
+  const mainPath = host.lang === "java" ? "src/Main.java" : `src/${FILES[host.lang]}`;
+  let project: WorkspaceData = readWorkspace(workspaceKey, createWorkspace(mainPath, initialCode));
+  if (!project.files[mainPath]) project.files[mainPath] = initialCode;
+  let activePath = mainPath;
+  let connectedFolder: LocalDirectoryHandle | null = null;
+  let saveTimer = 0;
+  const activeFile = el("span", "studio-active-file", activePath);
+  const fileActions = el("div", "studio-file-actions");
+  const renderTree = () => {
+    fileTree.replaceChildren(
+      el("div", "studio-explorer-heading", "EXPLORER"),
+      el("strong", "studio-project-name", "CODEQUEST PROJECT"),
+      fileActions,
+    );
+    const tree = el("div", "studio-file-tree");
+    const paths = [...new Set([...project.folders, ...Object.keys(project.files)])].sort((a, b) => a.localeCompare(b));
+    for (const path of paths) {
+      const depth = path.split("/").length - 1;
+      const item =
+        project.files[path] !== undefined
+          ? button(
+              `▤ ${path.split("/").at(-1)}`,
+              () => openFile(path),
+              `studio-file${activePath === path ? " active" : ""}`,
+            )
+          : el("div", "studio-folder", `▾ ${path.split("/").at(-1)}`);
+      item.style.setProperty("--tree-depth", String(depth));
+      item.setAttribute("title", path);
+      tree.append(item);
+    }
+    fileTree.append(
+      tree,
+      el(
+        "p",
+        "studio-explorer-note",
+        "Files save separately for each adventure. Java projects compile every .java file together.",
+      ),
+    );
+  };
+  const persistProject = () => {
+    project.files[activePath] = code.value;
+    if (!writeWorkspace(workspaceKey, project))
+      status.textContent = "Browser storage is full; connect or download your project.";
+    if (connectedFolder) {
+      const targetPath = activePath;
+      const contents = code.value;
+      window.clearTimeout(saveTimer);
+      saveTimer = window.setTimeout(() => {
+        void writeLocalFile(connectedFolder as LocalDirectoryHandle, targetPath, contents)
+          .then(() => {
+            if (panel.isConnected) status.textContent = `Saved to computer · ${targetPath}`;
+          })
+          .catch(() => {
+            if (panel.isConnected) status.textContent = "Could not save to the connected folder.";
+          });
+      }, 450);
+    }
+    renderTree();
+  };
+  const openFile = (path: string) => {
+    project.files[activePath] = code.value;
+    if (project.files[path] === undefined) return;
+    activePath = path;
+    code.value = project.files[path] ?? "";
+    activeFile.textContent = path;
+    code.setAttribute("aria-label", `Code editor: ${path}`);
+    lines.textContent = Array.from({ length: code.value.split("\n").length }, (_, i) => i + 1).join("\n");
+    renderTree();
+    code.focus();
+  };
+  code.value = project.files[activePath] ?? initialCode;
   const status = el("span", "studio-save", "Draft stays on this device");
   const changed = () => {
     lines.textContent = Array.from({ length: code.value.split("\n").length }, (_, i) => i + 1).join("\n");
-    try {
-      localStorage.setItem(key, code.value);
-      status.textContent = "Draft saved on this device";
-    } catch {
-      status.textContent = "Draft available for this session";
-    }
+    status.textContent = connectedFolder ? "Saving to your folder…" : "Project saved on this device";
+    persistProject();
   };
   changed();
   code.addEventListener("input", changed);
@@ -177,7 +255,15 @@ export function openTablet(host: TabletHost): () => void {
     code.disabled = true;
     feedback.textContent = `Running ${host.lang}…`;
     try {
-      const result = await host.run(code.value);
+      project.files[activePath] = code.value;
+      const javaSources =
+        host.lang === "java"
+          ? Object.fromEntries(
+              Object.entries(project.files).filter(([path]) => path.endsWith(".java") && path !== mainPath),
+            )
+          : undefined;
+      const entryCode = host.lang === "java" ? (project.files[mainPath] ?? code.value) : code.value;
+      const result = await host.run(entryCode, javaSources);
       if (!panel.isConnected) return;
       const error = executionError(result);
       output.textContent = [result.stdout || "(No output)", result.stderr, error?.message].filter(Boolean).join("\n");
@@ -197,12 +283,96 @@ export function openTablet(host: TabletHost): () => void {
     }
   };
   const toolbar = el("div", "studio-toolbar");
-  toolbar.append(run, el("span", "", "Ctrl / ⌘ + Enter to run"));
+  const addFile = button("+ File", () => createEntry("file"), "studio-small-action");
+  const addFolder = button("+ Folder", () => createEntry("folder"), "studio-small-action");
+  const connect = button(
+    "Open local folder",
+    () => {
+      void chooseLocalFolder()
+        .then(({ handle, workspace: localProject }) => {
+          connectedFolder = handle;
+          project = localProject;
+          if (!Object.keys(project.files).length) project = createWorkspace(mainPath, code.value);
+          if (!project.files[mainPath]) project.files[mainPath] = HELLO[host.lang];
+          activePath = mainPath;
+          code.value = project.files[activePath] ?? "";
+          activeFile.textContent = activePath;
+          changed();
+          status.textContent = `Connected to ${handle.name}`;
+        })
+        .catch((error: unknown) => {
+          if (panel.isConnected)
+            status.textContent = error instanceof Error ? error.message : "Folder access was cancelled.";
+        });
+    },
+    "studio-small-action",
+  );
+  toolbar.append(run, el("span", "", "Ctrl / ⌘ + Enter to run"), connect);
+  const createEntry = (kind: "file" | "folder") => {
+    const form = el("form", "studio-create-form");
+    const input = el("input", "studio-create-input");
+    input.placeholder = kind === "file" ? "src/Player.java" : "src/models";
+    input.setAttribute("aria-label", kind === "file" ? "New file path" : "New folder path");
+    const submit = button("Create", () => {}, "studio-small-action");
+    submit.type = "submit";
+    form.append(
+      input,
+      submit,
+      button("Cancel", () => form.remove(), "studio-small-action"),
+    );
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const raw = input.value.trim().replace(/^\/+|\/+$/g, "");
+      if (!raw || raw.split("/").some((part) => !/^[\w.-]+$/.test(part) || part === "." || part === "..")) {
+        status.textContent = "Use a simple relative path, such as src/Player.java.";
+        return;
+      }
+      if (kind === "folder") {
+        project.folders = [...new Set([...project.folders, raw])];
+        if (connectedFolder)
+          void createLocalFolder(connectedFolder, raw).catch(() => {
+            status.textContent = "Could not create that folder on your computer.";
+          });
+      } else {
+        if (!raw.includes(".")) {
+          status.textContent = "Add a file extension, such as .java or .js.";
+          return;
+        }
+        if (project.files[raw] !== undefined) {
+          status.textContent = "That file already exists.";
+          return;
+        }
+        project.folders = [
+          ...new Set([
+            ...project.folders,
+            ...raw
+              .split("/")
+              .slice(0, -1)
+              .map((_, index, parents) => parents.slice(0, index + 1).join("/")),
+          ]),
+        ];
+        project.files[raw] = "";
+        if (connectedFolder)
+          void writeLocalFile(connectedFolder, raw, "").catch(() => {
+            status.textContent = "Could not create that file on your computer.";
+          });
+        openFile(raw);
+      }
+      form.remove();
+      persistProject();
+    });
+    fileTree.append(form);
+    input.focus();
+  };
+  fileActions.append(addFile, addFolder);
+  renderTree();
+  const editorHeader = el("div", "studio-editor-header");
+  editorHeader.append(activeFile);
   codeGrid.append(lines, code);
   const inlineConsole = el("section", "studio-inline-console");
   inlineConsole.setAttribute("aria-label", "Run results");
   inlineConsole.append(el("div", "studio-output-title", "OUTPUT"), output);
-  workspace.append(codeGrid, toolbar, inlineConsole, feedback);
+  workspace.append(editorHeader, codeGrid, toolbar, inlineConsole, feedback);
   editorPane.append(fileTree, workspace);
   examplesPane.append(
     el("h3", "", "Start with something small"),
@@ -333,11 +503,100 @@ export function openTablet(host: TabletHost): () => void {
     if (lesson.code) card.append(el("pre", "code-example", lesson.code));
     guidePane.append(card);
   }
+  const challengeDate = new Date().toISOString().slice(0, 10),
+    challenge = dailyChallengeFor(challengeDate, host.lang),
+    adventureKey = host.adventureId ?? `guest-${host.lang}`,
+    completionKey = `codequest:daily:v1:${adventureKey}:${challengeDate}`,
+    dailyDraftKey = `codequest:daily-draft:v1:${adventureKey}:${challengeDate}`,
+    dailyCode = el("textarea", "daily-code"),
+    dailyOutput = el("pre", "studio-output daily-output", "Run your solution to check today's challenge."),
+    dailyFeedback = el("p", "studio-feedback daily-feedback");
+  dailyCode.setAttribute("aria-label", "Daily challenge code");
+  dailyOutput.setAttribute("aria-label", "Daily challenge output");
+  dailyCode.spellcheck = false;
+  dailyCode.autocapitalize = "off";
+  dailyCode.maxLength = 64000;
+  try {
+    dailyCode.value = localStorage.getItem(dailyDraftKey) ?? challenge.starter;
+    dailyFeedback.textContent =
+      localStorage.getItem(completionKey) === "complete"
+        ? "Already solved today · Your coding progress is safe."
+        : "Daily practice is free. Run code as many times as you like.";
+  } catch {
+    dailyCode.value = challenge.starter;
+    dailyFeedback.textContent = "Daily practice is free. This draft stays in the current session.";
+  }
+  dailyCode.addEventListener("input", () => {
+    try {
+      localStorage.setItem(dailyDraftKey, dailyCode.value);
+    } catch {
+      dailyFeedback.textContent = "Draft storage is full. You can keep practicing in this session.";
+    }
+  });
+  const dailyHint = el("details", "daily-hint");
+  dailyHint.append(el("summary", "", "Show a hint"), el("p", "", challenge.hint));
+  const solution = el("details", "daily-solution");
+  solution.append(el("summary", "", "Show one working solution"), el("pre", "code-example", challenge.solution));
+  const dailyRun = button(
+    "Run daily challenge",
+    () => {
+      if (runningDaily || !dailyPane.isConnected) return;
+      void runDaily();
+    },
+    "button primary",
+  );
+  let runningDaily = false;
+  const runDaily = async () => {
+    runningDaily = true;
+    dailyRun.disabled = true;
+    dailyCode.disabled = true;
+    dailyFeedback.textContent = "Running your daily challenge…";
+    try {
+      const result = await host.run(dailyCode.value),
+        error = executionError(result);
+      dailyOutput.textContent = [result.stdout || "(No output)", result.stderr, error?.message]
+        .filter(Boolean)
+        .join("\n");
+      if (error) dailyFeedback.textContent = "Fix the error and run it again. This challenge never costs hearts.";
+      else if (result.stdout.trim() === challenge.expected) {
+        try {
+          localStorage.setItem(completionKey, "complete");
+        } catch {
+          // A solved challenge still counts for this session if browser storage is full.
+        }
+        dailyFeedback.textContent = `Solved! ${challenge.skill} practice complete. No hearts or gems were spent.`;
+      } else dailyFeedback.textContent = "Not quite yet. Compare the output with the goal, use a hint, and try again.";
+    } catch {
+      dailyFeedback.textContent = "The runtime could not run this challenge. Try again; no progress changed.";
+    } finally {
+      runningDaily = false;
+      dailyRun.disabled = false;
+      dailyCode.disabled = false;
+    }
+  };
+  dailyPane.append(
+    el("span", "eyebrow", `DAILY QUEST / ${challengeDate} UTC`),
+    el("h3", "", challenge.title),
+    el("p", "daily-skill", challenge.skill),
+    el("p", "", challenge.prompt),
+    dailyHint,
+    dailyCode,
+    dailyRun,
+    el("span", "studio-output-title", "OUTPUT"),
+    dailyOutput,
+    dailyFeedback,
+    solution,
+  );
   body.append(...panes);
   const bottom = el("div", "studio-status");
   bottom.append(status, el("span", "", "FREE PRACTICE · AUTO SAVE"));
   studio.append(title, tabs, body, bottom);
   panel.append(studio);
   select(0);
-  return presentTabletOpening(panel, host.kind, host.name, host.focusCamera, host.animate);
+  const close = presentTabletOpening(panel, host.kind, host.name, host.focusCamera, host.animate);
+  return () => {
+    window.clearTimeout(saveTimer);
+    if (connectedFolder) void writeLocalFile(connectedFolder, activePath, code.value);
+    close();
+  };
 }

@@ -247,11 +247,21 @@ layout is `src/content/village.json`, with separate solid-object footprints,
 directional walking, following camera and per-district tint/signage. CodeMirror,
 Tiled and the remaining five areas remain follow-up work.
 
+The developer tablet keeps a per-adventure project (`codequest:workspace:v1:<adventureId>`)
+with relative file paths and folder names in browser storage. It can also import a
+player-selected local folder through the File System Access API and write edits
+back to that folder while connected. Java practice sends the active `Main.java`
+entry plus every other `.java` file to the Java worker, so classes can be split
+across files and compiled together. JavaScript, TypeScript and Python currently
+run the selected file; their project files still save independently. The field
+guide is hidden while modal pages are open so it cannot cover tablet or arcade
+content.
+
 ## 5. Screens (no URL routes — single page)
 Title (New / Continue) → Language → Hero → Name → World Map ↔ Area (HUD + panels: Scroll, Task, Boss, Pause, Out of hearts, Victory).
 
 ## 6. Code running and grading
-1. `worker-host` keeps one warm worker for the chosen language and sends it `{id, code, stdin}`. Runs are **queued**: one request inside the worker at a time.
+1. `worker-host` keeps one warm worker for the chosen language and sends it `{id, code, stdin, files?}`. Runs are **queued**: one request inside the worker at a time.
 2. The worker compiles if needed (TS → JS, Java → WASM) and runs it, capturing stdout/stderr (JS/TS: patched `console.log`; Python: Pyodide `setStdout`; Java: TeaVM stdout hook).
 3. Timeouts: compiling has a 20 s safety cap; when the worker posts `{phase: "running"}` the 5 s **run** timeout starts. On timeout the host calls `worker.terminate()` and the next run spawns a fresh worker. Loading a runtime has a 60 s cap. If the runner itself fails (load error, crash, restart) the result has `runnerError`.
 4. `grade()` runs every test case, compares trimmed stdout (normalised line endings) and checks `rules`. Result: `{passed, failedCheck?, compileError?, perCase[]}`.

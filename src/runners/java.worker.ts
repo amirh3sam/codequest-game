@@ -51,13 +51,18 @@ function init() {
   return ready;
 }
 
-async function run({ id, code }: RunRequest): Promise<RunResult> {
+async function run({ id, code, files }: RunRequest): Promise<RunResult> {
   const { compiler, load } = await init();
   diagnostics = [];
   const t0 = performance.now();
   compiler.clearSourceFiles();
   compiler.clearOutputFiles();
   compiler.addSourceFile("Main.java", code);
+  for (const [path, source] of Object.entries(files ?? {})) {
+    if (/^[\w./-]+\.java$/.test(path) && !path.split("/").some((part) => part === "..") && path !== "Main.java") {
+      compiler.addSourceFile(path, source);
+    }
+  }
 
   const compiled = compiler.compile();
   const mainClass = compiled ? compiler.detectMainClasses()[0] : undefined;

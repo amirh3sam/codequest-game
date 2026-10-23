@@ -1,6 +1,6 @@
 export type Lang = "java" | "javascript" | "typescript" | "python";
 
-export type RunRequest = { id: number; code: string; stdin?: string };
+export type RunRequest = { id: number; code: string; stdin?: string; files?: Record<string, string> };
 
 export type Diagnostic = { line: number; column?: number; message: string };
 
