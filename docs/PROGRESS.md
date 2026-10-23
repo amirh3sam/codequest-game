@@ -3,7 +3,7 @@
 ## 2026-10-23 (Java editor typing shortcuts)
 - Monaco now offers Java snippet completions for `main`/`psvm`, `sout`/`sysout`/`syso`, `serr`, `soutv`, `print`, `fori`, `foreach`/`iter`, `if`/`ifelse`, `while`, `dowhile`, `switch`, `trycatch`, `class`, `interface`, `enum`, and `ctor`. Tab stops make the generated code quick to customize; the editor shows a shortcut reference.
 - **Checks:** browser typing test confirmed `sout` expands to `System.out.println` and `main` expands to the full entry method. All 242 unit tests, lint, TypeScript and production build passed; dependency audit reports zero vulnerabilities.
-- **Release:** pending public commit and Vercel deployment.
+- **Release:** commit `9e81531` is public on `main`. Deployment `dpl_C81V5F1KiDLWEhv5YkhymhvygnZ2` is READY at https://codequest-game-inky.vercel.app/; `vercel curl` confirmed the production alias serves the app.
 
 ## 2026-10-23 (Java class scaffolds)
 - Creating a `.java` file now pre-fills its package based on its folder under `src/`, a `java.util.*` import, and a public class whose name matches the file. Java source files are passed to the browser compiler by basename so packaged classes compile correctly.
