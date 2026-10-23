@@ -3,7 +3,7 @@
 ## 2026-10-23 (sequential Java levels and teleport doors)
 - Levels 8–24 follow Abstraction Cloud in one continuous map. Level 8 unlocks after the Abstraction Cloud boss; each next category unlocks only after the previous category's eight tasks and boss. Each category has exactly eight tasks plus a separate boss. After each boss, portal doors provide direct travel to every unlocked category, including the newly unlocked next level.
 - **Checks:** Chromium confirmed fresh-save locks, level 8 unlocking, level 9 remaining locked until the first category boss, the complete eight-task-plus-boss flow, and portal travel through all 17 category bosses. All 17 category starters passed in Java, JavaScript, TypeScript and Python. All 249 unit tests, lint, typecheck, and production build passed.
-- **Release:** pending public push and production deployment.
+- **Release:** source commit `0183c46` is public on `main`. Production deployment `dpl_DUEFZD9uubJ6LtgvMsUytwWSVxrh` is READY at https://codequest-game-inky.vercel.app/; the production alias returned the updated game.
 - **Next:** continue building the category-level game missions.
 - **Blockers:** none.
 
