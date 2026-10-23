@@ -3,7 +3,7 @@
 ## 2026-10-23 (Java class scaffolds)
 - Creating a `.java` file now pre-fills its package based on its folder under `src/`, a `java.util.*` import, and a public class whose name matches the file. Java source files are passed to the browser compiler by basename so packaged classes compile correctly.
 - **Checks:** the Java tablet browser flow created a class under `src/models`, verified the generated package/import/class scaffold, imported it from `Main`, and ran it. All 242 unit tests, lint and TypeScript passed.
-- **Release:** pending public commit and Vercel deployment.
+- **Release:** commit `6f3503d` is public on `main`. Deployment `dpl_22Lcf1QuhSF791KLbJ3jN2qhtuNb` is READY at https://codequest-game-inky.vercel.app/; `vercel curl` confirmed the production alias serves the app.
 
 ## 2026-10-23 (close editor tabs)
 - Each open file tab now has an × button at its right edge. Closing the active tab switches to a neighboring tab; closed files stay in the Explorer and can be reopened. The workspace keeps one tab open at all times.
