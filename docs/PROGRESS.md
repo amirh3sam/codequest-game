@@ -1,5 +1,10 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (multi-class runs in all four languages)
+- Expanded browser projects so JavaScript, TypeScript and Python each use `Main → Badge → Player` across separate files. Java runs `Main → Badge → Formatter` across packaged classes.
+- **Results:** Java printed `Hello from a package!`; JavaScript, TypeScript and Python each printed `Hello from a file! plus Badge`. All four focused Chromium flows passed together. This verifies the project-source bundler and Java compiler; no runtime source fix was needed.
+- **Release:** test and progress-note update only; the live game bundle is unchanged.
+
 ## 2026-10-23 (run the active Java class)
 - **Bug fix:** Java Run used the project starter as its entry source even when another Java file was active. It now compiles that active file under its filename and runs its `main` method when present; other project classes remain available. If the active file has no `main`, it falls back to a detected project entry.
 - **Checks:** browser regression test created `src/Test1.java`, ran its `main`, and confirmed output is exactly lowercase `hello`. The packaged Java class flow also passed. All 242 unit tests, lint, TypeScript and production build passed; dependency audit reports zero vulnerabilities.

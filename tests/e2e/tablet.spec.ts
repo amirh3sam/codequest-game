@@ -92,8 +92,16 @@ test("Java tablet builds and runs a project split across class files", async ({ 
   const badgeEditor = page.getByLabel("Code editor: src/models/Badge.java");
   await expect(badgeEditor).toHaveValue(/package models;[\s\S]*import java\.util\.\*;[\s\S]*public class Badge/);
   await badgeEditor.fill(
-    'package models;\n\nimport java.util.*;\n\npublic class Badge {\n    public static String greeting() { return "Hello from a package!"; }\n}',
+    'package models;\n\nimport java.util.*;\n\npublic class Badge {\n    public static String greeting() { return Formatter.format("Hello from a package!"); }\n}',
   );
+  await page.getByRole("button", { name: "+ File", exact: true }).click();
+  await page.getByLabel("New file name").fill("Formatter.java");
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page
+    .getByLabel("Code editor: src/models/Formatter.java")
+    .fill(
+      "package models;\n\nimport java.util.*;\n\npublic class Formatter {\n    public static String format(String value) { return value; }\n}",
+    );
   await page.locator(".studio-file[title='src/Main.java']").click();
   await page
     .getByLabel("Code editor: src/Main.java")
@@ -109,7 +117,7 @@ test("Java tablet builds and runs a project split across class files", async ({ 
   await page.getByRole("button", { name: "Close src/models/Badge.java", exact: true }).click();
   await expect(page.locator(".studio-open-file-tab", { hasText: "Badge.java" })).toHaveCount(0);
   await expect(page.locator(".studio-file[title='src/models/Badge.java']")).toBeVisible();
-  await expect(page.getByLabel("Code editor: src/Player.java")).toBeVisible();
+  await expect(page.getByLabel("Code editor: src/models/Formatter.java")).toBeVisible();
   await page.locator(".studio-file[title='src/models/Badge.java']").click();
   await expect(page.getByLabel("Code editor: src/models/Badge.java")).toBeVisible();
   await page.getByRole("button", { name: "Rename src/models/Badge.java" }).click();
@@ -176,26 +184,36 @@ for (const lang of ["javascript", "typescript", "python"] as const) {
   test(`${lang}: local class imports run from files in the project tree`, async ({ page }) => {
     test.setTimeout(150_000);
     const extension = lang === "javascript" ? "js" : lang === "typescript" ? "ts" : "py";
-    const classCode = {
+    const playerCode = {
       javascript: 'export class Player { greeting() { return "Hello from a file!"; } }',
       typescript: 'export class Player { greeting(): string { return "Hello from a file!"; } }',
       python: 'class Player:\n    def greeting(self):\n        return "Hello from a file!"',
     }[lang];
+    const badgeCode = {
+      javascript: `import { Player } from "./Player.js";\nexport class Badge { greeting() { return new Player().greeting() + " plus Badge"; } }`,
+      typescript: `import { Player } from "./Player.ts";\nexport class Badge { greeting(): string { return new Player().greeting() + " plus Badge"; } }`,
+      python:
+        'from player import Player\nclass Badge:\n    def greeting(self):\n        return Player().greeting() + " plus Badge"',
+    }[lang];
     const mainCode = {
-      javascript: 'import { Player } from "./Player.js";\nconsole.log(new Player().greeting());',
-      typescript: 'import { Player } from "./Player.ts";\nconsole.log(new Player().greeting());',
-      python: "from player import Player\nprint(Player().greeting())",
+      javascript: 'import { Badge } from "./Badge.js";\nconsole.log(new Badge().greeting());',
+      typescript: 'import { Badge } from "./Badge.ts";\nconsole.log(new Badge().greeting());',
+      python: "from badge import Badge\nprint(Badge().greeting())",
     }[lang];
     await start(page, lang);
     await page.keyboard.press("t");
     await page.getByRole("button", { name: "+ File", exact: true }).click();
     await page.getByLabel("New file name").fill(`Player.${extension}`);
     await page.getByRole("button", { name: "Create", exact: true }).click();
-    await page.getByLabel(`Code editor: src/Player.${extension}`).fill(classCode);
+    await page.getByLabel(`Code editor: src/Player.${extension}`).fill(playerCode);
+    await page.getByRole("button", { name: "+ File", exact: true }).click();
+    await page.getByLabel("New file name").fill(`Badge.${extension}`);
+    await page.getByRole("button", { name: "Create", exact: true }).click();
+    await page.getByLabel(`Code editor: src/Badge.${extension}`).fill(badgeCode);
     await page.locator(".studio-file").filter({ hasText: FILES[lang] }).click();
     await page.getByLabel(`Code editor: src/${FILES[lang]}`).fill(mainCode);
     await page.getByRole("button", { name: "Run practice code", exact: true }).click();
-    await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("Hello from a file!\n", {
+    await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("Hello from a file! plus Badge\n", {
       timeout: 60_000,
     });
   });
