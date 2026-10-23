@@ -14,7 +14,7 @@ Start with **Mission** to meet Kai. The guided drone lesson lets you predict, ru
 
 Press **T** or click **Tablet**: the city camera zooms toward your developer, switches to their first-person view looking down at the tablet attached to their wrist, then enters its screen. The opening takes three seconds. Press **T** or **Skip animation** to jump ahead. Reduced motion opens it instantly.
 
-![First-person view of the developer's hands and attached wrist tablet](docs/screenshots/tablet-cinematic.png)
+![The slim wrist tablet with fitted hoodie sleeves and a supporting hand, seen through the developer's eyes](docs/screenshots/tablet-cinematic.png)
 
 [Watch the actual tablet opening](docs/screenshots/tablet-opening.webm).
 

@@ -4,6 +4,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ## [Unreleased]
 ### Changed
+- Redesigned the first-person 3D model with a slim metal tablet, small bezel controls, fitted woven sleeves, shaped hands with continuous curved fingers and two forearm bands. The supporting arm follows the bezel with connected joints; camera movement and the coding workspace retain their current behavior.
 - Tablet opening now zooms toward the city character, switches to their first-person view of the attached wrist display, then enters the workspace in three seconds. Replaced the third-person character shot.
 - Practice code, Run and output now stay on one page, with results below the editor. The Console tab offers a larger view of the same output; running no longer switches away from the code.
 ### Fixed

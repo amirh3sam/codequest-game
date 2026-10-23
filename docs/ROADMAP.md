@@ -4,6 +4,7 @@ Each task fits in one session. Tags point to PRD requirements.
 
 ## Current priority: learning through adventure (2026-10-22)
 
+- [x] Replace the bulky wrist model with a slim device, fitted sleeves and natural supporting hands while preserving the approved first-person camera and editor.
 - [x] Revise the tablet opening to a city zoom followed by the character's first-person view of their attached wrist tablet. Keep the sequence to three seconds, with skip, cancellation and instant reduced-motion access. Missions and Guide remain inside the device.
 - [x] Keep practice code, Run and its output on one page, with results below the editor in all four languages and on narrow screens.
 - [x] Verify that players opening the same public link in separate browsers retain independent characters and progress; make the local-save scope clear.

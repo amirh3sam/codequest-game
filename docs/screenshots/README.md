@@ -7,7 +7,7 @@ real game and working code, rather than concept art or interface mockups.
 - `drone-lesson.png`: a real prediction example printing 5 and updating the battery.
 - `code-repair.png`: a learner's repair printing 12 in the actual editor.
 - `developer-tablet.png`: practice code, Run and real output together on the tablet.
-- `tablet-cinematic.png`: the wearer's first-person view of their hands and attached wrist tablet.
+- `tablet-cinematic.png`: the redesigned slim wrist device, fitted sleeves and supporting hand in the wearer's first-person view.
 - `tablet-opening.webm`: browser video of the city zoom, first-person look down and full-screen transition.
 
 Regenerate with the local game running at `http://127.0.0.1:5173`:

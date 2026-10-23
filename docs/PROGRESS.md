@@ -1,5 +1,11 @@
 # Progress log (newest on top)
 
+## 2026-10-22 (slim wrist-device model)
+
+- **Done:** replaced the bulky 3D arms and illuminated casing with fitted woven hoodie sleeves, shaped hands, continuous curled fingers, a slim metal tablet, small bezel controls, a rear cradle and two bands around the forearm. The supporting arm now follows the bezel through a joint-length-preserving pose. Softened lighting keeps skin and cloth readable. The approved camera movement, three-second timing and editor/output layout retain their behavior.
+- **Checks:** 211 unit tests and five focused Chromium cases passed, including both character openings, walking/camera restoration, reduced-motion phone layout, skip/early close and unavailable WebGL. Lint, type checking and production build passed; production test hooks are absent. Inspected actual model captures and refreshed the opening screenshot/video without page errors. No dependencies or save changes.
+- **Release:** publishing and public verification follow this implementation entry.
+
 ## 2026-10-22 (first-person wrist view and inline practice results)
 
 - **Done:** revised the opening to a three-second city zoom, followed by the developer's own view looking down at an attached wrist tablet and entering its screen. Removed the external full-body/head shot. Both hoodie styles retain connected arms and hands; the screen faces the wearer's eyes. Skip, reduced motion, WebGL fallback, cancellation and camera restoration remain available.

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { createTabletArm, sleeveWeave } from "./tablet-hands";
 import type { tabletMotion } from "./tablet-motion";
 
 export type DeveloperKind = "boy" | "girl";
@@ -33,27 +34,27 @@ function sphere(
   return mesh;
 }
 
-function arm(parent: THREE.Group, x: number, cloth: THREE.Material, cuff: THREE.Material, skin: THREE.Material) {
-  const shoulder = new THREE.Group();
-  shoulder.position.set(x, 1.55, 0);
-  parent.add(shoulder);
-  sphere(shoulder, [0.15, 0.16, 0.15], [0, -0.03, 0], cloth);
-  box(shoulder, [0.23, 0.36, 0.24], [0, -0.2, 0], cloth, 0.085);
-  const elbow = new THREE.Group();
-  elbow.position.y = -0.39;
-  shoulder.add(elbow);
-  sphere(elbow, [0.105, 0.11, 0.11], [0, 0, 0], cloth);
-  box(elbow, [0.19, 0.3, 0.2], [0, -0.15, 0], cloth, 0.065);
-  box(elbow, [0.2, 0.075, 0.21], [0, -0.3, 0], cuff, 0.025);
-  const hand = new THREE.Group();
-  hand.position.y = -0.38;
-  elbow.add(hand);
-  box(hand, [0.135, 0.15, 0.085], [0, -0.02, 0], skin, 0.035);
-  for (const fingerX of [-0.045, -0.015, 0.015, 0.045])
-    box(hand, [0.027, 0.065, 0.06], [fingerX, -0.1, 0.005], skin, 0.012);
-  const thumb = box(hand, [0.05, 0.09, 0.065], [x < 0 ? 0.078 : -0.078, 0, 0.025], skin, 0.02);
-  thumb.rotation.z = x < 0 ? -0.5 : 0.5;
-  return { shoulder, elbow, hand };
+/** Solve the support arm to the bezel while retaining both real joint lengths. */
+function gripTablet(arm: ReturnType<typeof createTabletArm>, screen: THREE.Mesh, touch: number) {
+  const wrist = screen.localToWorld(new THREE.Vector3(0.29, -0.25, 0.035));
+  const shoulder = arm.shoulder.position;
+  const direction = wrist.clone().sub(shoulder);
+  const distance = THREE.MathUtils.clamp(direction.length(), 0.02, 0.769);
+  direction.normalize();
+  const pole = new THREE.Vector3(0, -1, -0.4);
+  pole.addScaledVector(direction, -pole.dot(direction)).normalize();
+  const along = (0.39 ** 2 - 0.38 ** 2 + distance ** 2) / (2 * distance);
+  const elbow = shoulder
+    .clone()
+    .addScaledVector(direction, along)
+    .addScaledVector(pole, Math.sqrt(Math.max(0, 0.39 ** 2 - along ** 2)));
+  const down = new THREE.Vector3(0, -1, 0);
+  arm.shoulder.quaternion.setFromUnitVectors(down, elbow.clone().sub(shoulder).normalize());
+  const forearm = new THREE.Quaternion().setFromUnitVectors(down, wrist.sub(elbow).normalize());
+  arm.elbow.quaternion.copy(arm.shoulder.quaternion).invert().multiply(forearm);
+  const hand = screen.getWorldQuaternion(new THREE.Quaternion());
+  hand.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(touch * 0.03, 0, Math.PI)));
+  arm.hand.quaternion.copy(forearm).invert().multiply(hand);
 }
 
 export function createTabletDisplay(name: string): THREE.CanvasTexture {
@@ -107,51 +108,57 @@ export function createTabletDisplay(name: string): THREE.CanvasTexture {
 export function createTabletRig(kind: DeveloperKind, texture: THREE.Texture) {
   const root = new THREE.Group();
   root.name = `first-person-${kind}`;
-  const cloth = material(kind === "girl" ? 0x65499d : 0x285e9f),
-    darkCloth = material(kind === "girl" ? 0x352550 : 0x193756);
-  const skin = material(0xd5a17e, 0, 0.66),
-    strap = material(0x142334);
-  const deviceMetal = material(0x334959, 0.8, 0.3),
-    lightMetal = material(0x8fa9b8, 0.65, 0.28);
-  const cyan = new THREE.MeshStandardMaterial({
-    color: 0x8beaff,
-    emissive: 0x34bfeb,
-    emissiveIntensity: 2,
-    roughness: 0.3,
-  });
-  const left = arm(root, 0.39, cloth, darkCloth, skin),
-    right = arm(root, -0.39, cloth, darkCloth, skin);
+  const cloth = material(kind === "girl" ? 0x47385e : 0x24485b, 0, 0.96),
+    darkCloth = material(kind === "girl" ? 0x241b34 : 0x102634, 0, 0.95);
+  cloth.map = darkCloth.map = sleeveWeave();
+  const skin = material(0xb98261, 0, 0.76),
+    nail = material(0xcda58a, 0, 0.63),
+    strap = material(0x101a22, 0, 0.9);
+  const deviceMetal = material(0x17232f, 0.65, 0.4),
+    lightMetal = material(0x526779, 0.7, 0.32);
+  const cyan = new THREE.MeshBasicMaterial({ color: 0x73d8e7, toneMapped: false });
+  const left = createTabletArm(root, 0.39, cloth, darkCloth, skin, nail),
+    right = createTabletArm(root, -0.39, cloth, darkCloth, skin, nail);
   left.shoulder.name = "tablet-shoulder";
   left.elbow.name = "tablet-forearm";
   const device = new THREE.Group();
   device.name = "wrist-tablet";
-  device.position.set(0, -0.22, 0.145);
+  device.position.set(0, -0.22, 0.125);
   device.rotation.set(-0.85, -0.6, Math.PI);
   left.elbow.add(device);
-  box(device, [0.64, 0.43, 0.075], [0, 0, 0], deviceMetal, 0.04);
-  box(device, [0.55, 0.35, 0.018], [0, 0, 0.045], strap, 0.018);
+  box(device, [0.585, 0.386, 0.022], [0, 0, 0], lightMetal, 0.018);
+  box(device, [0.575, 0.376, 0.012], [0, 0, 0.012], deviceMetal, 0.018);
+  box(device, [0.536, 0.344, 0.006], [0, 0, 0.021], strap, 0.012);
   const screenMaterial = new THREE.MeshBasicMaterial({ map: texture, color: 0xffffff, toneMapped: false });
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.51, 0.319), screenMaterial);
-  screen.position.z = 0.056;
+  screen.position.z = 0.025;
   screen.name = "tablet-screen";
   device.add(screen);
-  for (const x of [-0.29, 0.29])
-    for (const y of [-0.18, 0.18]) sphere(device, [0.013, 0.013, 0.008], [x, y, 0.041], lightMetal);
-  box(device, [0.11, 0.013, 0.012], [0, 0.19, 0.043], cyan, 0.004);
-  box(device, [0.025, 0.1, 0.018], [0.293, 0, 0.047], cyan, 0.007);
-  for (const y of [-0.09, 0.09]) box(device, [0.24, 0.055, 0.18], [0, y, -0.1], strap, 0.017);
-  const screenLight = new THREE.PointLight(0x5de5ff, 0, 1.3, 2);
-  screenLight.position.set(0, 0.16, 0.16);
+  sphere(device, [0.0045, 0.0045, 0.002], [0, 0.178, 0.02], strap);
+  box(device, [0.019, 0.003, 0.002], [-0.25, 0.178, 0.021], cyan, 0.001);
+  box(device, [0.004, 0.052, 0.009], [0.294, 0.035, 0], lightMetal, 0.002);
+  for (let i = 0; i < 4; i++) box(device, [0.002, 0.009, 0.008], [-0.294, -0.05 + i * 0.017, 0], strap, 0.001);
+  // The adjustable cradle meets two bands wrapped around the actual forearm.
+  box(device, [0.16, 0.17, 0.052], [0, 0, -0.033], deviceMetal, 0.015);
+  box(left.elbow, [0.06, 0.08, 0.04], [0, -0.235, 0.062], deviceMetal, 0.012);
+  for (const y of [-0.18, -0.28]) {
+    const band = new THREE.Mesh(new THREE.TorusGeometry(y === -0.18 ? 0.061 : 0.052, 0.009, 8, 40), strap);
+    band.rotation.x = Math.PI / 2;
+    band.position.y = y;
+    band.scale.y = 0.9;
+    left.elbow.add(band);
+  }
+  const screenLight = new THREE.PointLight(0x5de5ff, 0, 0.8, 2);
+  screenLight.position.set(0, 0.1, 0.09);
   device.add(screenLight);
 
   const pose = (motion: Motion) => {
     left.shoulder.rotation.set(-0.7 - motion.lift * 0.18, 0, -0.32);
     left.elbow.rotation.set(-0.7 - motion.lift * 0.12, 0, -0.1);
-    right.shoulder.rotation.set(-0.6 - motion.touch * 0.04, 0, 0.55);
-    right.elbow.rotation.set(-1.05 - motion.touch * 0.08, 0, 0.25);
-    right.hand.rotation.x = motion.touch * 0.15;
     screenMaterial.color.setScalar(0.16 + motion.screen * 0.84);
-    screenLight.intensity = motion.screen * 0.65;
+    screenLight.intensity = motion.screen * 0.15;
+    root.updateMatrixWorld(true);
+    gripTablet(right, screen, motion.touch);
     root.updateMatrixWorld(true);
   };
   return { root, eye: new THREE.Vector3(0, 1.84, -0.25), left, right, device, screen, pose };

@@ -5,11 +5,11 @@ import { createTabletDisplay, createTabletRig, type DeveloperKind } from "./tabl
 function cityStage(scene: THREE.Scene): void {
   scene.background = new THREE.Color(0x0c1c2c);
   scene.fog = new THREE.Fog(0x0c1c2c, 4, 15);
-  scene.add(new THREE.HemisphereLight(0xb9e8ff, 0x314662, 2.5));
-  const key = new THREE.DirectionalLight(0xffddbc, 3.3);
+  scene.add(new THREE.HemisphereLight(0xdce9f0, 0x344052, 1.6));
+  const key = new THREE.DirectionalLight(0xffdec7, 1.8);
   key.position.set(-3, 5, 4);
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0x51bfff, 4.2);
+  const rim = new THREE.DirectionalLight(0x78c8e0, 1.8);
   rim.position.set(3, 3, -3);
   scene.add(rim);
   const floor = new THREE.Mesh(
