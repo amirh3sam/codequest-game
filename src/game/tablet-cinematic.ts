@@ -1,62 +1,52 @@
-import * as THREE from "three";
+import { type DeveloperKind, TABLET_ART, tabletFrame } from "./tablet-frame";
 import { TABLET_SHOT_MS, tabletMotion } from "./tablet-motion";
-import { createTabletDisplay, createTabletRig, type DeveloperKind } from "./tablet-rig";
 
-function cityStage(scene: THREE.Scene): void {
-  scene.background = new THREE.Color(0x0c1c2c);
-  scene.fog = new THREE.Fog(0x0c1c2c, 4, 15);
-  scene.add(new THREE.HemisphereLight(0xdce9f0, 0x344052, 1.6));
-  const key = new THREE.DirectionalLight(0xffdec7, 1.8);
-  key.position.set(-3, 5, 4);
-  scene.add(key);
-  const rim = new THREE.DirectionalLight(0x78c8e0, 1.8);
-  rim.position.set(3, 3, -3);
-  scene.add(rim);
-  const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(40, 40),
-    new THREE.MeshStandardMaterial({ color: 0x1c3448, roughness: 0.7, metalness: 0.3 }),
-  );
-  floor.rotation.x = -Math.PI / 2;
-  scene.add(floor);
-  const shadow = new THREE.Mesh(
-    new THREE.CircleGeometry(0.5, 32),
-    new THREE.MeshBasicMaterial({ color: 0x071321, transparent: true, opacity: 0.42 }),
-  );
-  shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = 0.003;
-  shadow.scale.set(1, 0.8, 1);
-  scene.add(shadow);
-  const grid = new THREE.GridHelper(30, 30, 0x34738b, 0x274153);
-  grid.position.y = 0.002;
-  scene.add(grid);
-  const glass = new THREE.MeshStandardMaterial({ color: 0x244865, metalness: 0.58, roughness: 0.34 });
-  const trim = new THREE.MeshBasicMaterial({ color: 0x62cbdc });
-  for (const [x, z, height, width] of [
-    [-3, 3, 4.8, 2.4],
-    [2.9, 4, 6, 2.3],
-    [-5, 1, 3.2, 1.9],
-    [5, 1.8, 4, 2.2],
-  ]) {
-    if (x === undefined || z === undefined || height === undefined || width === undefined) continue;
-    const building = new THREE.Mesh(new THREE.BoxGeometry(width, height, 1.6), glass);
-    building.position.set(x, height / 2, z);
-    scene.add(building);
-    for (let y = 0.5; y < height; y += 0.6) {
-      const strip = new THREE.Mesh(new THREE.BoxGeometry(width * 0.83, 0.027, 0.02), trim);
-      strip.position.set(x, y, z - 0.82);
-      scene.add(strip);
-    }
-  }
-  const trail = new THREE.Mesh(new THREE.PlaneGeometry(0.035, 30), new THREE.MeshBasicMaterial({ color: 0x55cbe9 }));
-  trail.rotation.x = -Math.PI / 2;
-  trail.position.set(-1.2, 0.006, 0);
-  scene.add(trail);
-  const second = trail.clone();
-  second.position.x = 1.2;
-  scene.add(second);
+function display(name: string): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 500;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Tablet display needs a canvas");
+  ctx.fillStyle = "#091723";
+  ctx.fillRect(0, 0, 1024, 500);
+  ctx.fillStyle = "#1a3445";
+  ctx.fillRect(0, 0, 1024, 75);
+  ctx.font = "bold 22px monospace";
+  ctx.fillStyle = "#8ae5eb";
+  ctx.fillText("CODEQUEST / FIELD LINK", 32, 46);
+  ctx.font = "18px monospace";
+  ctx.fillStyle = "#b8d3df";
+  ctx.fillText(name.toUpperCase(), 735, 44, 255);
+  ctx.fillStyle = "#122837";
+  ctx.fillRect(0, 77, 205, 380);
+  ctx.font = "16px monospace";
+  ctx.fillStyle = "#799db1";
+  ctx.fillText("EXPLORER", 25, 122);
+  ctx.fillStyle = "#b0dce7";
+  for (const [i, item] of ["practice", "missions", "city guide"].entries()) ctx.fillText(item, 25, 177 + i * 45);
+  ctx.font = "20px monospace";
+  ctx.fillStyle = "#8ad8ef";
+  ctx.fillText("// Build, test, explore.", 245, 145);
+  ctx.fillStyle = "#c3deea";
+  ctx.font = "bold 27px monospace";
+  ctx.fillText("Your next idea starts here.", 245, 190);
+  ctx.fillStyle = "#8eafc0";
+  ctx.font = "18px monospace";
+  ctx.fillText("Opening your personal workspace", 245, 235);
+  ctx.fillStyle = "#294557";
+  ctx.fillRect(245, 278, 730, 2);
+  ctx.fillStyle = "#6ddcb7";
+  ctx.fillText("OUTPUT", 245, 320);
+  ctx.fillText("Ready to build.", 245, 360);
+  ctx.fillStyle = "#16364b";
+  ctx.fillRect(0, 452, 1024, 48);
+  ctx.fillStyle = "#a1cad8";
+  ctx.font = "16px monospace";
+  ctx.fillText("EDITOR     EXAMPLES     MISSIONS     GUIDE", 30, 483);
+  return canvas;
 }
 
-/** Short-lived WebGL scene. No model downloads, game state mutations or player code. */
+/** Illustrated foreground animation over the real city; no separate 3D scene. */
 export function playTabletCinematic(
   container: HTMLElement,
   kind: DeveloperKind,
@@ -66,39 +56,30 @@ export function playTabletCinematic(
   const canvas = document.createElement("canvas");
   canvas.className = "tablet-cinematic-canvas";
   canvas.setAttribute("aria-hidden", "true");
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "low-power" });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.4));
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
-  container.prepend(canvas);
-  const scene = new THREE.Scene();
-  cityStage(scene);
-  const rig = createTabletRig(kind, createTabletDisplay(name));
-  scene.add(rig.root);
-  const camera = new THREE.PerspectiveCamera(60, 1, 0.015, 40);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Tablet animation needs a 2D canvas");
+  const screen = display(name);
+  const art = new Image();
   container.dataset.view = "first-person";
-  const center = new THREE.Vector3(),
-    screenRotation = new THREE.Quaternion(),
-    normal = new THREE.Vector3(),
-    screenUp = new THREE.Vector3();
-  const end = new THREE.Vector3(),
-    target = new THREE.Vector3(),
-    forward = new THREE.Vector3(0, 1.65, 1.1);
+  container.dataset.renderer = "2d";
+  container.dataset.character = kind;
+  container.prepend(canvas);
+  let width = 1,
+    height = 1,
+    frame = 0,
+    disposed = false,
+    elapsed = 0,
+    previous = 0;
+  const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
   const resize = () => {
-    const width = Math.max(1, container.clientWidth),
-      height = Math.max(1, container.clientHeight);
-    renderer.setSize(width, height, false);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
+    width = Math.max(1, container.clientWidth);
+    height = Math.max(1, container.clientHeight);
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(height * ratio);
   };
   const observer = new ResizeObserver(resize);
   observer.observe(container);
   resize();
-  let frame = 0,
-    disposed = false,
-    elapsed = 0,
-    previous = performance.now();
   const visibility = () => {
     previous = performance.now();
   };
@@ -107,33 +88,21 @@ export function playTabletCinematic(
     if (disposed) return;
     disposed = true;
     cancelAnimationFrame(frame);
+    clearTimeout(loadTimer);
     observer.disconnect();
     document.removeEventListener("visibilitychange", visibility);
-    canvas.removeEventListener("webglcontextlost", contextLost);
-    const geometries = new Set<THREE.BufferGeometry>(),
-      materials = new Set<THREE.Material>(),
-      textures = new Set<THREE.Texture>();
-    scene.traverse((node) => {
-      if (!(node instanceof THREE.Mesh) && !(node instanceof THREE.LineSegments)) return;
-      geometries.add(node.geometry);
-      for (const surface of Array.isArray(node.material) ? node.material : [node.material]) {
-        materials.add(surface);
-        if ("map" in surface && surface.map instanceof THREE.Texture) textures.add(surface.map);
-      }
-    });
-    for (const geometry of geometries) geometry.dispose();
-    for (const surface of materials) surface.dispose();
-    for (const texture of textures) texture.dispose();
-    renderer.dispose();
-    renderer.forceContextLoss();
+    canvas.removeEventListener("contextlost", fail);
+    art.onload = art.onerror = null;
+    canvas.width = canvas.height = 1;
     canvas.remove();
   };
-  const contextLost = (event: Event) => {
-    event.preventDefault();
+  const fail = () => {
+    if (disposed) return;
     dispose();
     done();
   };
-  canvas.addEventListener("webglcontextlost", contextLost);
+  canvas.addEventListener("contextlost", fail);
+  const loadTimer = window.setTimeout(fail, 6000);
   const animate = (now: number) => {
     if (disposed) return;
     if (!container.isConnected) {
@@ -143,22 +112,30 @@ export function playTabletCinematic(
     if (!document.hidden) elapsed += Math.max(0, now - previous);
     previous = now;
     const motion = tabletMotion(elapsed);
+    const pose = tabletFrame(width, height, motion);
     container.dataset.phase = motion.phase;
-    container.dataset.character = kind;
     canvas.style.opacity = String(motion.reveal);
-    rig.pose(motion);
-    rig.screen.getWorldPosition(center);
-    rig.screen.getWorldQuaternion(screenRotation);
-    normal.set(0, 0, 1).applyQuaternion(screenRotation);
-    screenUp.set(0, 1, 0).applyQuaternion(screenRotation);
-    const distance =
-      (Math.min(0.51 / camera.aspect, 0.319) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))) * 0.97;
-    end.copy(center).addScaledVector(normal, distance);
-    camera.position.copy(rig.eye).lerp(end, motion.enter);
-    camera.up.set(0, 1, 0).lerp(screenUp, motion.enter).normalize();
-    target.lerpVectors(forward, center, motion.gaze);
-    camera.lookAt(target);
-    renderer.render(scene, camera);
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    ctx.save();
+    ctx.translate(pose.x, pose.y);
+    ctx.rotate(pose.angle);
+    ctx.scale(pose.scale, pose.scale);
+    ctx.translate(-pose.pivotX, -pose.pivotY);
+    ctx.drawImage(art, 0, 0, TABLET_ART.width, TABLET_ART.height);
+    const area = TABLET_ART.screen;
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(area.x, area.y, area.width, area.height, 14);
+    ctx.clip();
+    ctx.fillStyle = "#091723";
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+    ctx.globalAlpha = motion.screen;
+    ctx.drawImage(screen, area.x, area.y, area.width, area.height);
+    ctx.fillStyle = "#74e1c4";
+    ctx.fillRect(area.x + area.width * 0.24, area.y + area.height * 0.79, area.width * 0.64 * motion.screen, 3);
+    ctx.restore();
+    ctx.restore();
     if (elapsed >= TABLET_SHOT_MS) {
       dispose();
       done();
@@ -166,6 +143,14 @@ export function playTabletCinematic(
     }
     frame = requestAnimationFrame(animate);
   };
-  frame = requestAnimationFrame(animate);
+  art.onload = () => {
+    if (disposed) return;
+    clearTimeout(loadTimer);
+    container.dataset.artReady = "true";
+    previous = performance.now();
+    frame = requestAnimationFrame(animate);
+  };
+  art.onerror = fail;
+  art.src = TABLET_ART.url;
   return dispose;
 }

@@ -1,5 +1,14 @@
 # Progress log (newest on top)
 
+## 2026-10-22 (illustrated 2D wrist animation)
+
+- **Done:** replaced the 3D hands and wrist model with an original transparent 2D illustration of a hoodie sleeve, natural hand and attached wrist tablet. Canvas 2D raises, settles and rotates the illustrated foreground, draws the player's display inside the bezel and zooms into the full-screen editor. The real city camera still approaches the character. The editor, Run button and output share the existing page.
+- **Lifecycle:** T/Skip and Esc remain available; reduced motion opens the editor instantly. Missing artwork or an unavailable animation canvas opens the workspace directly. Closing during delayed module/image loading cannot reopen it. Temporary canvas, frame loop, listeners and observers are released.
+- **Checks:** 213 unit tests and all 13 focused Chromium cases passed. Coverage includes all four practice languages, both 2D openings, responsive screen-entry geometry, phone layout, worker cancellation, saved drafts, mission navigation, interrupted drone delivery/camera recovery, missing art, delayed loads and canvas fallback. Lint, types and production build passed; production test hooks are absent.
+- **Art/media:** saved the generated RGBA sprite and exact built-in image-tool prompt in [the tablet asset directory](../public/assets/tablet/ARTWORK.md). Inspected the actual animated frame with the live display correctly inside its bezel, and replaced the opening screenshot/video. Capture now advances rendered frames so the city zoom appears in the image.
+- **Dependencies:** removed Three.js, its types and both obsolete rig files. The animation module is now 3.90 kB (1.83 kB gzip); its 1.62 MB illustrated PNG loads on demand. No changes to saves or grading.
+- **Release:** publishing and public verification follow this implementation entry.
+
 ## 2026-10-22 (slim wrist-device model)
 
 - **Done:** replaced the bulky 3D arms and illuminated casing with fitted woven hoodie sleeves, shaped hands, continuous curled fingers, a slim metal tablet, small bezel controls, a rear cradle and two bands around the forearm. The supporting arm now follows the bezel through a joint-length-preserving pose. Softened lighting keeps skin and cloth readable. The approved camera movement, three-second timing and editor/output layout retain their behavior.

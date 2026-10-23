@@ -1,4 +1,4 @@
-import type { DeveloperKind } from "../game/tablet-rig";
+import type { DeveloperKind } from "../game/tablet-frame";
 import { button, el } from "./dom";
 
 /** Own the temporary canvas and the city camera across skip, close and late imports. */

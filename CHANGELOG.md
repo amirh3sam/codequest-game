@@ -4,14 +4,13 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ## [Unreleased]
 ### Changed
-- Redesigned the first-person 3D model with a slim metal tablet, small bezel controls, fitted woven sleeves, shaped hands with continuous curved fingers and two forearm bands. The supporting arm follows the bezel with connected joints; camera movement and the coding workspace retain their current behavior.
+- Replaced the 3D wrist model with an illustrated 2D animation: a hoodie sleeve, natural hand and strapped tablet lift into view, settle and zoom into the workspace. The personal display is drawn live inside the bezel. Missing artwork or canvas support opens the workspace directly; Three.js and the old model code have been removed.
 - Tablet opening now zooms toward the city character, switches to their first-person view of the attached wrist display, then enters the workspace in three seconds. Replaced the third-person character shot.
 - Practice code, Run and output now stay on one page, with results below the editor. The Console tab offers a larger view of the same output; running no longer switches away from the code.
 ### Fixed
 - Very quick E/Space presses now open nearby terminals directly on key-down, so an interaction is retained even when key-up arrives before the next rendered frame.
 - Developer walking no longer draws standing legs under the animated legs. Each pose now separates two complete leg layers, preserves the original shoes, removes detached edge fragments and keeps the laptop/backpack on the body. Added a browser regression covering all 48 boy/girl walking frames.
 ### Added
-- Original 3D wrist-tablet cinematic: the city camera approaches the character, articulated arms lift the device, the head turns toward its screen, and a perspective camera enters the full-screen workspace. Supports both developers, skipping, early closing, reduced motion and unavailable 3D contexts; the temporary WebGL scene is disposed after use.
 - Missions and Guide tabs inside the tablet, with graded tasks retaining the device frame and a Tablet home control. Existing four-language practice, mission rules and saves remain in place.
 - Explicit browser-local save copy and an independent-player browser test: two people using the same URL in separate browser profiles retain different characters, progress and tablet drafts through reload.
 - Current gameplay, drone-lesson, repair-editor and tablet screenshots in the README, with a reproducible browser capture script. Removed the four unrelated planning mockups.

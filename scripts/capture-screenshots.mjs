@@ -72,7 +72,8 @@ try {
   await page.clock.pauseAt(new Date("2026-10-22T12:00:01Z"));
   await page.keyboard.press("t");
   await page.locator(".tablet-cinematic-canvas").waitFor({ timeout: 15_000 });
-  await page.clock.fastForward(1450);
+  await page.locator('.tablet-cinematic[data-art-ready="true"]').waitFor({ timeout: 15_000 });
+  await page.clock.runFor(1450);
   await page.screenshot({ path: `${directory}/tablet-cinematic.png` });
   await page.clock.fastForward(2500);
   await page.getByRole("dialog", { name: "Developer tablet", exact: true }).waitFor({ timeout: 20_000 });

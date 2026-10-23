@@ -6,7 +6,6 @@ Only free assets and libraries with licenses that allow our use.
 | Name | License | Link |
 |---|---|---|
 | Phaser 4 | MIT | https://phaser.io |
-| Three.js 0.186.1 | MIT | https://threejs.org/ |
 | Vite | MIT | https://vite.dev |
 | TypeScript | Apache-2.0 | https://www.typescriptlang.org |
 | Vitest | MIT | https://vitest.dev |
@@ -22,7 +21,8 @@ _Planned (added when installed): CodeMirror 6 (MIT)._
 ## Art & audio
 | Pack | License | Use | Source |
 |---|---|---|---|
-| CodeQuest native objects and interface | Project source | Delivery drone, courier parcel, solid lane/gates, battery lesson, original first-person 3D arms and wrist device, and full-screen tablet workspace | Phaser Graphics, procedural Three.js geometry and HTML/CSS in `src/game/`, `src/ui/` and `src/style.css`. No external character models or game footage. |
+| CodeQuest native objects and interface | Project source | Delivery drone, courier parcel, solid lane/gates, battery lesson, animated 2D tablet display and full-screen workspace | Phaser Graphics, Canvas 2D and HTML/CSS in `src/game/`, `src/ui/` and `src/style.css`. |
+| CodeQuest wrist-tablet illustration | Generated project artwork | Transparent illustrated forearm, hand, hoodie sleeve and attached wrist device for the 2D opening | Built-in image-generation tool; [asset and exact prompt](../public/assets/tablet/ARTWORK.md). |
 | CodeQuest tech city artwork | Generated project artwork | Hoodie developers with laptops/backpacks, city ground, street trees, utility cabinets, rails, coding terminals, digital guide and Firewall core | Built-in image-generation tool; [assets and prompts](../public/assets/tech-city/ARTWORK.md) |
 | CodeQuest adventure artwork | Generated project artwork | Armored warriors, painted outpost, treasure chests, scroll and Gatekeeper | Built-in image-generation tool; [assets and prompts](../public/assets/adventure/ARTWORK.md) |
 | Kenney Tiny Town 1.1 | CC0 1.0 | Village tiles and scenery | https://kenney.nl/assets/tiny-town |

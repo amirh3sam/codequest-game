@@ -71,7 +71,9 @@ test("closing a running tablet program cancels it and permits another run", asyn
 });
 
 for (const kind of ["boy", "girl"] as const) {
-  test(`${kind}: a first-person wrist view enters the full-screen tablet, then restores walking`, async ({ page }) => {
+  test(`${kind}: an illustrated 2D wrist view enters the full-screen tablet, then restores walking`, async ({
+    page,
+  }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -82,6 +84,8 @@ for (const kind of ["boy", "girl"] as const) {
     await expect(page.locator(".tablet-cinematic-canvas")).toBeVisible({ timeout: 15_000 });
     await expect(page.locator(".tablet-cinematic")).toHaveAttribute("data-character", kind);
     await expect(page.locator(".tablet-cinematic")).toHaveAttribute("data-view", "first-person");
+    await expect(page.locator(".tablet-cinematic")).toHaveAttribute("data-renderer", "2d");
+    await expect(page.locator(".tablet-cinematic")).toHaveAttribute("data-art-ready", "true");
     await expect
       .poll(() =>
         page.evaluate(() => (window as unknown as Harness).__codequest.game.scene.getScene("boot").cameras.main.zoom),
@@ -144,7 +148,7 @@ test("tablet animation can be skipped or closed before its module arrives withou
   ).toBe(1);
 });
 
-test("the workspace remains usable when a 3D context is unavailable", async ({ page }) => {
+test("the workspace remains usable when a 2D animation context is unavailable", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext;
@@ -157,6 +161,34 @@ test("the workspace remains usable when a 3D context is unavailable", async ({ p
   await page.keyboard.press("t");
   await expect(page.getByLabel("Practice code", { exact: true })).toBeVisible({ timeout: 15_000 });
   await expect(page.locator(".tablet-cinematic")).toHaveCount(0);
+});
+
+test("missing illustration opens the workspace, and late image loading never reopens a closed tablet", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  let fail = true;
+  await page.route("**/assets/tablet/wrist-tablet-2d.png", async (route) => {
+    if (fail) await route.abort();
+    else {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      await route.continue();
+    }
+  });
+  await start(page);
+  await page.keyboard.press("t");
+  await expect(page.getByLabel("Practice code", { exact: true })).toBeVisible({ timeout: 15_000 });
+  await page.keyboard.press("Escape");
+  fail = false;
+  await page.keyboard.press("t");
+  await expect(page.locator(".tablet-cinematic-canvas")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(1100);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.locator(".tablet-cinematic-canvas")).toHaveCount(0);
+  expect(
+    await page.evaluate(() => (window as unknown as Harness).__codequest.game.scene.getScene("boot").cameras.main.zoom),
+  ).toBe(1);
 });
 
 test("missions and guides are usable inside the device and graded tasks retain its frame", async ({ page }) => {

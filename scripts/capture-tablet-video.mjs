@@ -28,7 +28,7 @@ try {
   if (!video) throw new Error("Browser video was unavailable");
   await video.saveAs(`${directory}/tablet-opening.webm`);
   if (errors.length) throw new Error(errors.join("\n"));
-  console.log("Recorded the real 3D tablet opening to docs/screenshots/tablet-opening.webm.");
+  console.log("Recorded the illustrated 2D tablet opening to docs/screenshots/tablet-opening.webm.");
 } finally {
   await browser.close();
 }

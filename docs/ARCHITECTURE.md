@@ -1,6 +1,6 @@
 # CodeQuest — Architecture
 
-_Last updated: 2026-10-22 · Three.js and Vite versions checked on npm 2026-10-22_
+_Last updated: 2026-10-22 · Illustrated 2D wrist-tablet animation_
 
 ## 1. Stack
 | Area | Pick (version) | Why |
@@ -8,7 +8,7 @@ _Last updated: 2026-10-22 · Three.js and Vite versions checked on npm 2026-10-2
 | Language | TypeScript 7.0.2 | Types catch bugs early; TS 7 (Go compiler) is the fast, current stable. |
 | Build / dev server | Vite 8.3.5 | Standard dev server and browser-game build, with worker/WASM support and current fixes for the 8.3 development-server advisories. |
 | Game engine | Phaser 4.2.1 (MIT) | Most-used free 2D web game engine; built-in Tiled tilemaps, arcade physics, sprite animation. |
-| Tablet cinematic | Three.js 0.186.1 (MIT), loaded only when its animation is requested | Three-second city zoom and first-person wrist view: procedural arms/device, a camera at the wearer's eyes looking down, then entry into the screen. Phaser owns the city and movement; DOM code, Run and output share one workspace. |
+| Tablet animation | Canvas 2D and an original illustrated foreground sprite, loaded only when requested | Three-second city zoom, wrist lift, settle and screen entry. A live canvas display sits inside the illustrated bezel; a viewport-aware transform fills the screen before opening the DOM editor. Missing art/canvas opens the workspace directly; closing releases the temporary canvas. |
 | Maps | Tiled editor (free) → `.tmj` JSON | Industry-standard free map editor that Phaser loads natively. |
 | UI panels (menus, scroll, task editor, HUD) | Plain TypeScript + HTML/CSS over the canvas | Text-heavy UI is easier and more accessible in DOM than in canvas; no extra framework needed. |
 | Code editor | CodeMirror 6 (`codemirror` 6.0.2, `@codemirror/lang-java` 6.0.2, `lang-javascript` 6.2.5, `lang-python` 6.2.1) | Light, accessible, syntax highlighting for all 4 languages. |
@@ -20,7 +20,7 @@ _Last updated: 2026-10-22 · Three.js and Vite versions checked on npm 2026-10-2
 | End-to-end tests | Playwright 1.63.0 | Drives a real browser: needed to test WASM runners and the canvas game. |
 | Lint + format | Biome 2.5.15 | One fast tool for both lint and format instead of ESLint + Prettier. |
 | Save | `localStorage` (versioned JSON) | No server, no login; enough for MVP. |
-| Art | Generated tech-city assets, retained Kenney CC0 sprites and native Phaser/CSS objects | Hoodie developers, transparent city objects and coding terminals; the drone, gates and tablet use code-native drawing. See [current screenshots](screenshots/README.md). |
+| Art | Generated tech-city and wrist-tablet assets, retained Kenney CC0 sprites and native Phaser/CSS objects | Hoodie developers, transparent city objects, terminals and a 2D illustrated wrist display. The drone and gates use native drawing. See [current screenshots](screenshots/README.md). |
 | CI | GitHub Actions | Free for private repos within monthly minutes. |
 
 ## 2. Diagram

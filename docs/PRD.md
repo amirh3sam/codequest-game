@@ -6,8 +6,8 @@ Current direction: the public release includes Variable District and Logic
 Junction in all four languages. The user's latest priority is deeper education
 and enjoyable gameplay, with code visibly repairing the city. The stranded-drone
 pilot in [GAME-DESIGN.md](GAME-DESIGN.md) now connects guided practice to a world
-repair. The developer tablet now opens through a short original 3D sequence:
-city camera zoom, first-person view looking down at the wearer's wrist tablet,
+repair. The developer tablet now opens through a short illustrated 2D animation:
+city camera zoom, a wrist tablet lifting into view and settling,
 then a move into the full-screen workspace. Code, Run and output share one page,
 with results below the editor. Its tabs hold practice code, examples,
 console output, mission status and the district guide. Missions use the existing

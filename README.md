@@ -12,9 +12,9 @@ Start with **Mission** to meet Kai. The guided drone lesson lets you predict, ru
 
 ![The actual drone lesson with a working code example, prediction choices and battery meter](docs/screenshots/drone-lesson.png)
 
-Press **T** or click **Tablet**: the city camera zooms toward your developer, switches to their first-person view looking down at the tablet attached to their wrist, then enters its screen. The opening takes three seconds. Press **T** or **Skip animation** to jump ahead. Reduced motion opens it instantly.
+Press **T** or click **Tablet**: the city camera zooms toward your developer, then an illustrated **2D wrist tablet** lifts into view, settles and zooms into its screen. The opening takes three seconds. Press **T** or **Skip animation** to jump ahead. Reduced motion opens it instantly.
 
-![The slim wrist tablet with fitted hoodie sleeves and a supporting hand, seen through the developer's eyes](docs/screenshots/tablet-cinematic.png)
+![The illustrated 2D wrist tablet during its opening animation](docs/screenshots/tablet-cinematic.png)
 
 [Watch the actual tablet opening](docs/screenshots/tablet-opening.webm).
 

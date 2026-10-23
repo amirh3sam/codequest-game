@@ -1501,6 +1501,8 @@ small {
   z-index: 5;
   inset: 0;
   overflow: hidden;
+  background: radial-gradient(ellipse at 50% 65%, #122c3a44, #07111cbb);
+  backdrop-filter: blur(4px);
 }
 .tablet-cinematic-canvas {
   position: absolute;
