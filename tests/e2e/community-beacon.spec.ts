@@ -126,11 +126,11 @@ test("beacon has a solid base, a prerequisite and a reachable path around it", a
   await expect(page.getByLabel("Beacon code", { exact: true })).toHaveCount(0);
   await page.keyboard.press("Escape");
   await page.keyboard.down("d");
-  await page.waitForTimeout(450);
+  await expect.poll(async () => (await position()).x).toBeGreaterThan(906);
   await page.keyboard.up("d");
   expect((await position()).x).toBeGreaterThan(900);
   await page.keyboard.down("w");
-  await page.waitForTimeout(500);
+  await expect.poll(async () => (await position()).y).toBeLessThan(280);
   await page.keyboard.up("w");
   expect((await position()).y).toBeLessThan(280);
 });

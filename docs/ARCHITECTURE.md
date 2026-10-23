@@ -1,6 +1,6 @@
 # CodeQuest — Architecture
 
-_Last updated: 2026-10-22 · Community beacon discovery and sound effects_
+_Last updated: 2026-10-23 · Adventure library, distinct district layout and layered sound effects_
 
 ## 1. Stack
 | Area | Pick (version) | Why |
@@ -20,6 +20,7 @@ _Last updated: 2026-10-22 · Community beacon discovery and sound effects_
 | End-to-end tests | Playwright 1.63.0 | Drives a real browser: needed to test WASM runners and the canvas game. |
 | Lint + format | Biome 2.5.15 | One fast tool for both lint and format instead of ESLint + Prettier. |
 | Save | `localStorage` (versioned JSON) | No server, no login; enough for MVP. |
+| Adventure library | `core/adventures.ts`, `codequest:adventures:v1` | Multiple UUID-keyed version-1 game states. Atomic library writes preserve other adventures; older language slots are imported on read and retained. |
 | Sound effects | Native Web Audio oscillators and gain envelopes | Original short cues, one context created after a user gesture, bounded voices and cadence, saved mute preference, hidden-tab suspension. Phaser's unused sound manager is disabled. |
 | Art | Generated tech-city and wrist-tablet assets, retained Kenney CC0 sprites and native Phaser/CSS objects | Hoodie developers, transparent city objects, terminals and a 2D illustrated wrist display. The drone and gates use native drawing. See [current screenshots](screenshots/README.md). |
 | CI | GitHub Actions | Free for private repos within monthly minutes. |
@@ -111,6 +112,7 @@ type Boss = Omit<Task, "difficulty"> & { name: string; hints: { cost: 1 | 2 | 3;
 ```ts
 type Save = {
   version: 1; lang: "java" | "javascript" | "typescript" | "python";
+  adventureId?: string; // UUID for new adventures; deterministic legacy-<lang> for imports
   hero: { kind: "boy" | "girl"; name: string };
   currentArea: string; position?: { x: number; y: number };
   discoveries?: { beacon?: "garden" | "arcade" };
@@ -123,6 +125,23 @@ type Save = {
 ```
 Gems are stored per area: an area reset removes only that area's gems, and gems can only be spent on that area's boss.
 
+The primary library is `codequest:adventures:v1`, containing `{version: 1,
+adventures: GameState[]}` with unique validated adventure IDs. `loadAdventures`
+merges valid older language slots without writing to storage. `saveAdventure`
+validates the entire existing library before atomically updating one adventure.
+Corrupt/future libraries and unreadable legacy slots are preserved. The UI keeps
+the latest valid per-language slot as a compatibility snapshot; the library is
+the source for choosing any adventure. A new UUID creates another save without
+confirmation or replacement. The tablet uses `codequest:tablet:v2:<adventureId>`;
+only imported legacy adventures fall back to their older per-language draft.
+
+`district-layout.ts` defines independent entrances, walk bounds, terminal routes,
+lesson and boss positions. Variable District retains its campus. Logic Junction
+uses original skyrail artwork, a transparent routing-hub sprite and relocated
+solid props. District changes destroy the previous scenery and its tweens,
+reposition live markers/collision shapes and validate saved coordinates against
+the new layout. Out-of-bounds legacy positions return to the district entrance.
+
 The optional `discoveries` field is additive: existing version-1 saves remain valid.
 The beacon accepts only `garden` or `arcade`; malformed known discovery fields are
 rejected before overwriting a save. `lightBeacon` requires the repaired drone (or
@@ -133,11 +152,12 @@ a receipt tied to the current code and selection before allowing activation.
 Closing or changing either invalidates that receipt. Output is the acceptance
 criterion; the free activity does not enforce a particular source-code syntax.
 
-Sound preference is separate from progress at `codequest:audio:v1` (`on` or
-`muted`). The audio module creates one native context on a trusted gesture,
-limits concurrent voices, stops active notes when muted or hidden, and resumes
-after another interaction. Unsupported audio and unavailable preference storage
-leave the game playable.
+Sound preferences are separate from progress at `codequest:audio:v1` (`on` or
+`muted`) and `codequest:volume:v1` (0–1). One native context unlocks on a trusted
+gesture. Cached noise buffers, filters, low impact tones and bell partials make
+textured footsteps, tactile clicks, swishes and richer result cues. Voices and
+cadence are bounded; active audio stops when muted or hidden. Unsupported audio
+and unavailable preference storage leave gameplay intact.
 
 ### Implemented core API
 

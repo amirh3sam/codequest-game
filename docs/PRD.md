@@ -1,6 +1,6 @@
 # CodeQuest — Product Requirements (PRD)
 
-_Last updated: 2026-10-22 · Status: two districts and the first adventure-learning pilot playable_
+_Last updated: 2026-10-23 · Status: multiple adventures, distinct districts and revised audio_
 
 Current direction: the public release includes Variable District and Logic
 Junction in all four languages. The user's latest priority is deeper education
@@ -17,7 +17,11 @@ scope below describe the original requirements and will be revised as that
 redesign is implemented. Existing heart, reward and save rules remain the pilot's
 baseline.
 
-Personal saves belong to the browser profile used to play, separated by language.
+Personal saves belong to the browser profile used to play. The adventure library
+supports multiple named journeys in any language, including several in one
+language. Switching through Menu → Switch adventure preserves each hero's
+missions, discoveries and tablet draft. New adventures never replace old ones.
+Older per-language saves remain available through automatic library import.
 The shared Vercel URL serves the game assets; it does not serve a shared player
 character or save. Separate players' browser profiles keep independent heroes,
 missions and tablet drafts. Progress is not synchronized across devices.
@@ -47,7 +51,7 @@ Beginners find programming tutorials dry and quit early. Reading theory without 
 - Paid anything.
 
 ## 5. Game loop (summary)
-1. **Pick a language**: Java, JavaScript, TypeScript or Python. Each language has its own save.
+1. **Pick a language**: Java, JavaScript, TypeScript or Python. Each adventure has its own save; multiple adventures can use the same language.
 2. **Pick a hero**: boy or girl.
 3. **Name the hero** (or press the dice button to get a random name).
 4. **World map:** 7 areas from easy to hard, each locked until the previous boss is defeated:
@@ -75,7 +79,7 @@ Beginners find programming tutorials dry and quit early. Reading theory without 
 - US-7 As a learner, I lose hearts for wrong answers, so I think before submitting.
 - US-8 As a learner, I keep my progress when I close the browser.
 - US-9 As a learner, losing all hearts only restarts the area I'm in, not the whole game.
-- US-10 As a learner, I can switch to another language and keep separate progress for each.
+- US-10 As a learner, I can switch between multiple saved adventures in the same or different languages, keeping separate progress and practice drafts.
 
 ## 7. MVP scope
 **In:** all 4 languages selectable; hero + name; title / continue screen; world map with 7 area nodes (areas 3–7 shown locked "coming soon"); **areas 1 and 2 fully playable in all 4 languages** (scroll + 8 tasks + boss each = 64 tasks + 8 bosses); in-browser runners for all 4 languages; hearts, gems, boss hints; browser save; keyboard controls; free pixel-art assets.
@@ -86,7 +90,7 @@ Beginners find programming tutorials dry and quit early. Reading theory without 
 
 **FR-1 Language selection**
 - Given I'm on the start screen, When I choose "New game", Then I see Java, JavaScript, TypeScript and Python cards with a one-line description.
-- Given I pick a language that already has a save, When I select it, Then I'm asked "Continue" or "Start new" (new requires confirmation).
+- Given I pick a language that already has saves, When I select it, Then I can continue the latest adventure, open the full library, or start another without replacing earlier adventures.
 
 **FR-2 Hero selection**
 - Given I picked a language, When the hero screen opens, Then I can choose a boy or girl hero with a preview sprite.
@@ -140,7 +144,7 @@ Beginners find programming tutorials dry and quit early. Reading theory without 
 **FR-14 Save and load**
 - Given I make progress, When a task, hint purchase, heart change or area change happens, Then the game auto-saves to the browser.
 - Given I reload the page, When I choose Continue, Then I return to the same area with the same hearts, gems, solved tasks and hero.
-- Each language has its own save slot. A broken or old-version save is detected and I'm offered "Start new" instead of crashing.
+- Each adventure has its own ID and saved state. Multiple adventures can use one language; starting another preserves all existing journeys. Broken or future-version data is preserved and reported without crashing or overwriting the library.
 
 **FR-15 HUD and pause**
 - Given I'm in an area, Then the HUD shows the hero name, hearts, gems, area name and task progress (e.g. 3/8).

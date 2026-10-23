@@ -4,7 +4,13 @@
 
 A 2D adventure game that teaches programming in a modern tech city. Pick **Java, JavaScript, TypeScript or Python**, choose a hoodie developer, and help Kai repair a delivery drone. Predict a battery value, experiment with real code, then submit a repair to open a city lane. Explore two districts, solve coding terminals and challenge the Firewall and Router. Your code runs in the browser, with no account.
 
-> Status: **Two districts are playable in all four languages.** Walk with WASD/arrows and press E to interact. Complete eight missions and the Firewall in Variable District to unlock Logic Junction, with eight conditions missions and the Router. Travel between unlocked districts through Menu → World map. Progress saves automatically for each language. Areas 3–7 are coming next. See [docs/ROADMAP.md](docs/ROADMAP.md).
+> Status: **Two distinct districts are playable in all four languages.** Walk with WASD/arrows and press E to interact. Complete eight missions and the Firewall in Variable District to unlock Logic Junction's elevated skyrail plaza, with its own scenery, terminal route, solid control hub and Router. Travel between unlocked districts through Menu → World map. Areas 3–7 are coming next. See [docs/ROADMAP.md](docs/ROADMAP.md).
+
+Keep **multiple saved adventures**, including several in the same language. Use **Menu → Switch adventure** or **Your adventures** on the title screen to resume a hero. Starting another adventure preserves the others; progress, event choices and tablet drafts stay separate. Existing language saves appear in the library automatically.
+
+![Saved adventures with separate heroes and languages](docs/screenshots/adventure-library.png)
+
+![Logic Junction's skyrail plaza and solid routing-control hub](docs/screenshots/logic-junction.png)
 
 ![CodeQuest gameplay: hoodie developer, Kai the courier and coding terminals in the modern tech city](docs/screenshots/tech-city.png)
 
@@ -14,7 +20,7 @@ After repairing the drone, find the **community beacon** beside the courier lane
 
 ![Mina's optional community beacon with a chosen event, working code and live preview](docs/screenshots/community-beacon.png)
 
-Sound effects accompany walking, buttons, tablet opening, code results, deliveries and celebrations. Use **Sound on/off** on the title screen or game toolbar; the preference stays on this device. Audio starts after an interaction and stops when the tab is hidden.
+Sound effects include textured footsteps, tactile clicks, tablet swishes, soft error knocks and layered completion chimes. Set **Effects volume** in **Menu**, or use **Sound on/off** on the title screen or toolbar. Both settings stay on this device. Audio starts after an interaction and stops when the tab is hidden.
 
 ![The actual drone lesson with a working code example, prediction choices and battery meter](docs/screenshots/drone-lesson.png)
 
@@ -24,7 +30,7 @@ Press **T** or click **Tablet**: the city camera zooms toward your developer, th
 
 [Watch the actual tablet opening](docs/screenshots/tablet-opening.webm).
 
-The full-screen tablet holds Editor, Examples, Console, Missions and Guide tabs. The editor, Run button and output stay together on one page, with results below your code. Keep a separate practice draft for each language, or open your current missions inside the device. Free practice never spends hearts or awards gems; mission submissions keep their normal grading rules. Press **Esc** to return to the city.
+The full-screen tablet holds Editor, Examples, Console, Missions and Guide tabs. The editor, Run button and output stay together on one page, with results below your code. Each adventure has its own practice draft, and its missions open inside the device. Free practice never spends hearts or awards gems; mission submissions keep their normal grading rules. Press **Esc** to return to the city.
 
 ![The in-game tablet showing practice code and its real output together](docs/screenshots/developer-tablet.png)
 

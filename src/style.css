@@ -1704,3 +1704,48 @@ small {
     grid-template-columns: 1fr;
   }
 }
+.adventure-library {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.adventure-card {
+  padding: 20px;
+  border: 1px solid #69d8ff45;
+  border-radius: 14px;
+  background: linear-gradient(140deg, #18344d, #101b2c);
+  display: grid;
+  gap: 10px;
+}
+.adventure-card h3,
+.adventure-card p {
+  margin: 0;
+}
+.adventure-card .sprite {
+  width: 48px;
+  height: 58px;
+}
+.adventure-card small {
+  color: #a7c4d8;
+}
+.adventure-library-link {
+  margin-bottom: 14px;
+}
+.sound-settings {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.sound-settings label {
+  grid-column: 1 / -1;
+  color: var(--muted);
+}
+.sound-settings input {
+  width: 100%;
+  accent-color: #81d8e8;
+}

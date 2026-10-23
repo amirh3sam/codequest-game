@@ -2,11 +2,12 @@ import Phaser from "phaser";
 import type { AreaContent } from "../../content/schema";
 import village from "../../content/village.json" with { type: "json" };
 import { canFightBoss, canSolveTask, type GameState, type Position } from "../../core/state";
-import { buildAdventureWorld } from "../adventure-world";
+import { buildAdventureWorld, type DistrictWorld } from "../adventure-world";
 import { SPRITES, TILESETS } from "../assets";
 import { gameAudio } from "../audio";
 import { canStandAt, moveWithCollisions, type Solid } from "../collision";
 import { CommunityBeacon } from "../community-beacon";
+import { districtLayout } from "../district-layout";
 import { DroneQuest } from "../drone-quest";
 import { createHeroTextures, type Facing, heroFrame } from "../hero-sprites";
 import { createQuestProps } from "../quest-props";
@@ -22,6 +23,7 @@ type Marker = {
   glow: Phaser.GameObjects.Arc;
   group: Phaser.GameObjects.Container;
   plate: Phaser.GameObjects.Graphics | null;
+  shadow: Phaser.GameObjects.Ellipse;
 };
 export type VillageCallbacks = {
   interact(id: string): void;
@@ -38,6 +40,7 @@ export class BootScene extends Phaser.Scene {
   private districtLabel!: Phaser.GameObjects.Text;
   private droneQuest!: DroneQuest;
   private communityBeacon!: CommunityBeacon;
+  private world!: DistrictWorld;
   private delivering = false;
   private solids: Solid[] = [];
   private state: GameState | null = null;
@@ -57,6 +60,8 @@ export class BootScene extends Phaser.Scene {
     this.load.image("hero-source", `${import.meta.env.BASE_URL}assets/tech-city/developers.png`);
     this.load.image("quest-props-source", `${import.meta.env.BASE_URL}assets/tech-city/coding-stations.png`);
     this.load.image("adventure-world", `${import.meta.env.BASE_URL}assets/tech-city/city-ground.png`);
+    this.load.image("logic-ground", `${import.meta.env.BASE_URL}assets/logic-junction/skyrail-ground.png`);
+    this.load.image("routing-hub", `${import.meta.env.BASE_URL}assets/logic-junction/routing-hub.png`);
     this.load.image("environment-source", `${import.meta.env.BASE_URL}assets/tech-city/city-objects.png`);
     for (const tileset of TILESETS) {
       this.load.spritesheet(tileset.key, `${import.meta.env.BASE_URL}${tileset.path}`, {
@@ -70,7 +75,7 @@ export class BootScene extends Phaser.Scene {
     createHeroTextures(this);
     createQuestProps(this);
     this.cameras.main.setBackgroundColor("#7fa55b");
-    this.solids = buildAdventureWorld(this, this.reducedMotion);
+    this.world = buildAdventureWorld(this, this.reducedMotion);
     this.cameras.main.setBounds(0, 0, village.world.width, village.world.height).setRoundPixels(true);
     this.marker("lesson", village.lesson.x, village.lesson.y, SPRITES.scroll, "Quick guide");
     for (const [index, spot] of village.tasks.entries())
@@ -127,7 +132,7 @@ export class BootScene extends Phaser.Scene {
   }
   private marker(id: string, x: number, y: number, sprite: { texture: string; frame: number }, title: string): void {
     const chest = id !== "lesson" && id !== "boss";
-    this.add.ellipse(x + 3, y, 37, 14, 0x233f34, 0.22).setDepth(1);
+    const shadow = this.add.ellipse(x + 3, y, 37, 14, 0x233f34, 0.22).setDepth(1);
     const glow = this.add.circle(x, y - 6, 33, 0x55cfff, 0.07).setDepth(1);
     const pad = this.add
       .circle(x, y, 25, 0x233f34, 0.08)
@@ -172,7 +177,7 @@ export class BootScene extends Phaser.Scene {
       if (id === "lesson")
         this.tweens.add({ targets: icon, y: -1, duration: 1800, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
     }
-    const marker = { id, x, y, icon, label, pad, beacon, glow, group, plate };
+    const marker = { id, x, y, icon, label, pad, beacon, glow, group, plate, shadow };
     this.solids.push({
       id,
       x: x - (chest ? 24 : 16),
@@ -204,8 +209,27 @@ export class BootScene extends Phaser.Scene {
     }
     const changedDistrict = previous?.currentArea !== state.currentArea;
     if (changedDistrict) {
+      this.world.destroy();
+      this.world = buildAdventureWorld(this, this.reducedMotion, area.id);
+      const layout = districtLayout(area.id);
       let index = 0;
       for (const marker of this.markers) {
+        const spot = marker.id === "lesson" ? layout.lesson : marker.id === "boss" ? layout.boss : layout.tasks[index];
+        if (spot) {
+          const dx = spot.x - marker.x,
+            dy = spot.y - marker.y;
+          const solid = this.solids.find((entry) => entry.id === marker.id);
+          if (solid && "x" in solid) {
+            solid.x += dx;
+            solid.y += dy;
+          }
+          marker.x = spot.x;
+          marker.y = spot.y;
+          marker.group.setPosition(spot.x, spot.y).setDepth(spot.y);
+          marker.pad.setPosition(spot.x, spot.y);
+          marker.glow.setPosition(spot.x, spot.y - 6);
+          marker.shadow.setPosition(spot.x + 3, spot.y);
+        }
         if (marker.id === "lesson") continue;
         if (marker.id === "boss") {
           marker.label.setText(area.boss.name.replace(/^The /, ""));
@@ -219,8 +243,8 @@ export class BootScene extends Phaser.Scene {
         marker.group.setName(task.id);
       }
       const logic = area.id === "conditions";
-      (this.children.getByName("district-ground") as Phaser.GameObjects.Image).setTint(logic ? 0xe4dfff : 0xffffff);
       this.districtLabel
+        .setPosition(layout.label.x, layout.label.y)
         .setText(logic ? "IF / ELSE / DECISION NETWORK" : "VALUES / DATA HUB")
         .setColor(logic ? "#dfbaff" : "#9ae9ff");
       this.facing = "south";
@@ -228,8 +252,9 @@ export class BootScene extends Phaser.Scene {
     }
     const sprite = state.hero.kind === "girl" ? SPRITES.heroGirl : SPRITES.heroBoy;
     this.hero.setTexture(sprite.texture, heroFrame(this.facing));
-    const location = state.position ?? village.spawn;
-    this.position = this.canStand(location.x, location.y) ? { ...location } : { ...village.spawn };
+    const entrance = districtLayout(area.id).spawn,
+      location = state.position ?? entrance;
+    this.position = this.canStand(location.x, location.y) ? { ...location } : { ...entrance };
     this.hero.setPosition(this.position.x, this.position.y + 4).setDepth(this.position.y);
     this.shadow.setPosition(this.position.x, this.position.y - 1);
     this.cameras.main.startFollow(this.hero, true, 0.14, 0.14);
@@ -336,10 +361,10 @@ export class BootScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.hero, true, 0.14, 0.14);
   }
   private canStand(x: number, y: number): boolean {
-    return canStandAt({ x, y }, { bounds: village.walkBounds, solids: this.worldSolids() });
+    return canStandAt({ x, y }, { bounds: districtLayout(this.area?.id).bounds, solids: this.worldSolids() });
   }
   private worldSolids(): Solid[] {
-    return [...this.solids, ...this.droneQuest.solids, ...this.communityBeacon.solids];
+    return [...this.world.solids, ...this.solids, ...this.droneQuest.solids, ...this.communityBeacon.solids];
   }
   private distance(marker: Position): number {
     return Math.hypot(marker.x - this.position.x, marker.y - this.position.y);
@@ -388,7 +413,7 @@ export class BootScene extends Phaser.Scene {
     dy *= step / length;
     const before = this.position;
     this.position = moveWithCollisions(before, dx, dy, {
-      bounds: village.walkBounds,
+      bounds: districtLayout(this.area.id).bounds,
       solids: this.worldSolids(),
     });
     const distance = Math.hypot(this.position.x - before.x, this.position.y - before.y);

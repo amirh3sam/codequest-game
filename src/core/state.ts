@@ -29,6 +29,7 @@ export type AreaState = Readonly<{
 /** Matches the version-1 save shape in docs/ARCHITECTURE.md. */
 export type GameState = Readonly<{
   version: 1;
+  adventureId?: string;
   lang: Lang;
   hero: Hero;
   currentArea: AreaId;

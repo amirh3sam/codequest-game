@@ -21,6 +21,7 @@ _Planned (added when installed): CodeMirror 6 (MIT)._
 ## Art & audio
 | Pack | License | Use | Source |
 |---|---|---|---|
+| CodeQuest Logic Junction artwork | Generated project artwork | Skyrail plaza ground and separate transparent routing-control hub | Built-in image-generation tool; [assets and exact prompts](../public/assets/logic-junction/ARTWORK.md). |
 | CodeQuest sound effects | Project source | Footsteps, interface taps, tablet opening, code success/error, delivery, beacon and boss celebration | Original Web Audio synthesis in `src/game/audio.ts`; no downloaded recordings. |
 | CodeQuest community beacon | Project source | Solid announcement board, garden/arcade glyphs and courtyard lights | Native Phaser Graphics in `src/game/community-beacon.ts`. |
 | CodeQuest native objects and interface | Project source | Delivery drone, courier parcel, solid lane/gates, battery lesson, animated 2D tablet display and full-screen workspace | Phaser Graphics, Canvas 2D and HTML/CSS in `src/game/`, `src/ui/` and `src/style.css`. |

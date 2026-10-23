@@ -8,6 +8,7 @@ type TabletHost = {
   lang: Lang;
   name: string;
   kind: "boy" | "girl";
+  adventureId?: string;
   animate: boolean;
   focusCamera(): () => void;
   panel(title: string, subtitle: string, wide: boolean): HTMLElement;
@@ -110,9 +111,13 @@ export function openTablet(host: TabletHost): () => void {
   code.spellcheck = false;
   code.autocapitalize = "off";
   code.maxLength = 64000;
-  const key = `codequest:tablet:v1:${host.lang}`;
+  const legacyKey = `codequest:tablet:v1:${host.lang}`;
+  const key = host.adventureId ? `codequest:tablet:v2:${host.adventureId}` : legacyKey;
   try {
-    code.value = localStorage.getItem(key) ?? HELLO[host.lang];
+    code.value =
+      localStorage.getItem(key) ??
+      (host.adventureId?.startsWith("legacy-") ? localStorage.getItem(legacyKey) : null) ??
+      HELLO[host.lang];
   } catch {
     code.value = HELLO[host.lang];
   }

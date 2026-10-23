@@ -1,5 +1,15 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (multiple adventures, distinct districts and revised audio)
+
+- **Done:** added an adventure library, available from the title and Menu → Switch adventure. Players can keep multiple named journeys in the same or different languages; new journeys preserve older ones. Each adventure has independent progress, discoveries, position and tablet draft. Old per-language games and practice drafts import without deletion. Corrupt/future data and failed writes preserve existing saves; canceled runtime warmups cannot report errors in a different adventure.
+- **World:** Logic Junction now has original elevated-skyrail artwork, a separate transparent routing-control hub, its own entrance, walk bounds, terminal route and solid props. Changing districts rebuilds scenery, releases old tweens and repositions both objects and collisions. Older invalid coordinates fall back to the new entrance. Variable District keeps its campus and courier/beacon activities.
+- **Audio:** replaced simple tones with filtered texture layers, alternating soft foot impacts, tactile clicks, device swishes, low error knocks and bell partials for completions. Menu now has an effects-volume slider; volume and mute persist independently. No downloaded audio or added dependencies.
+- **Checks:** 225 unit tests passed. Focused Chromium suites passed for multiple same/different-language adventures, old-save import, separate browser players, all four beacon/practice languages, volume/mute and audio fallback, both 2D tablet openings, district travel, full Logic progression and collisions. A reachability search verified paths to all ten Logic interaction points using the actual scene collision rules. The previous beacon movement test now waits for actual positions instead of a fixed frame-rate assumption. Lint, types and production build passed.
+- **Visual review:** inspected actual desktop library and new-map captures, including the generated hub's alpha and attached live sign. Narrow library and tablet layouts passed. Saved map art and exact prompts in [Logic Junction artwork](../public/assets/logic-junction/ARTWORK.md); updated real game screenshots and capture scripts.
+- **Next (authorized):** staged Variable District finale with visible subsystem repairs, then beginner playtesting before further curriculum expansion.
+- **Release:** pending public deployment verification.
+
 ## 2026-10-22 (community beacon and sound effects)
 
 - **Done:** added Mina's optional community beacon beside the courier lane. After the drone repair, choose Garden night or Arcade night, practice printing a string variable in a real worker, and explicitly activate the matching announcement. The solid sign and courtyard lights change mint/violet; Mina reacts and the tablet mission log records the Signal Maker badge. Tasks and Tablet → Missions link to the activity.
@@ -10,7 +20,7 @@
 - **Next:** a staged district finale and beginner playtesting. Comprehension and enjoyment have not yet been measured with beginners.
 - **Release:** source commit `a5fc54a` is public and deployed to the separate CodeQuest project as `dpl_8B5bsCmpRZiF42EswHHVTHwVJXJF` (READY), aliased at https://codequest-game-inky.vercel.app/.
 - **Public verification:** two fresh unauthenticated browser profiles received HTTP 200, completed both prerequisite missions with real code and announced different events (Nova/garden and Ari/arcade). Each retained its character, choice, two gems and three hearts after reload. Audio played after interaction, stopped when muted and retained the mute setting after reload. No page errors or production test hooks.
-- **CI:** GitHub run `39892652545` passed lint, types, 219 unit tests and all 100 Chromium cases for source commit `a5fc54a`.
+- **CI:** GitHub run `39892652545` succeeded for source commit `a5fc54a`: lint, types, 219 unit tests, 99 Chromium cases on the first attempt and one beacon movement case on retry. The movement check used a fixed wall-clock delay; the follow-up waits for actual movement instead.
 
 ## 2026-10-22 (illustrated 2D wrist animation)
 

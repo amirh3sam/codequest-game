@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import type Phaser from "phaser";
 import { loadArea } from "../../src/content/loader";
 import { createGame, defeatBoss, solveTask } from "../../src/core/state";
 
@@ -77,4 +78,71 @@ test("losing hearts in Logic Junction preserves the completed first district", a
   expect(state.areas.conditions.lessonsFound).toBe(true);
   expect(state.areas.variables.bossDefeated).toBe(true);
   expect(state.areas.variables.solved).toHaveLength(8);
+});
+
+test("districts have different scenery and routes; every Logic terminal is reachable around solid objects", async ({
+  page,
+}) => {
+  await enterLogic(page);
+  const report = await page.evaluate(() => {
+    const scene = (window as unknown as { __codequest: { game: Phaser.Game } }).__codequest.game.scene.getScene("boot");
+    const navigation = scene as unknown as {
+      getPosition(): { x: number; y: number };
+      canStand(x: number, y: number): boolean;
+    };
+    const start = navigation.getPosition(),
+      visited = new Set<string>(),
+      queue = [start];
+    visited.add(`${start.x}:${start.y}`);
+    for (let index = 0; index < queue.length; index++) {
+      const point = queue[index];
+      if (!point) continue;
+      for (const [dx, dy] of [
+        [10, 0],
+        [-10, 0],
+        [0, 10],
+        [0, -10],
+      ]) {
+        const x = point.x + (dx ?? 0),
+          y = point.y + (dy ?? 0),
+          key = `${x}:${y}`;
+        if (!visited.has(key) && navigation.canStand(x, y)) {
+          visited.add(key);
+          queue.push({ x, y });
+        }
+      }
+    }
+    const targets = [...Array.from({ length: 8 }, (_, i) => `conditions-${i + 1}`), "lesson", "boss"];
+    return {
+      ground: (scene.children.getByName("district-ground") as Phaser.GameObjects.Image).texture.key,
+      layers: scene.children.list.filter((object) => object.name === "district-ground").length,
+      spawn: start,
+      reachable: targets.map((id) => {
+        const target = scene.children.getByName(id) as Phaser.GameObjects.Container;
+        return queue.some((point) => Math.hypot(point.x - target.x, point.y - target.y) <= 60);
+      }),
+      hubSolid: !navigation.canStand(768, 400),
+      outsideSolid: !navigation.canStand(220, 650),
+    };
+  });
+  expect(report).toMatchObject({
+    ground: "logic-ground",
+    layers: 1,
+    spawn: { x: 220, y: 550 },
+    hubSolid: true,
+    outsideSolid: true,
+  });
+  expect(report.reachable).toEqual(Array(10).fill(true));
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await page.getByRole("button", { name: "World map", exact: true }).click();
+  await page.locator(".world-node").filter({ hasText: "Variable District" }).click();
+  const restored = await page.evaluate(() => {
+    const scene = (window as unknown as { __codequest: { game: Phaser.Game } }).__codequest.game.scene.getScene("boot");
+    return {
+      ground: (scene.children.getByName("district-ground") as Phaser.GameObjects.Image).texture.key,
+      layers: scene.children.list.filter((object) => object.name === "district-ground").length,
+      hub: Boolean(scene.children.getByName("routing-control-hub")),
+    };
+  });
+  expect(restored).toEqual({ ground: "adventure-world", layers: 1, hub: false });
 });

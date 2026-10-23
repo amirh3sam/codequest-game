@@ -3,6 +3,7 @@ import { dronePilot } from "../content/drone-pilot";
 import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
 import type { AreaContent, Boss, Task } from "../content/schema";
 import village from "../content/village.json" with { type: "json" };
+import { loadAdventures, saveAdventure } from "../core/adventures";
 import { canLightBeacon, lightBeacon } from "../core/discoveries";
 import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone-mission";
 import { GEM_REWARD, isValidHeroName } from "../core/rules";
@@ -116,10 +117,8 @@ export class GameApp {
       this.tabletCleanup?.();
       this.capturePosition();
     });
-    const latest = LANGUAGES.map(({ id }) => loadGame(id))
-      .filter((result) => result.status === "loaded")
-      .sort((a, b) => Date.parse(b.state.updatedAt) - Date.parse(a.state.updatedAt))[0];
-    if (latest?.status === "loaded") this.lang = latest.state.lang;
+    const library = loadAdventures();
+    if (library.status === "loaded" && library.adventures[0]) this.lang = library.adventures[0].lang;
     this.intro();
   }
   getState(): GameState | null {
@@ -190,6 +189,7 @@ export class GameApp {
     return panel;
   }
   private intro(): void {
+    this.capturePosition();
     this.tabletNavigation = false;
     this.runToken++;
     this.runner?.kill();
@@ -242,7 +242,26 @@ export class GameApp {
       choices.append(card);
     }
     panel.append(choices);
-    const existing = loadGame(this.lang);
+    const library = loadAdventures();
+    const archived =
+      library.status === "loaded" ? library.adventures.find((entry) => entry.lang === this.lang) : undefined;
+    const existing = archived ? { status: "loaded" as const, state: archived } : loadGame(this.lang);
+    if (library.status === "loaded" && library.adventures.length)
+      panel.append(
+        button(
+          `Your adventures · ${library.adventures.length} saved`,
+          () => this.adventureLibrary(),
+          "button adventure-library-link",
+        ),
+      );
+    if (library.status !== "loaded")
+      panel.append(
+        el(
+          "p",
+          "warning",
+          "The adventure library is unavailable. Existing data is preserved; new play will stay in this session.",
+        ),
+      );
     if (existing.status === "loaded") {
       const saved = el("div", "saved-adventure");
       saved.append(
@@ -256,7 +275,11 @@ export class GameApp {
       panel.append(saved);
     } else if (existing.status === "corrupt" || existing.status === "unsupported-version")
       panel.append(
-        el("p", "warning", "This saved adventure couldn't be read. Starting new will replace it after confirmation."),
+        el(
+          "p",
+          "warning",
+          "An older save couldn't be read. It will be kept intact while new adventures use the library.",
+        ),
       );
     else if (existing.status === "storage-error")
       panel.append(el("p", "warning", "Browser saving is unavailable. You can still play this session."));
@@ -316,21 +339,21 @@ export class GameApp {
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       if (!isValidHeroName(this.heroName)) return;
-      if (
-        ["loaded", "corrupt", "unsupported-version"].includes(existing.status) &&
-        !window.confirm("Start a new adventure? This will replace the saved game for this language.")
-      )
-        return;
-      this.savingAllowed = existing.status !== "storage-error";
-      this.begin(createGame(this.lang, { kind: this.heroKind, name: this.heroName.trim() }, now()));
+      this.savingAllowed = library.status === "loaded";
+      this.begin({
+        ...createGame(this.lang, { kind: this.heroKind, name: this.heroName.trim() }, now()),
+        adventureId: crypto.randomUUID(),
+      });
     });
     panel.append(
       form,
-      el("p", "intro-footer", "Your character and progress save in this browser · No account needed"),
+      el("p", "intro-footer", "Start as many adventures as you like. Each keeps its own progress on this device."),
       this.soundToggle(),
     );
   }
   private begin(state: GameState): void {
+    if (!state.adventureId) state = { ...state, adventureId: `legacy-${state.lang}` };
+    this.savingAllowed = loadAdventures().status === "loaded";
     if (!isAreaAvailable(state.currentArea)) state = enterArea(state, "variables", now());
     const area = loadArea(state.lang, state.currentArea);
     if (
@@ -342,7 +365,7 @@ export class GameApp {
           ),
       )
     ) {
-      this.toast("This save doesn't match the district tasks. Choose Start new to replace it.");
+      this.toast("This save doesn't match the district tasks. You can keep it and start a separate adventure.");
       return;
     }
     this.runner?.kill();
@@ -352,12 +375,22 @@ export class GameApp {
     this.hud.hidden = false;
     this.commit(state);
     this.close();
-    this.runner.warmup().catch(() => this.toast("The language runtime couldn't load. Run your code to retry."));
+    const runner = this.runner,
+      adventureId = state.adventureId;
+    runner.warmup().catch(() => {
+      if (this.runner === runner && this.state?.adventureId === adventureId)
+        this.toast("The language runtime couldn't load. Run your code to retry.");
+    });
     this.toast("Welcome! Use WASD or arrows to walk. Press E near the guide or a terminal.");
   }
   private persist(): void {
     if (!this.state) return;
-    const result = this.savingAllowed ? saveGame(this.state) : { status: "storage-error" };
+    const result = this.savingAllowed ? saveAdventure(this.state) : { status: "storage-error" };
+    // Maintain the old language slot as a compatibility snapshot; the library owns all adventures.
+    if (result.status === "saved") {
+      const old = loadGame(this.state.lang);
+      if (old.status === "loaded" || old.status === "empty") saveGame(this.state);
+    }
     this.saved.textContent =
       result.status === "saved" ? "✓ Saved on this device" : "Saving unavailable · progress stays in this session";
   }
@@ -392,6 +425,48 @@ export class GameApp {
     };
     refresh(toggle);
     return toggle;
+  }
+  private adventureLibrary(): void {
+    this.capturePosition();
+    const library = loadAdventures();
+    const panel = this.panel(
+      "Your adventures",
+      "Switch languages or start another journey. Every adventure keeps its own progress.",
+      true,
+    );
+    if (library.status !== "loaded") {
+      panel.append(el("p", "warning", "Your saved library couldn't be read. Its data has been preserved."));
+    } else {
+      const grid = el("div", "adventure-library");
+      for (const state of library.adventures) {
+        const progress = state.areas[state.currentArea],
+          area = village.worldAreas.find((entry) => entry.id === state.currentArea);
+        const language = LANGUAGES.find((entry) => entry.id === state.lang)?.name ?? state.lang;
+        const card = el("article", "adventure-card");
+        card.dataset.adventureId = state.adventureId;
+        const avatar = this.icon(state.hero.kind === "girl" ? "heroGirl" : "heroBoy", true);
+        card.append(
+          avatar,
+          el("span", "eyebrow", language),
+          el("h3", "", state.hero.name),
+          el("p", "", `${area?.name ?? state.currentArea} · ${progress.solved.length}/8 missions`),
+          el(
+            "small",
+            "",
+            `${progress.hearts} hearts · ${progress.gems} gems${state.discoveries?.beacon ? " · Signal Maker" : ""}`,
+          ),
+          button(`Resume ${state.hero.name} · ${language}`, () => this.begin(state), "button primary"),
+        );
+        grid.append(card);
+      }
+      panel.append(grid);
+      if (!library.adventures.length)
+        panel.append(el("p", "", "Your first adventure is waiting. Pick a language and a developer to begin."));
+    }
+    const actions = el("div", "panel-actions");
+    actions.append(button("Start another adventure", () => this.intro()));
+    if (this.state) actions.append(button("Back to current adventure", () => this.close()));
+    panel.append(actions);
   }
   private renderHud(): void {
     if (!this.state) return;
@@ -592,6 +667,7 @@ export class GameApp {
       hearts: progress.hearts,
       gems: progress.gems,
       guide: this.area.lesson.pages,
+      adventureId: this.state.adventureId,
       discovery:
         this.area.id === "variables"
           ? {
@@ -678,11 +754,30 @@ export class GameApp {
     const actions = el("div", "menu-actions");
     actions.append(
       button("Resume adventure", () => this.close(), "button primary"),
+      button("Switch adventure", () => this.adventureLibrary()),
       button("World map", () => this.worldMap()),
       button("Read the lesson", () => this.lesson()),
       button("Title screen", () => this.intro()),
     );
     panel.append(actions);
+    const audio = el("div", "sound-settings"),
+      label = el("label", "", "Effects volume"),
+      volume = el("input"),
+      value = el("output", "", `${Math.round(gameAudio.volume * 100)}%`);
+    volume.type = "range";
+    volume.id = "effects-volume";
+    volume.min = "0";
+    volume.max = "100";
+    volume.step = "5";
+    volume.value = String(Math.round(gameAudio.volume * 100));
+    label.htmlFor = volume.id;
+    volume.addEventListener("input", () => {
+      gameAudio.setVolume(Number(volume.value) / 100);
+      value.textContent = `${volume.value}%`;
+    });
+    volume.addEventListener("change", () => gameAudio.play("tap"));
+    audio.append(label, volume, value, this.soundToggle());
+    panel.append(audio);
   }
   private worldMap(): void {
     if (!this.state) return;

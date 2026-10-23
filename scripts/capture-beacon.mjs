@@ -27,6 +27,7 @@ try {
     const key = "codequest:v1:javascript",
       state = JSON.parse(localStorage.getItem(key));
     state.position = { x: 866, y: 330 };
+    state.updatedAt = new Date(Math.max(Date.now(), Date.parse(state.updatedAt) + 1)).toISOString();
     localStorage.setItem(key, JSON.stringify(state));
   });
   // A fresh context avoids the old page's pagehide position save replacing the camera staging.

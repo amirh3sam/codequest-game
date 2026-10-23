@@ -1,16 +1,41 @@
 import Phaser from "phaser";
 import village from "../content/village.json" with { type: "json" };
+import type { AreaId } from "../core/rules";
 import type { Solid } from "./collision";
 import { createEnvironmentFrames, type EnvironmentKind, OBJECT_SIZE } from "./environment-objects";
+import { buildLogicWorld } from "./logic-world";
+
+export type DistrictWorld = { solids: Solid[]; destroy(): void };
+
+export function buildAdventureWorld(
+  scene: Phaser.Scene,
+  reducedMotion: boolean,
+  area: AreaId = "variables",
+): DistrictWorld {
+  if (!scene.textures.exists("environment-fir")) createEnvironmentFrames(scene);
+  const before = new Set(scene.children.list);
+  const solids = area === "conditions" ? buildLogicWorld(scene, reducedMotion) : buildCampusWorld(scene, reducedMotion);
+  const objects = scene.children.list.filter((object) => !before.has(object));
+  return {
+    solids,
+    destroy: () => {
+      for (const object of objects) {
+        if (object instanceof Phaser.GameObjects.Container)
+          for (const child of object.list) scene.tweens.killTweensOf(child);
+        scene.tweens.killTweensOf(object);
+        object.destroy();
+      }
+    },
+  };
+}
 
 /** Painted backdrop plus live lighting, water and foreground occlusion. */
-export function buildAdventureWorld(scene: Phaser.Scene, reducedMotion: boolean): Solid[] {
+function buildCampusWorld(scene: Phaser.Scene, reducedMotion: boolean): Solid[] {
   const { width, height } = village.world;
   scene.add
     .image(width / 2, height / 2, "adventure-world")
     .setDisplaySize(width, height)
     .setName("district-ground");
-  createEnvironmentFrames(scene);
   const solids: Solid[] = [...village.solidObjects, { id: "pond", points: village.pondShore }];
   const object = (spot: { x: number; y: number; kind: string }, index: number) => {
     const kind = spot.kind as EnvironmentKind,

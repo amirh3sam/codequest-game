@@ -19,6 +19,10 @@ export function saveKey(lang: Lang): string {
   return `codequest:v${SAVE_VERSION}:${lang}`;
 }
 
+export function isAdventureId(value: unknown): value is string {
+  return typeof value === "string" && /^[a-zA-Z0-9-]{1,80}$/.test(value);
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
   const prototype = Object.getPrototypeOf(value);
@@ -113,6 +117,7 @@ export function isGameState(value: unknown): value is GameState {
       return false;
   }
 
+  if (Object.hasOwn(value, "adventureId") && !isAdventureId(value.adventureId)) return false;
   const areas = value.areas;
   if (Object.keys(areas).length !== AREA_IDS.length || !AREA_IDS.every((id) => isAreaState(areas[id]))) return false;
   // All fields have been narrowed above; now check invariants across the seven areas.

@@ -4,6 +4,11 @@ Each task fits in one session. Tags point to PRD requirements.
 
 ## Current priority: learning through adventure (2026-10-22)
 
+- [x] Add an adventure library for multiple journeys in the same or different languages, preserving old saves and separate practice drafts.
+- [x] Give Logic Junction an elevated skyrail map, independent paths, scenery, solid control hub and terminal positions.
+- [x] Replace simple beeps with textured footsteps, clicks, swishes and layered chimes; add a saved effects-volume control.
+- [ ] Next: turn the Variable District finale into a staged city repair with visible subsystem progress.
+
 - [x] Replace the 3D hand model with an illustrated 2D wrist-tablet animation: lift, settle and screen entry, preserving city zoom and the editor/output layout.
 - [x] Revise the tablet opening to a city zoom followed by the character's first-person view of their attached wrist tablet. Keep the sequence to three seconds, with skip, cancellation and instant reduced-motion access. Missions and Guide remain inside the device.
 - [x] Keep practice code, Run and its output on one page, with results below the editor in all four languages and on narrow screens.

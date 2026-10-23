@@ -11,6 +11,8 @@ real game and working code, rather than concept art or interface mockups.
 - `tablet-opening.webm`: browser video of the city zoom, 2D wrist lift/settle and full-screen transition.
 - `community-beacon.png`: Mina's optional event choice with real code and a successful announcement preview.
 - `community-courtyard.png`: the solid beacon and mint courtyard lights after activating Garden night, with the sound toggle in the toolbar.
+- `adventure-library.png`: three independent named adventures ready to resume in different languages.
+- `logic-junction.png`: the distinct skyrail plaza with its transparent routing hub, solid props and relocated terminals.
 
 Regenerate with the local game running at `http://127.0.0.1:5173`:
 
@@ -18,6 +20,7 @@ Regenerate with the local game running at `http://127.0.0.1:5173`:
 node scripts/capture-screenshots.mjs
 node scripts/capture-tablet-video.mjs
 node scripts/capture-beacon.mjs
+node scripts/capture-adventures.mjs
 ```
 
 The capture uses an isolated browser profile and a valid local save to frame the
@@ -27,3 +30,8 @@ No production account, user save or game artwork is modified.
 The beacon capture earns the two prerequisite missions through real submissions,
 then stages the camera beside the beacon in its isolated save. It also checks
 the discovery panel at a 390-pixel viewport width.
+
+The adventure capture creates three journeys through the interface, then stages
+a valid first-district completion in that isolated profile to frame Logic Junction.
+It also checks the library at 390 pixels wide. Map artwork and exact built-in
+image-generation prompts are in `public/assets/logic-junction/ARTWORK.md`.
