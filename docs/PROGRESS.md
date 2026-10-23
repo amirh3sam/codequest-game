@@ -6,7 +6,7 @@
 - **Footsteps:** softened the synth further with lower filtered noise, less volume and a longer attack/fade to remove the sharp gunshot-like edge.
 - **Coding tablet:** every coding task now opens through the same illustrated 2D wrist-tablet sequence as the practice tablet. The full-screen task editor keeps the console under the code; each run animates new output into view. T and Skip animation work, and reduced-motion preferences open instantly.
 - **Checks:** 231 unit tests, Biome lint, TypeScript and focused Chromium checks for city travel into Packet Dash, runner controls, tablet opening/skip, animated console output and full eight-task progression passed. A simultaneous full E2E run and production build overloaded the browser workers and timed out unrelated suites; the touched flows were rerun successfully on one worker.
-- **Release:** pending final production build, public commit and Vercel deployment.
+- **Release:** source commit `8649462` is public on `main`. Vercel deployment `dpl_9bDumTgsnKdHoYFHaoCTqU2DqSoh` is READY at https://codequest-game-inky.vercel.app/; the live alias returned HTTP 200.
 
 ## 2026-10-23 (touch controls, portable saves and staged hub repair)
 
