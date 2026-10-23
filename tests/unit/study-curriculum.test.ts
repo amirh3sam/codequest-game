@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  isStudyLevelUnlocked,
   readStudyProgress,
   readStudyTaskProgress,
   STUDY_CURRICULUM,
@@ -71,5 +72,20 @@ describe("full study path curriculum", () => {
     expect(readStudyProgress("legacy")).toEqual([]);
     expect(saveStudyTaskProgress("legacy", topic.id, 2)).toBe(true);
     expect(readStudyTaskProgress("legacy", topic.id)).toBe(2);
+  });
+
+  it("locks level 8 until Abstraction Cloud is cleared, then unlocks one category boss at a time", () => {
+    const first = STUDY_CURRICULUM[0];
+    const second = STUDY_CURRICULUM[1];
+    const third = STUDY_CURRICULUM[2];
+    if (!first || !second || !third) throw new Error("Missing Java category levels");
+    expect(isStudyLevelUnlocked("nova", first.id, false)).toBe(false);
+    expect(isStudyLevelUnlocked("nova", first.id, true)).toBe(true);
+    expect(isStudyLevelUnlocked("nova", second.id, true)).toBe(false);
+    for (let count = 1; count <= STUDY_TASKS_PER_TOPIC; count++)
+      expect(saveStudyTaskProgress("nova", first.id, count)).toBe(true);
+    expect(saveStudyBossProgress("nova", first.id)).toBe(true);
+    expect(isStudyLevelUnlocked("nova", second.id, true)).toBe(true);
+    expect(isStudyLevelUnlocked("nova", third.id, true)).toBe(false);
   });
 });

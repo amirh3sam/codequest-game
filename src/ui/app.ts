@@ -5,6 +5,7 @@ import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
 import { PROJECT_QUESTS, readProjectQuestProgress } from "../content/project-quests";
 import type { AreaContent, Boss, Task } from "../content/schema";
 import {
+  isStudyLevelUnlocked,
   readCompletedStudyTasks,
   readStudyProgress,
   readStudyTaskProgress,
@@ -954,7 +955,7 @@ export class GameApp {
       if (token === this.runToken) this.busy = false;
     }
   }
-  private tablet(animate = true, studyTopicId?: string, studyLevelOffset = 0): void {
+  private tablet(animate = true, studyTopicId?: string, studyLevelOffset = village.worldAreas.length): void {
     if (!this.state) return;
     gameAudio.play("open");
     this.tabletNavigation = false;
@@ -976,6 +977,7 @@ export class GameApp {
       adventureId: this.state.adventureId,
       initialStudyTopicId: studyTopicId,
       studyLevelOffset,
+      studyPrerequisiteComplete: this.state.areas.abstraction.bossDefeated,
       discovery:
         this.area.id === "variables"
           ? {
@@ -1319,12 +1321,13 @@ export class GameApp {
     if (!this.state) return;
     const panel = this.panel(
         "Your journey",
-        `Follow the seven city districts, then continue into ${STUDY_CURRICULUM.length} Java category levels beside Abstraction Cloud.`,
+        `Level 8 unlocks after Abstraction Cloud. Then defeat each category boss to unlock the next level. Every category has eight tasks plus its boss.`,
         true,
       ),
       adventureKey = this.state.adventureId ?? `guest-${this.state.lang}`,
       nodes = el("div", "world-nodes level-map-nodes");
     const completedSkillTasks = readCompletedStudyTasks(adventureKey);
+    const completedSkillLevels = new Set(readStudyProgress(adventureKey));
     panel.append(
       el("span", "eyebrow", `LEVEL MAP · 7 CITY LEVELS + ${STUDY_CURRICULUM.length} JAVA CATEGORIES`),
       el(
@@ -1335,7 +1338,7 @@ export class GameApp {
       el(
         "p",
         "world-map-hint",
-        "The Java category levels continue after Abstraction Cloud. Each has eight coding tasks followed by a boss challenge.",
+        "Level 8 unlocks after Abstraction Cloud. Then defeat each category boss to unlock the next level; every category has eight tasks plus its boss.",
       ),
     );
     for (const [index, area] of village.worldAreas.entries()) {
@@ -1366,25 +1369,31 @@ export class GameApp {
     }
     for (const [index, topic] of STUDY_CURRICULUM.entries()) {
       const taskProgress = readStudyTaskProgress(adventureKey, topic.id),
-        isComplete = readStudyProgress(adventureKey).includes(topic.id),
+        isComplete = completedSkillLevels.has(topic.id),
+        unlocked = isStudyLevelUnlocked(adventureKey, topic.id, this.state.areas.abstraction.bossDefeated),
         skill = button(
           "",
           () => this.tablet(false, topic.id, village.worldAreas.length),
-          `world-skill-node${isComplete ? " complete" : taskProgress > 0 ? " in-progress" : ""}`,
+          `world-skill-node${!unlocked ? " locked" : isComplete ? " complete" : taskProgress > 0 ? " in-progress" : ""}`,
         );
+      skill.disabled = !unlocked;
       skill.append(
         el("span", "world-number", isComplete ? "✓" : String(village.worldAreas.length + index + 1).padStart(2, "0")),
         el("strong", "", topic.title),
         el(
           "small",
           "",
-          isComplete
-            ? "Boss defeated · level complete"
-            : taskProgress >= STUDY_TASKS_PER_TOPIC
-              ? "8/8 tasks · boss ready"
-              : taskProgress
-                ? `Continue · ${taskProgress}/8 tasks`
-                : "Start level · 8 tasks + boss",
+          !unlocked
+            ? index === 0
+              ? "Locked · complete Abstraction Cloud to unlock level 8"
+              : `Locked · defeat the previous category boss to unlock level ${village.worldAreas.length + index + 1}`
+            : isComplete
+              ? "Boss defeated · level complete"
+              : taskProgress >= STUDY_TASKS_PER_TOPIC
+                ? "8/8 tasks · boss ready"
+                : taskProgress
+                  ? `Continue · ${taskProgress}/8 tasks`
+                  : "Start level · 8 tasks + boss",
         ),
       );
       nodes.append(skill);

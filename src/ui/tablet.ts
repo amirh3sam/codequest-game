@@ -8,6 +8,7 @@ import {
   saveProjectQuestProgress,
 } from "../content/project-quests";
 import {
+  isStudyLevelUnlocked,
   readCompletedStudyTasks,
   readStudyProgress,
   readStudyTaskProgress,
@@ -52,6 +53,7 @@ type TabletHost = {
   adventureId?: string;
   initialStudyTopicId?: string;
   studyLevelOffset?: number;
+  studyPrerequisiteComplete: boolean;
   animate: boolean;
   focusCamera(): () => void;
   panel(title: string, subtitle: string, wide: boolean): HTMLElement;
@@ -1194,6 +1196,7 @@ export function openTablet(host: TabletHost): () => void {
     for (const [index, item] of STUDY_CURRICULUM.entries()) {
       const isComplete = completedTopics.includes(item.id);
       const topicProgress = readStudyTaskProgress(studyAdventureKey, item.id);
+      const isUnlocked = isStudyLevelUnlocked(studyAdventureKey, item.id, host.studyPrerequisiteComplete);
       const progressLabel = isComplete ? "✓" : topicProgress >= STUDY_TASKS_PER_TOPIC ? "BOSS" : `${topicProgress}/8`;
       const topicButton = button(
         `${progressLabel}  ${String((host.studyLevelOffset ?? 0) + index + 1).padStart(2, "0")}. ${item.title}`,
@@ -1205,13 +1208,21 @@ export function openTablet(host: TabletHost): () => void {
           (item.id === topic?.id ? " active" : "") +
           (isComplete ? " complete" : topicProgress > 0 ? " in-progress" : ""),
       );
+      topicButton.disabled = !isUnlocked;
+      if (!isUnlocked)
+        topicButton.title =
+          index === 0
+            ? "Complete Abstraction Cloud to unlock this level."
+            : "Defeat the previous category boss to unlock this level.";
       topicButton.setAttribute("aria-current", String(item.id === topic?.id));
       navigation.append(topicButton);
     }
     if (topic) {
       const taskProgress = readStudyTaskProgress(studyAdventureKey, topic.id);
       const isComplete = completedTopics.includes(topic.id);
-      const levelNumber = (host.studyLevelOffset ?? 0) + STUDY_CURRICULUM.indexOf(topic) + 1;
+      const topicIndex = STUDY_CURRICULUM.indexOf(topic);
+      const isUnlocked = isStudyLevelUnlocked(studyAdventureKey, topic.id, host.studyPrerequisiteComplete);
+      const levelNumber = (host.studyLevelOffset ?? 0) + topicIndex + 1;
       const topicNumber = String(levelNumber).padStart(2, "0");
       detail.append(
         el("span", "eyebrow", `LEVEL ${topicNumber} / ${(host.studyLevelOffset ?? 0) + STUDY_CURRICULUM.length}`),
@@ -1220,7 +1231,18 @@ export function openTablet(host: TabletHost): () => void {
         el("p", "study-try-it", topic.tryIt),
         el("aside", "study-key-idea", topic.idea),
       );
-      if (isComplete) {
+      if (!isUnlocked) {
+        detail.append(
+          el("strong", "study-level-locked", "Level locked"),
+          el(
+            "p",
+            "",
+            topicIndex === 0
+              ? "Complete the Abstraction Cloud boss to unlock level 8."
+              : `Defeat the boss in level ${(host.studyLevelOffset ?? 0) + topicIndex} to unlock this category.`,
+          ),
+        );
+      } else if (isComplete) {
         detail.append(
           el("strong", "study-level-complete", "Level cleared · 8/8 tasks + boss"),
           el(
@@ -1229,6 +1251,28 @@ export function openTablet(host: TabletHost): () => void {
             "Your eight coding tasks and boss challenge are saved for this adventure. Choose another category or revisit this level.",
           ),
         );
+        const portals = el("section", "study-portals");
+        portals.append(
+          el("span", "eyebrow", "LEVEL PORTALS"),
+          el("p", "", "The boss opened these doors. Teleport to any unlocked category level."),
+        );
+        const portalDoors = el("div", "study-portal-doors");
+        for (const [portalIndex, portalTopic] of STUDY_CURRICULUM.entries()) {
+          if (!isStudyLevelUnlocked(studyAdventureKey, portalTopic.id, host.studyPrerequisiteComplete)) continue;
+          const portalLevel = String((host.studyLevelOffset ?? 0) + portalIndex + 1).padStart(2, "0");
+          portalDoors.append(
+            button(
+              `↗ Teleport · ${portalLevel} · ${portalTopic.title}`,
+              () => {
+                activeStudyId = portalTopic.id;
+                renderStudyPath();
+              },
+              "study-portal-door",
+            ),
+          );
+        }
+        portals.append(portalDoors);
+        detail.append(portals);
       } else {
         const isBossChallenge = taskProgress >= STUDY_TASKS_PER_TOPIC;
         const levelIndex = isBossChallenge ? STUDY_TASKS_PER_TOPIC : taskProgress;
@@ -1252,7 +1296,7 @@ export function openTablet(host: TabletHost): () => void {
           "button primary",
         );
         const nextTaskButton = button(
-          isBossChallenge ? "Finish level" : "Next task",
+          isBossChallenge ? "Open level portals" : "Next task",
           () => renderStudyPath(),
           "button primary",
         );

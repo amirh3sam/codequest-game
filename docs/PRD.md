@@ -47,7 +47,11 @@ challenge: 136 tasks and 17 bosses per language. Progress and code
 drafts save per adventure; existing one-task topic completions carry forward
 as task one. The world map shows the seven city districts first, followed by
 the 17 category levels directly after Abstraction Cloud in the same continuous
-level grid. Choosing a category opens its matching Study Path lesson. On the map, players can
+level grid. Level 8 stays locked until the Abstraction Cloud boss is defeated;
+each later category stays locked until the preceding category boss is defeated.
+Defeating a category boss opens direct teleport doors to every unlocked category,
+including the next level, so players can travel without returning to the menu.
+Choosing an unlocked category opens its matching Study Path lesson. On the map, players can
 click a destination to walk or hold the left mouse button and drag to steer.
 
 ## 1. Problem

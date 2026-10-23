@@ -704,6 +704,19 @@ export function readStudyProgress(adventureId: string): string[] {
   );
 }
 
+export function isStudyLevelUnlocked(
+  adventureId: string,
+  topicId: string,
+  abstractionCloudBossDefeated: boolean,
+): boolean {
+  const index = STUDY_CURRICULUM.findIndex(({ id }) => id === topicId);
+  if (index < 0) return false;
+  if (readStudyProgress(adventureId).includes(topicId)) return true;
+  if (index === 0) return abstractionCloudBossDefeated;
+  const previousTopic = STUDY_CURRICULUM[index - 1];
+  return previousTopic ? readStudyProgress(adventureId).includes(previousTopic.id) : false;
+}
+
 export function studyBossProgressKey(adventureId: string): string {
   return `codequest:study-bosses:v1:${adventureId}`;
 }
