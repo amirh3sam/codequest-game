@@ -1,5 +1,13 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (project quests, debugging guide, badges and project sharing)
+- Added a two-step Badge Builder quest that practices class composition across separate files in JavaScript, TypeScript, Python and Java. Its workspace and milestone progress are saved per adventure, separately from the player's regular project.
+- Tablet and mission editors now translate diagnostics into beginner-friendly tips and offer a Go to line action. Tablet line hints map bundle offsets back to the player's source file.
+- Added six Progress-page badges for mission completion, district restoration, the community beacon, the project quest and arcade high scores.
+- Added `.codequest.json` project export/import with language/version checks, unsafe path filtering and an import size limit. Local adventure saves remain device-local.
+- **Checks:** all 243 unit tests, lint, TypeScript, production build and production dependency audit passed (zero vulnerabilities). Five focused Chromium flows passed: project export/import and debugging guidance, plus quest completion in all four languages. The full 124-case browser sweep was stopped after unrelated pre-existing adventure/audio tests timed out waiting for an obsolete `Tasks` control; another old adventure selector now matches both the language chooser and saved-adventure row. The edited flows passed their focused tests.
+- **Release:** pending final validation, public push and Vercel deployment.
+
 ## 2026-10-23 (multi-class runs in all four languages)
 - Expanded browser projects so JavaScript, TypeScript and Python each use `Main → Badge → Player` across separate files. Java runs `Main → Badge → Formatter` across packaged classes.
 - **Results:** Java printed `Hello from a package!`; JavaScript, TypeScript and Python each printed `Hello from a file! plus Badge`. All four focused Chromium flows passed together. This verifies the project-source bundler and Java compiler; no runtime source fix was needed.

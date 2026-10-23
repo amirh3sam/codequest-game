@@ -1,7 +1,15 @@
 import { dailyChallengeFor } from "../content/daily-challenge";
 import { batteryExample } from "../content/drone-pilot";
+import {
+  createProjectQuestWorkspace,
+  PROJECT_QUESTS,
+  projectQuestWorkspaceKey,
+  readProjectQuestProgress,
+  saveProjectQuestProgress,
+} from "../content/project-quests";
 import { executionError } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
+import { beginnerHint, diagnosticLine, focusEditorLine } from "./debug-guidance";
 import { button, el } from "./dom";
 import { JAVA_SHORTCUTS } from "./java-snippets";
 import {
@@ -11,10 +19,12 @@ import {
   deleteWorkspaceEntry,
   javaClassTemplate,
   type LocalDirectoryHandle,
+  parseWorkspaceShare,
   readWorkspace,
   removeLocalEntry,
   renameLocalEntry,
   renameWorkspaceEntry,
+  serializeWorkspaceShare,
   type WorkspaceData,
   writeLocalFile,
   writeWorkspace,
@@ -81,8 +91,9 @@ export function openTablet(host: TabletHost): () => void {
     consolePane = el("div", "studio-console"),
     missionsPane = el("div", "studio-missions"),
     guidePane = el("div", "studio-guide"),
-    dailyPane = el("div", "studio-daily");
-  const panes = [editorPane, examplesPane, consolePane, missionsPane, guidePane, dailyPane],
+    dailyPane = el("div", "studio-daily"),
+    projectsPane = el("div", "studio-projects");
+  const panes = [editorPane, examplesPane, consolePane, missionsPane, guidePane, dailyPane, projectsPane],
     tabButtons: HTMLButtonElement[] = [];
   const select = (index: number, focus = false) => {
     for (const [i, pane] of panes.entries()) {
@@ -93,7 +104,7 @@ export function openTablet(host: TabletHost): () => void {
     }
     if (focus) tabButtons[index]?.focus();
   };
-  for (const [i, label] of ["Code", "Examples", "Console", "Missions", "Guide", "Daily Quest"].entries()) {
+  for (const [i, label] of ["Code", "Examples", "Console", "Missions", "Guide", "Daily Quest", "Projects"].entries()) {
     const tab = button(label, () => select(i), "studio-tab");
     tab.id = `tablet-tab-${i}`;
     tab.setAttribute("role", "tab");
@@ -136,7 +147,8 @@ export function openTablet(host: TabletHost): () => void {
   code.maxLength = 64000;
   const legacyKey = `codequest:tablet:v1:${host.lang}`;
   const key = host.adventureId ? `codequest:tablet:v2:${host.adventureId}` : legacyKey;
-  const workspaceKey = `codequest:workspace:v1:${host.adventureId ?? `guest-${host.lang}`}`;
+  const personalWorkspaceKey = `codequest:workspace:v1:${host.adventureId ?? `guest-${host.lang}`}`;
+  let workspaceKey = personalWorkspaceKey;
   const initialCode = (() => {
     try {
       return (
@@ -158,6 +170,9 @@ export function openTablet(host: TabletHost): () => void {
   let selectedFolder = project.folders.includes("src") ? "src" : "";
   const expandedFolders = new Set(project.folders);
   let connectedFolder: LocalDirectoryHandle | null = null;
+  let personalFolder: LocalDirectoryHandle | null = null;
+  let activeProjectQuest: (typeof PROJECT_QUESTS)[number] | null = null;
+  let questStep = 0;
   let saveTimer = 0;
   const editorHeader = el("div", "studio-editor-header");
   const openFiles = [entryPath];
@@ -395,11 +410,12 @@ export function openTablet(host: TabletHost): () => void {
     if (!writeWorkspace(workspaceKey, project))
       status.textContent = "Browser storage is full; connect or download your project.";
     if (connectedFolder) {
+      const targetFolder = connectedFolder;
       const targetPath = activePath;
       const contents = code.value;
       window.clearTimeout(saveTimer);
       saveTimer = window.setTimeout(() => {
-        void writeLocalFile(connectedFolder as LocalDirectoryHandle, targetPath, contents)
+        void writeLocalFile(targetFolder, targetPath, contents)
           .then(() => {
             if (panel.isConnected) status.textContent = `Saved to computer · ${targetPath}`;
           })
@@ -458,6 +474,7 @@ export function openTablet(host: TabletHost): () => void {
   const consoleOutput = el("pre", "studio-output", output.textContent ?? "");
   consoleOutput.setAttribute("aria-label", "Console output");
   const feedback = el("p", "studio-feedback");
+  const debugHelp = el("div", "debug-guidance");
   feedback.setAttribute("role", "status");
   let running = false;
   const run = button(
@@ -484,11 +501,50 @@ export function openTablet(host: TabletHost): () => void {
       const result = await host.run(project.files[runPath] ?? code.value, projectSources, runPath);
       if (!panel.isConnected) return;
       const error = executionError(result);
-      output.textContent = [result.stdout || "(No output)", result.stderr, error?.message].filter(Boolean).join("\n");
+      const lineOffset =
+        host.lang === "java"
+          ? 0
+          : Object.entries(projectSources)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .reduce((offset, [, source]) => offset + (source.match(/\n/g)?.length ?? 0) + 2, 0);
+      const rawLine = error ? diagnosticLine(error.message) : undefined;
+      const sourceLine = rawLine && rawLine > lineOffset ? rawLine - lineOffset : rawLine;
+      const errorMessage =
+        error?.message && rawLine && sourceLine !== rawLine
+          ? error.message.replace(new RegExp(`\\bLine ${rawLine}:|\\(line ${rawLine}\\)`, "i"), (match) =>
+              match.startsWith("(") ? `(line ${sourceLine})` : `Line ${sourceLine}:`,
+            )
+          : error?.message;
+      output.textContent = [result.stdout || "(No output)", result.stderr, errorMessage].filter(Boolean).join("\n");
       consoleOutput.textContent = output.textContent;
+      debugHelp.replaceChildren();
+      if (error) {
+        const line = sourceLine;
+        debugHelp.append(
+          el("strong", "", line ? `Try line ${line}` : "Debugging hint"),
+          el("p", "", beginnerHint(errorMessage ?? error.message, host.lang)),
+        );
+        if (line)
+          debugHelp.append(button(`Go to line ${line}`, () => focusEditorLine(code, line), "studio-small-action"));
+      }
       feedback.textContent = error
         ? "Check the console and try again. Practice never costs hearts."
         : "Run complete · No hearts or gems spent";
+      if (!error && activeProjectQuest) {
+        const quest = activeProjectQuest;
+        const expected = quest.steps[questStep]?.expectedOutput;
+        if (expected && result.stdout.trim() === expected) {
+          questStep = Math.min(quest.steps.length, questStep + 1);
+          saveProjectQuestProgress(host.adventureId ?? `guest-${host.lang}`, quest.id, questStep);
+          renderProjectQuest();
+          feedback.textContent =
+            questStep === quest.steps.length
+              ? "Project complete! Your multi-file quest is saved."
+              : "Milestone complete! The next project step is ready.";
+        } else if (expected) {
+          feedback.textContent = `The project ran. Compare the output with the current quest goal: ${expected}`;
+        }
+      }
       select(0);
     } catch {
       if (panel.isConnected) feedback.textContent = "Couldn't run this program. Try again; no progress changed.";
@@ -559,11 +615,159 @@ export function openTablet(host: TabletHost): () => void {
     },
     "studio-small-action",
   );
-  toolbar.append(run, el("span", "", "Ctrl / ⌘ + Enter to run"), connect);
+  const share = button(
+    "Export project",
+    () => {
+      try {
+        const blob = new Blob([serializeWorkspaceShare(project, host.lang)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${host.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "player"}-${host.lang}.codequest.json`;
+        link.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        status.textContent = "Project backup downloaded. Share the .codequest.json file with a friend.";
+      } catch {
+        status.textContent = "Could not export this project.";
+      }
+    },
+    "studio-small-action",
+  );
+  const importInput = el("input", "studio-import-input");
+  importInput.type = "file";
+  importInput.accept = ".json,.codequest.json,application/json";
+  importInput.setAttribute("aria-label", "Choose a CodeQuest project to import");
+  const importProject = button("Import project", () => importInput.click(), "studio-small-action");
+  importInput.addEventListener("change", () => {
+    const file = importInput.files?.[0];
+    if (!file) return;
+    void file
+      .text()
+      .then((source) => {
+        if (activeProjectQuest) throw new Error("Return to My project before importing a shared project.");
+        const imported = parseWorkspaceShare(source, host.lang);
+        connectedFolder = null;
+        project = imported;
+        entryPath = imported.entryPath ?? Object.keys(imported.files)[0] ?? mainPath;
+        activePath = entryPath;
+        openFiles.splice(0, openFiles.length, activePath);
+        selectedFolder = parentPath(activePath);
+        code.value = project.files[activePath] ?? "";
+        monacoEditor?.setModel(activePath, code.value);
+        renderEditorTabs();
+        changed();
+        status.textContent = `Imported ${file.name} · saved as your ${host.lang} project`;
+      })
+      .catch((error: unknown) => {
+        status.textContent = error instanceof Error ? error.message : "Could not import this project.";
+      })
+      .finally(() => {
+        importInput.value = "";
+      });
+  });
+  toolbar.append(run, el("span", "", "Ctrl / ⌘ + Enter to run"), connect, share, importProject, importInput);
   const javaShortcutHint =
     host.lang === "java"
       ? el("p", "studio-java-shortcuts", `Java snippets: ${JAVA_SHORTCUTS} · Press Ctrl+Space for suggestions`)
       : null;
+  const renderProjectQuest = () => {
+    projectsPane.replaceChildren();
+    projectsPane.append(
+      el("span", "eyebrow", "MULTI-FILE PROJECTS"),
+      el("h3", "", "Build something that works together"),
+    );
+    for (const quest of PROJECT_QUESTS) {
+      const card = el("article", "studio-project-card");
+      const progress = readProjectQuestProgress(host.adventureId ?? `guest-${host.lang}`, quest.id);
+      card.append(
+        el("h4", "", quest.title),
+        el("p", "", quest.description),
+        el("p", "studio-project-progress", `${progress} / ${quest.steps.length} project milestones`),
+      );
+      if (activeProjectQuest?.id === quest.id) {
+        questStep = readProjectQuestProgress(host.adventureId ?? `guest-${host.lang}`, quest.id);
+        const step = quest.steps[questStep];
+        card.append(
+          el(
+            "strong",
+            "",
+            step ? `${questStep + 1}. ${step.title}` : "Project complete! You built a working multi-file feature.",
+          ),
+          ...(step ? [el("p", "", step.prompt), el("p", "studio-project-hint", `Hint: ${step.hint}`)] : []),
+          button(
+            "Open project files",
+            () => {
+              select(0);
+              focusCode();
+            },
+            "button primary",
+          ),
+          button("Return to My project", () => leaveProjectQuest(), "studio-small-action"),
+        );
+      } else {
+        card.append(
+          button(
+            progress ? "Resume project quest" : "Start project quest",
+            () => launchProjectQuest(quest),
+            "button primary",
+          ),
+        );
+      }
+      projectsPane.append(card);
+    }
+  };
+  const launchProjectQuest = (quest: (typeof PROJECT_QUESTS)[number]) => {
+    persistProject();
+    if (connectedFolder) {
+      personalFolder = connectedFolder;
+      connectedFolder = null;
+    }
+    activeProjectQuest = quest;
+    const adventureKey = host.adventureId ?? `guest-${host.lang}`;
+    workspaceKey = projectQuestWorkspaceKey(adventureKey, quest.id);
+    project = readWorkspace(workspaceKey, createProjectQuestWorkspace(quest, host.lang));
+    entryPath = quest.entryPath[host.lang];
+    if (!project.files[entryPath]) project = createProjectQuestWorkspace(quest, host.lang);
+    project.entryPath = entryPath;
+    activePath = entryPath;
+    questStep = readProjectQuestProgress(adventureKey, quest.id);
+    openFiles.splice(0, openFiles.length, activePath);
+    selectedFolder = "src";
+    expandedFolders.add("src");
+    code.value = project.files[activePath] ?? "";
+    monacoEditor?.setModel(activePath, code.value);
+    code.setAttribute("aria-label", `Code editor: ${activePath}`);
+    renderEditorTabs();
+    renderTree();
+    changed();
+    renderProjectQuest();
+    select(6);
+  };
+  const leaveProjectQuest = () => {
+    if (!activeProjectQuest) return;
+    persistProject();
+    activeProjectQuest = null;
+    workspaceKey = personalWorkspaceKey;
+    project = readWorkspace(workspaceKey, createWorkspace(mainPath, initialCode));
+    entryPath = project.entryPath ?? mainPath;
+    if (!project.files[entryPath]) entryPath = mainPath;
+    activePath = entryPath;
+    openFiles.splice(0, openFiles.length, activePath);
+    selectedFolder = parentPath(activePath);
+    if (personalFolder) {
+      connectedFolder = personalFolder;
+      personalFolder = null;
+    }
+    code.value = project.files[activePath] ?? initialCode;
+    monacoEditor?.setModel(activePath, code.value);
+    code.setAttribute("aria-label", `Code editor: ${activePath}`);
+    renderEditorTabs();
+    renderTree();
+    changed();
+    renderProjectQuest();
+    select(0);
+  };
+  renderProjectQuest();
   const createEntry = (kind: "file" | "folder") => {
     const form = el("form", "studio-create-form");
     const input = el("input", "studio-create-input");
@@ -634,7 +838,7 @@ export function openTablet(host: TabletHost): () => void {
   inlineConsole.append(el("div", "studio-output-title", "OUTPUT"), output);
   workspace.append(editorHeader, codeGrid, toolbar);
   if (javaShortcutHint) workspace.append(javaShortcutHint);
-  workspace.append(inlineConsole, feedback);
+  workspace.append(inlineConsole, feedback, debugHelp);
   editorPane.append(fileTree, workspace);
   examplesPane.append(
     el("h3", "", "Start with something small"),

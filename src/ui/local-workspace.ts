@@ -1,3 +1,5 @@
+import type { Lang } from "../runners/types";
+
 export type WorkspaceFiles = Record<string, string>;
 export type WorkspaceData = { version: 1; entryPath?: string; files: WorkspaceFiles; folders: string[] };
 
@@ -22,6 +24,7 @@ type FolderPickerWindow = Window & {
 
 const MAX_FILES = 120;
 const MAX_FILE_BYTES = 512_000;
+const MAX_PROJECT_SHARE_CHARS = 2_000_000;
 const TEXT_FILE =
   /\.(?:c|cc|cpp|cs|css|go|h|html|java|js|json|jsx|kt|md|mjs|php|py|rb|rs|sh|sql|swift|ts|tsx|txt|xml|yaml|yml)$/i;
 const SKIP_DIRECTORY = new Set([".git", ".next", ".venv", "build", "dist", "node_modules", "vendor"]);
@@ -166,6 +169,49 @@ export function writeWorkspace(key: string, workspace: WorkspaceData): boolean {
   } catch {
     return false;
   }
+}
+
+export function serializeWorkspaceShare(workspace: WorkspaceData, language: Lang): string {
+  return JSON.stringify({
+    format: "codequest-project",
+    version: 1,
+    language,
+    exportedAt: new Date().toISOString(),
+    workspace,
+  });
+}
+
+export function parseWorkspaceShare(source: string, language: Lang): WorkspaceData {
+  if (source.length > MAX_PROJECT_SHARE_CHARS) throw new Error("This project file is too large to import.");
+  let data: unknown;
+  try {
+    data = JSON.parse(source);
+  } catch {
+    throw new Error("This isn't a valid CodeQuest project file.");
+  }
+  if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("This isn't a CodeQuest project file.");
+  const share = data as { format?: unknown; version?: unknown; language?: unknown; workspace?: unknown };
+  if (share.format !== "codequest-project" || share.version !== 1 || share.language !== language)
+    throw new Error("This project is for a different coding language or an unsupported version.");
+  if (
+    !share.workspace ||
+    typeof share.workspace !== "object" ||
+    Array.isArray(share.workspace) ||
+    !Array.isArray((share.workspace as WorkspaceData).folders) ||
+    !isWorkspaceFiles((share.workspace as WorkspaceData).files)
+  )
+    throw new Error("This project file doesn't contain a valid workspace.");
+  const workspace = share.workspace as WorkspaceData;
+  const files = Object.fromEntries(Object.entries(workspace.files).filter(([path]) => isSafePath(path)));
+  const folders = [...new Set(workspace.folders.filter(isSafePath))];
+  if (Object.keys(files).length === 0) throw new Error("This project has no safe source files to open.");
+  const entryPath =
+    typeof workspace.entryPath === "string" &&
+    isSafePath(workspace.entryPath) &&
+    files[workspace.entryPath] !== undefined
+      ? workspace.entryPath
+      : Object.keys(files)[0];
+  return { version: 1, entryPath, files, folders };
 }
 
 export async function chooseLocalFolder(): Promise<{ handle: LocalDirectoryHandle; workspace: WorkspaceData }> {

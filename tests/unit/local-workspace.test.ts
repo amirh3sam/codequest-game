@@ -4,8 +4,10 @@ import {
   createWorkspace,
   deleteWorkspaceEntry,
   javaClassTemplate,
+  parseWorkspaceShare,
   readWorkspace,
   renameWorkspaceEntry,
+  serializeWorkspaceShare,
   writeWorkspace,
 } from "../../src/ui/local-workspace";
 
@@ -69,6 +71,17 @@ describe("per-adventure project workspace", () => {
     expect(python).not.toContain("from player import Player");
     const external = combineProjectSources('import { Player } from "./Player.js";', {}, "javascript");
     expect(external).toContain('import { Player } from "./Player.js";');
+  });
+
+  it("exports and validates shareable projects for the selected language", () => {
+    const workspace = createWorkspace("src/practice.js", 'console.log("hello");');
+    const share = serializeWorkspaceShare(workspace, "javascript");
+    expect(parseWorkspaceShare(share, "javascript")).toEqual(workspace);
+    expect(() => parseWorkspaceShare(share, "python")).toThrow("different coding language");
+    const unsafe = JSON.parse(share) as { workspace: { files: Record<string, string> } };
+    unsafe.workspace.files["../../secrets.txt"] = "no";
+    expect(parseWorkspaceShare(JSON.stringify(unsafe), "javascript").files["../../secrets.txt"]).toBeUndefined();
+    expect(() => parseWorkspaceShare("x".repeat(2_000_001), "javascript")).toThrow("too large");
   });
 
   it("renames and deletes project entries with nested contents and keeps the run entry in sync", () => {

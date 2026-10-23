@@ -2,6 +2,7 @@ import { adventureStoryBeat } from "../content/adventure-story";
 import { BEACON_EVENTS } from "../content/community-beacon";
 import { dronePilot } from "../content/drone-pilot";
 import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
+import { PROJECT_QUESTS, readProjectQuestProgress } from "../content/project-quests";
 import type { AreaContent, Boss, Task } from "../content/schema";
 import village from "../content/village.json" with { type: "json" };
 import { loadAdventures, saveAdventure } from "../core/adventures";
@@ -34,6 +35,7 @@ import type { Lang, RunResult } from "../runners/types";
 import { WorkerHost } from "../runners/worker-host";
 import { openArcade } from "./arcade";
 import { openCommunityBeacon } from "./community-beacon";
+import { beginnerHint, diagnosticLine, focusEditorLine } from "./debug-guidance";
 import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
 import { openHubFinale } from "./hub-finale";
@@ -1064,6 +1066,41 @@ export class GameApp {
     districtSummary.append(el("span", "", "district bosses defeated"));
     summary.append(missionSummary, districtSummary);
     panel.append(summary);
+    const adventureKey = state.adventureId ?? `guest-${state.lang}`;
+    const badges = [
+      { title: "First Repair", detail: "Complete your first coding mission", earned: solvedMissions > 0 },
+      { title: "District Restorer", detail: "Defeat a district boss", earned: restoredDistricts > 0 },
+      { title: "Community Helper", detail: "Light the community beacon", earned: Boolean(state.discoveries?.beacon) },
+      {
+        title: "Badge Builder",
+        detail: "Finish the multi-file project quest",
+        earned: PROJECT_QUESTS.some((quest) => readProjectQuestProgress(adventureKey, quest.id) >= quest.steps.length),
+      },
+      {
+        title: "Skyline Sprinter",
+        detail: "Score 15 in Packet Dash",
+        earned: (state.games?.packetDashBest ?? 0) >= 15,
+      },
+      {
+        title: "Signal Architect",
+        detail: "Stack 6 signals in Signal Stack",
+        earned: (state.games?.signalStackBest ?? 0) >= 6,
+      },
+    ];
+    const badgeGrid = el("div", "adventure-badges");
+    badgeGrid.append(
+      ...badges.map(({ title, detail, earned }) => {
+        const badge = el("article", `adventure-badge${earned ? " earned" : " locked"}`);
+        badge.append(
+          el("span", "adventure-badge-mark", earned ? "✦" : "◇"),
+          el("strong", "", title),
+          el("p", "", detail),
+          el("small", "", earned ? "UNLOCKED" : "NOT YET"),
+        );
+        return badge;
+      }),
+    );
+    panel.append(el("h3", "badge-heading", "Adventure badges"), badgeGrid);
     const tracks = el("div", "skill-tracks");
     for (const [index, district] of village.worldAreas.entries()) {
       const id = district.id as GameState["currentArea"],
@@ -1377,7 +1414,8 @@ export class GameApp {
         }),
       );
     const output = el("pre", "output", "Your output will appear here."),
-      feedback = el("div", "feedback");
+      feedback = el("div", "feedback"),
+      debugHelp = el("div", "debug-guidance");
     const revealOutput = (text: string) => {
       output.textContent = text;
       output.classList.remove("console-reveal");
@@ -1414,6 +1452,15 @@ export class GameApp {
           const error = executionError(result);
           revealOutput(result.stdout || "(No output)");
           feedback.textContent = error?.message ?? "Run complete. Submit when you're ready.";
+          debugHelp.replaceChildren();
+          if (error) {
+            const line = diagnosticLine(error.message);
+            debugHelp.append(
+              el("strong", "", line ? `Try line ${line}` : "Debugging hint"),
+              el("p", "", beginnerHint(error.message, this.lang)),
+            );
+            if (line) debugHelp.append(button(`Go to line ${line}`, () => focusEditorLine(code, line)));
+          }
           gameAudio.play(error ? "error" : "success");
           const charge = readBatteryOutput(result.stdout);
           if (drone && !error && charge !== undefined) {
@@ -1505,7 +1552,7 @@ export class GameApp {
       }
     };
     actions.append(run, submit);
-    work.append(label, code, actions, el("span", "section-label", "OUTPUT"), output, feedback);
+    work.append(label, code, actions, el("span", "section-label", "OUTPUT"), output, feedback, debugHelp);
     columns.append(instructions, work);
     panel.append(columns);
     this.tabletCleanup = presentTaskConsoleOpening(panel, task, this.state.hero.name);

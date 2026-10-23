@@ -54,6 +54,90 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
   });
 }
 
+test("tablet gives a line-specific debugging hint and exports an importable project backup", async ({ page }) => {
+  await start(page, "javascript");
+  await page.keyboard.press("t");
+  await page.getByRole("tab", { name: "Examples", exact: true }).click();
+  await page.getByRole("button", { name: "Load debugging challenge", exact: true }).click();
+  await page.getByRole("button", { name: "Run practice code", exact: true }).click();
+  await expect(page.locator(".debug-guidance")).toContainText("Try line 2");
+  await expect(page.locator(".debug-guidance")).toContainText("Check the spelling");
+  await page.getByRole("button", { name: "Go to line 2", exact: true }).click();
+  await expect(page.getByLabel("Practice code", { exact: true })).toBeFocused();
+  const downloadEvent = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export project", exact: true }).click();
+  const download = await downloadEvent;
+  const downloadPath = await download.path();
+  expect(download.suggestedFilename()).toMatch(/\.codequest\.json$/);
+  expect(downloadPath).toBeTruthy();
+  await page.getByLabel("Practice code", { exact: true }).fill('console.log("changed");');
+  await page.locator(".studio-import-input").setInputFiles(downloadPath as string);
+  await expect(page.getByLabel("Practice code", { exact: true })).toHaveValue(/console\.log\(mesage\)/);
+});
+
+for (const lang of ["javascript", "typescript", "python", "java"] as const) {
+  test(`${lang}: multi-file Badge Builder quest saves both milestones`, async ({ page }) => {
+    test.setTimeout(180_000);
+    await start(page, lang);
+    await page.keyboard.press("t");
+    await page.getByRole("tab", { name: "Projects", exact: true }).click();
+    await page.getByRole("button", { name: "Start project quest", exact: true }).click();
+    await page.getByRole("tab", { name: "Code", exact: true }).click();
+    const editFile = async (path: string, source: string) => {
+      await page.locator(`.studio-file[title='${path}']`).click();
+      await page.getByLabel(`Code editor: ${path}`).fill(source);
+    };
+    const files: Record<Lang, { player: string; badge: string; main: string }> = {
+      javascript: {
+        player:
+          'export class Player {\n  constructor(name) { this.name = name; }\n  greeting() { return "Hello, " + this.name + "!"; }\n}',
+        badge:
+          'import { Player } from "./Player.js";\nexport class Badge {\n  constructor(player) { this.player = player; }\n  award() { return this.player.name + " earned the CodeQuest badge!"; }\n}',
+        main: 'import { Player } from "./Player.js";\nimport { Badge } from "./Badge.js";\nconst player = new Player("Kai");\nconsole.log(new Badge(player).award());',
+      },
+      typescript: {
+        player:
+          'export class Player {\n  constructor(public name: string) {}\n  greeting(): string { return "Hello, " + this.name + "!"; }\n}',
+        badge:
+          'import { Player } from "./Player.ts";\nexport class Badge {\n  constructor(private player: Player) {}\n  award(): string { return this.player.name + " earned the CodeQuest badge!"; }\n}',
+        main: 'import { Player } from "./Player.ts";\nimport { Badge } from "./Badge.ts";\nconst player = new Player("Kai");\nconsole.log(new Badge(player).award());',
+      },
+      python: {
+        player:
+          'class Player:\n    def __init__(self, name):\n        self.name = name\n\n    def greeting(self):\n        return f"Hello, {self.name}!"\n',
+        badge:
+          'from player import Player\n\nclass Badge:\n    def __init__(self, player):\n        self.player = player\n\n    def award(self):\n        return self.player.name + " earned the CodeQuest badge!"\n',
+        main: 'from player import Player\nfrom badge import Badge\n\nplayer = Player("Kai")\nprint(Badge(player).award())\n',
+      },
+      java: {
+        player:
+          'class Player {\n    private final String name;\n    Player(String name) { this.name = name; }\n    String getName() { return name; }\n    String greeting() { return "Hello, " + name + "!"; }\n}\n',
+        badge:
+          'class Badge {\n    private final Player player;\n    Badge(Player player) { this.player = player; }\n    String award() { return player.getName() + " earned the CodeQuest badge!"; }\n}\n',
+        main: 'public class Main {\n    public static void main(String[] args) {\n        Player player = new Player("Kai");\n        System.out.println(new Badge(player).award());\n    }\n}\n',
+      },
+    };
+    const paths: Record<Lang, { player: string; badge: string; main: string }> = {
+      javascript: { player: "src/Player.js", badge: "src/Badge.js", main: "src/Main.js" },
+      typescript: { player: "src/Player.ts", badge: "src/Badge.ts", main: "src/Main.ts" },
+      python: { player: "src/player.py", badge: "src/badge.py", main: "src/main.py" },
+      java: { player: "src/Player.java", badge: "src/Badge.java", main: "src/Main.java" },
+    };
+    await editFile(paths[lang].player, files[lang].player);
+    await page.getByRole("button", { name: "Run practice code", exact: true }).click();
+    await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("Hello, Ada!\n", { timeout: 60_000 });
+    await editFile(paths[lang].badge, files[lang].badge);
+    await editFile(paths[lang].main, files[lang].main);
+    await page.getByRole("button", { name: "Run practice code", exact: true }).click();
+    await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("Kai earned the CodeQuest badge!\n", {
+      timeout: 60_000,
+    });
+    await page.getByRole("tab", { name: "Projects", exact: true }).click();
+    await expect(page.locator(".studio-project-progress")).toHaveText("2 / 2 project milestones");
+    await expect(page.getByText("Project complete! You built a working multi-file feature.")).toBeVisible();
+  });
+}
+
 test("Java tablet builds and runs a project split across class files", async ({ page }) => {
   test.setTimeout(150_000);
   await start(page, "java");

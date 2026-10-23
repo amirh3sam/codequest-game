@@ -28,6 +28,14 @@ missions and tablet drafts. Progress is not synchronized across devices.
 
 Current game screenshots: [tech city](screenshots/tech-city.png), [guided drone lesson](screenshots/drone-lesson.png), [repair editor](screenshots/code-repair.png) and [developer tablet](screenshots/developer-tablet.png). Superseded planning pictures have been removed.
 
+The tablet now includes a saved multi-file project quest, beginner debugging
+hints with links to the relevant source line, and project backup/import through
+a language-checked `.codequest.json` file. Quest workspaces are saved separately
+from a player's personal project for each adventure. The Progress page includes
+unlockable badges earned through missions, exploration and arcade activities.
+Project files and badges remain local to each browser adventure unless the
+player exports a backup; this does not add accounts, cloud saves or multiplayer.
+
 ## 1. Problem
 Beginners find programming tutorials dry and quit early. Reading theory without practice doesn't stick, and practice sites feel like homework. CodeQuest teaches programming through a 2D top-down RPG. You walk a world, read short lessons found in the map, and solve real coding tasks to move forward.
 

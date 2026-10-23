@@ -2184,6 +2184,110 @@ small {
   font: 11px monospace;
   color: #89a9c0;
 }
+
+.studio-import-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.studio-projects {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: clamp(16px, 3vw, 30px);
+  overflow: auto;
+}
+.studio-project-card {
+  max-width: 760px;
+  padding: clamp(16px, 3vw, 24px);
+  border: 1px solid color-mix(in srgb, var(--language-accent) 35%, #66859d);
+  border-radius: 14px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--language-accent) 10%, #182439), #101927);
+  box-shadow: 0 16px 40px #0003;
+}
+.studio-project-card h4 {
+  margin: 5px 0;
+  color: #f0f6ff;
+  font-size: 20px;
+}
+.studio-project-card p {
+  max-width: 60ch;
+  color: #afc2d5;
+  line-height: 1.6;
+}
+.studio-project-card .studio-project-progress {
+  color: var(--language-accent);
+  font: 12px monospace;
+}
+.studio-project-card .studio-project-hint {
+  padding: 10px 12px;
+  border-left: 2px solid var(--language-accent);
+  background: #ffffff08;
+}
+.debug-guidance {
+  display: grid;
+  justify-items: start;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e7b96855;
+  border-radius: 8px;
+  background: #e7b9680c;
+  color: #f5d799;
+  font-size: 12px;
+}
+.debug-guidance p {
+  margin: 0;
+  color: #c5d1dc;
+  line-height: 1.5;
+}
+.adventure-badges {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 8px;
+  margin: 0 0 18px;
+}
+.badge-heading {
+  margin: 0 0 9px;
+  color: #edf7ff;
+  font-size: 15px;
+}
+.adventure-badge {
+  position: relative;
+  min-height: 102px;
+  padding: 12px;
+  border: 1px solid #6e8ba833;
+  border-radius: 9px;
+  background: #101b2a;
+}
+.adventure-badge.earned {
+  border-color: #75dbc588;
+  background: linear-gradient(145deg, #163a38, #121e2d);
+}
+.adventure-badge.locked {
+  opacity: 0.65;
+}
+.adventure-badge-mark {
+  float: right;
+  color: #79e6d3;
+  font-size: 20px;
+}
+.adventure-badge strong {
+  display: block;
+  color: #e8f1fc;
+  font-size: 12px;
+}
+.adventure-badge p {
+  margin: 5px 0;
+  color: #a9bdcf;
+  font-size: 10px;
+}
+.adventure-badge small {
+  color: #78ddc8;
+  font: 9px monospace;
+}
 .studio-java-shortcuts {
   flex-shrink: 0;
   overflow-x: auto;

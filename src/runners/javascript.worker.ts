@@ -26,7 +26,12 @@ self.onmessage = async ({ data }: MessageEvent<RunRequest | { warmup: true }>) =
       runMs: performance.now() - started,
       ...(syntaxError
         ? { compileErrors: [{ line: result.errorLine ?? 1, message: result.runtimeError ?? "Syntax error" }] }
-        : { runtimeError: result.runtimeError }),
+        : {
+            runtimeError:
+              result.runtimeError && result.errorLine !== undefined
+                ? `${result.runtimeError} (line ${result.errorLine})`
+                : result.runtimeError,
+          }),
     };
     post(response);
   } catch (error) {
