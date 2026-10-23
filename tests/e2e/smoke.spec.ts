@@ -47,6 +47,34 @@ test("game boots and shows the canvas", async ({ page }, testInfo) => {
   expect(errors).toEqual([]);
 });
 
+test("language colors are distinct and the first-run guide follows play", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".language-grid .choice")).toHaveCount(4);
+  const accents = await page
+    .locator(".language-grid .choice")
+    .evaluateAll((cards) => cards.map((card) => getComputedStyle(card).getPropertyValue("--language-accent").trim()));
+  expect(new Set(accents).size).toBe(4);
+  await page.getByRole("button", { name: "Start adventure", exact: true }).click();
+  await expect(page.locator(".field-guide-title")).toHaveText("1 / 3 · MOVE");
+  await page.keyboard.down("d");
+  await page.waitForTimeout(350);
+  await page.keyboard.up("d");
+  await expect(page.locator(".field-guide-title")).toHaveText("2 / 3 · MEET YOUR COURIER", { timeout: 5000 });
+  await page.getByRole("button", { name: "Mission", exact: true }).click();
+  await expect(page.locator(".field-guide-title")).toHaveText("3 / 3 · TRY A MISSION");
+  await expect(page.locator(".courier-intro")).toContainText("Kai");
+  await page.getByRole("button", { name: "Look around the city" }).click();
+  await page.getByRole("button", { name: "Skip guide" }).click();
+  await expect(page.locator(".field-guide")).toHaveCount(0);
+  await page.getByRole("button", { name: "Progress", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Your coding progress" })).toBeVisible();
+  await expect(page.getByText("0 / 16 missions")).toBeVisible();
+  await expect(page.getByRole("progressbar", { name: "Variable District missions completed" })).toHaveAttribute(
+    "aria-valuenow",
+    "0",
+  );
+});
+
 test("boy developer selection survives walking and reloading", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Boy hero", exact: true }).click();

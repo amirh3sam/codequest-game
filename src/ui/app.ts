@@ -70,6 +70,8 @@ export class GameApp {
   private toastTimer = 0;
   private tabletCleanup: (() => void) | null = null;
   private tabletNavigation = false;
+  private onboardingStage = 3;
+  private onboardingOrigin: Position | null = null;
   private callbacks: VillageCallbacks = {
     interact: (id) => this.interact(id),
     position: (position) => this.storePosition(position),
@@ -358,10 +360,13 @@ export class GameApp {
       event.preventDefault();
       if (!isValidHeroName(this.heroName)) return;
       this.savingAllowed = library.status === "loaded";
-      this.begin({
-        ...createGame(this.lang, { kind: this.heroKind, name: this.heroName.trim() }, now()),
-        adventureId: crypto.randomUUID(),
-      });
+      this.begin(
+        {
+          ...createGame(this.lang, { kind: this.heroKind, name: this.heroName.trim() }, now()),
+          adventureId: crypto.randomUUID(),
+        },
+        true,
+      );
     });
     panel.append(
       form,
@@ -370,7 +375,7 @@ export class GameApp {
       this.soundToggle(),
     );
   }
-  private begin(state: GameState): void {
+  private begin(state: GameState, firstRun = false): void {
     if (!state.adventureId) state = { ...state, adventureId: `legacy-${state.lang}` };
     this.savingAllowed = loadAdventures().status === "loaded";
     if (!isAreaAvailable(state.currentArea)) state = enterArea(state, "variables", now());
@@ -391,9 +396,12 @@ export class GameApp {
     this.runner = new WorkerHost(state.lang);
     this.lang = state.lang;
     this.area = area;
+    this.onboardingStage = firstRun ? 0 : this.readOnboarding(state);
+    if (firstRun) this.saveOnboarding(0, state);
     this.hud.hidden = false;
     this.mobile.hidden = false;
     this.commit(state);
+    this.onboardingOrigin = this.onboardingStage === 0 ? this.scene.getPosition() : null;
     this.close();
     const runner = this.runner,
       adventureId = state.adventureId;
@@ -401,7 +409,38 @@ export class GameApp {
       if (this.runner === runner && this.state?.adventureId === adventureId)
         this.toast("The language runtime couldn't load. Run your code to retry.");
     });
-    this.toast("Welcome! Use WASD or arrows to walk. Press E near the guide or a terminal.");
+    this.toast(
+      this.onboardingStage < 3
+        ? "Your first steps are ready in the field guide."
+        : "Welcome back! Your adventure is ready.",
+    );
+  }
+  private onboardingKey(state = this.state): string | null {
+    return state?.adventureId ? `codequest:onboarding:v1:${state.adventureId}` : null;
+  }
+  private readOnboarding(state: GameState): number {
+    try {
+      const value = Number(localStorage.getItem(this.onboardingKey(state) ?? ""));
+      return Number.isInteger(value) && value >= 0 && value <= 3 ? value : 3;
+    } catch {
+      return 3;
+    }
+  }
+  private saveOnboarding(stage: number, state = this.state): void {
+    try {
+      const key = this.onboardingKey(state);
+      if (key) localStorage.setItem(key, String(stage));
+    } catch {
+      // The guide remains usable for this session if browser storage is full.
+    }
+  }
+  private advanceOnboarding(stage: number, completed = false): void {
+    if (this.onboardingStage >= 3 || stage <= this.onboardingStage) return;
+    this.onboardingStage = Math.min(3, stage);
+    this.onboardingOrigin = null;
+    this.saveOnboarding(this.onboardingStage);
+    this.renderHud();
+    if (completed) this.toast("First mission complete! You can see all eight steps in Tasks.");
   }
   private persist(): void {
     if (!this.state) return;
@@ -423,6 +462,11 @@ export class GameApp {
   }
   private storePosition(position: Position): void {
     if (!this.state) return;
+    if (
+      this.onboardingOrigin &&
+      Math.hypot(position.x - this.onboardingOrigin.x, position.y - this.onboardingOrigin.y) >= 24
+    )
+      this.advanceOnboarding(1);
     this.state = { ...this.state, position, updatedAt: now() };
     this.persist();
   }
@@ -582,7 +626,7 @@ export class GameApp {
     if (this.area.id === "variables") actions.append(button("Mission", () => this.mission()));
     actions.append(
       button("Lesson", () => this.lesson()),
-      button("Tasks", () => this.journal()),
+      button("Progress", () => this.journal()),
       button("Menu", () => this.pause()),
       this.soundToggle(),
     );
@@ -597,7 +641,7 @@ export class GameApp {
           : progress.solved.length === 8
             ? `${this.area.boss.name} is ready. Visit the data hub!`
             : this.area.id === "variables" && !isDroneRepaired(state)
-              ? "Help Kai launch the delivery drone · Mission"
+              ? `Help ${this.courierName()} launch the delivery drone ${String.fromCharCode(183)} Mission`
               : `Next: ${this.area.tasks[progress.solved.length]?.title ?? "Explore the district"}`,
       ),
     );
@@ -620,7 +664,28 @@ export class GameApp {
       el("span", "", "WASD / Arrows · Move     E / Space · Interact     T · Tablet     Esc · Menu"),
       this.saved,
     );
+    const onboarding = this.onboardingCard();
     this.hud.replaceChildren(identity, stats, actions, objective, location, footer);
+    if (onboarding) this.hud.append(onboarding);
+  }
+  private onboardingCard(): HTMLElement | null {
+    if (this.onboardingStage >= 3 || !this.state) return null;
+    const guide = el("aside", "field-guide");
+    guide.setAttribute("aria-label", "First steps guide");
+    const stages = [
+      ["1 / 3 · MOVE", "Use WASD or arrow keys. On a phone, hold a direction or tap the ground."],
+      ["2 / 3 · MEET YOUR COURIER", `Walk near ${this.courierName()} and press E / Space, or tap Interact.`],
+      [
+        "3 / 3 · TRY A MISSION",
+        `Talk with ${this.courierName()}, choose Create the training badge, then run your code before submitting.`,
+      ],
+    ] as const;
+    const [title, description] = stages[this.onboardingStage] ?? stages[2];
+    guide.append(el("span", "eyebrow", "FIELD GUIDE"), el("strong", "field-guide-title", title));
+    guide.append(el("p", "", description));
+    const skip = button("Skip guide", () => this.advanceOnboarding(3), "field-guide-skip");
+    guide.append(skip);
+    return guide;
   }
   private close(): void {
     this.tabletNavigation = false;
@@ -726,6 +791,7 @@ export class GameApp {
   }
   private mission(): void {
     if (!this.state || this.area.id !== "variables") return;
+    if (this.onboardingStage === 1) this.advanceOnboarding(2);
     if (canFightBoss(this.state, this.area) && !this.state.areas.variables.bossDefeated) {
       this.hubFinale();
       return;
@@ -893,7 +959,71 @@ export class GameApp {
   private journal(): void {
     if (!this.state) return;
     this.capturePosition();
-    const panel = this.panel("District missions", "Solve them in order. Each correct answer earns gems.");
+    const state = this.state;
+    const availableAreas = village.worldAreas.filter(({ id }) => isAreaAvailable(id as GameState["currentArea"]));
+    const totalMissions = availableAreas.reduce(
+      (total, { id }) => total + loadArea(state.lang, id as GameState["currentArea"]).tasks.length,
+      0,
+    );
+    const solvedMissions = availableAreas.reduce(
+      (total, { id }) => total + state.areas[id as GameState["currentArea"]].solved.length,
+      0,
+    );
+    const restoredDistricts = availableAreas.filter(
+      ({ id }) => state.areas[id as GameState["currentArea"]].bossDefeated,
+    ).length;
+    const panel = this.panel(
+      "Your coding progress",
+      "See the skills you are building, what is complete, and what is coming next.",
+      true,
+    );
+    const summary = el("div", "skill-progress-summary");
+    const missionSummary = el("div"),
+      districtSummary = el("div");
+    missionSummary.append(el("strong", "", `${solvedMissions} / ${totalMissions} missions`));
+    missionSummary.append(el("span", "", "across playable districts"));
+    districtSummary.append(el("strong", "", `${restoredDistricts} / ${availableAreas.length} districts restored`));
+    districtSummary.append(el("span", "", "district bosses defeated"));
+    summary.append(missionSummary, districtSummary);
+    panel.append(summary);
+    const tracks = el("div", "skill-tracks");
+    for (const [index, district] of village.worldAreas.entries()) {
+      const id = district.id as GameState["currentArea"],
+        active = isAreaAvailable(id),
+        progress = state.areas[id],
+        complete = progress.bossDefeated;
+      const track = el("article", `skill-track${active ? " playable" : " upcoming"}${complete ? " mastered" : ""}`);
+      track.append(
+        el("span", "eyebrow", `SKILL ${String(index + 1).padStart(2, "0")} · ${district.concept.toUpperCase()}`),
+        el("strong", "skill-track-name", district.name),
+      );
+      if (active) {
+        const label = el("span", "skill-track-count", `${progress.solved.length} / 8 missions`),
+          meter = el("div", "skill-track-meter");
+        meter.setAttribute("role", "progressbar");
+        meter.setAttribute("aria-label", `${district.name} missions completed`);
+        meter.setAttribute("aria-valuemin", "0");
+        meter.setAttribute("aria-valuemax", "8");
+        meter.setAttribute("aria-valuenow", String(progress.solved.length));
+        for (let step = 0; step < 8; step++) meter.append(el("span", step < progress.solved.length ? "complete" : ""));
+        const next = loadArea(state.lang, id).tasks[progress.solved.length];
+        track.append(
+          label,
+          meter,
+          el(
+            "p",
+            "",
+            complete
+              ? "Skill restored · District boss defeated."
+              : next
+                ? `Next: ${next.title}`
+                : "All missions complete · Visit the district boss.",
+          ),
+        );
+      } else track.append(el("span", "skill-coming-soon", "Coming soon"));
+      tracks.append(track);
+    }
+    panel.append(tracks);
     if (this.area.id === "variables")
       panel.append(button("Courier mission · Launch the drone", () => this.mission(), "button mission-link"));
     if (this.area.id === "variables")
@@ -1124,6 +1254,7 @@ export class GameApp {
             this.commit(
               boss ? defeatBoss(this.state, this.area, now()) : solveTask(this.state, this.area, task.id, now()),
             );
+            if (task.id === "variables-1" && this.onboardingStage === 2) this.advanceOnboarding(3, true);
             if (boss) {
               this.busy = false;
               this.victory();
@@ -1156,7 +1287,7 @@ export class GameApp {
                 ),
               );
             else if (task.id === "variables-1")
-              actions.prepend(button("Continue with Kai", () => this.mission(), "button primary"));
+              actions.prepend(button(`Continue with ${this.courierName()}`, () => this.mission(), "button primary"));
           } else {
             gameAudio.play("error");
             const transition = applySubmissionFailure(

@@ -1,5 +1,13 @@
 # Progress log (newest on top)
 
+## 2026-10-23 (first-run onboarding and skill progress)
+
+- **Language selection:** JavaScript, Python, TypeScript and Java now have distinct accent colors across their first-screen cards, selected state and focus styling.
+- **First-run guide:** each newly created adventure gets a dismissible three-step field guide. It explains movement on keyboard and mobile, meeting the selected adventure's courier, and safely running the first coding mission. The step is saved per adventure and resumes after reload.
+- **Skill progress:** the Progress panel now summarizes solved missions and restored playable districts, shows an accessible per-district mission meter and next task, and previews the five future skill tracks.
+- **Checks:** added a Chromium flow for all four distinct language colors, guide progression and dismissal, and progress totals/meters. The focused flow, 231 unit tests, lint and type checking passed.
+- **Release:** pending build, public push and production deployment.
+
 ## 2026-10-23 (player-specific battery courier)
 
 - **First district guide:** the delivery courier now appears as the opposite hero: selecting the boy shows Ava, and selecting the girl shows Kai. The map character, nameplate, battery mission portrait, introduction and task prompt use the same identity.

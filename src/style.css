@@ -503,13 +503,14 @@ h3 {
   gap: 10px;
 }
 .choice {
+  --language-accent: #f4cb55;
   position: relative;
   text-align: left;
   min-height: 118px;
   padding: 14px;
   color: #e9eedc;
-  border: 1px solid #6386b666;
-  background: linear-gradient(140deg, #28456988, #11213aaa);
+  border: 1px solid color-mix(in srgb, var(--language-accent) 45%, transparent);
+  background: linear-gradient(140deg, color-mix(in srgb, var(--language-accent) 13%, #172943), #11213aaa);
   border-radius: 10px;
   box-shadow: inset 0 1px #ffffff04;
 }
@@ -523,8 +524,18 @@ h3 {
   line-height: 1.5;
   margin-top: 9px;
 }
+.choice[data-language="python"] {
+  --language-accent: #63d5b5;
+}
+.choice[data-language="typescript"] {
+  --language-accent: #a496ff;
+}
+.choice[data-language="java"] {
+  --language-accent: #ff956e;
+}
 .choice strong {
   font-size: 13px;
+  color: color-mix(in srgb, var(--language-accent) 70%, #fff);
 }
 .choice .language-badge {
   display: grid;
@@ -533,42 +544,32 @@ h3 {
   height: 29px;
   margin: 0 0 10px;
   border-radius: 7px;
-  background: #e8cd7733;
-  color: #efcf79;
+  background: color-mix(in srgb, var(--language-accent) 18%, #101c2d);
+  color: var(--language-accent);
   font: bold 12px monospace;
-}
-.choice[data-language="python"] .language-badge {
-  background: #7bb5cc24;
-  color: #9dcedc;
-}
-.choice[data-language="typescript"] .language-badge {
-  background: #87a9e02b;
-  color: #9cbbeb;
-}
-.choice[data-language="java"] .language-badge {
-  background: #dea58b24;
-  color: #e7b39b;
 }
 .choice.selected::after {
   content: "✓";
   position: absolute;
   top: 12px;
   right: 13px;
-  color: var(--accent);
+  color: var(--language-accent);
   font-size: 13px;
 }
-.choice:hover,
 .button:hover:not(:disabled),
 .task-row:hover:not(:disabled) {
   background: #294b39;
 }
+.choice:hover {
+  background: linear-gradient(140deg, color-mix(in srgb, var(--language-accent) 25%, #172943), #172943);
+}
 .choice.selected,
 .hero-choice.selected {
-  border-color: #69d8ff;
-  background: linear-gradient(135deg, #27577866, #183654aa);
+  border-color: var(--language-accent, #69d8ff);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--language-accent, #69d8ff) 20%, #15273c), #183654aa);
   box-shadow:
-    inset 0 0 0 1px #69d8ff11,
-    0 3px 14px #0001;
+    inset 0 0 0 1px color-mix(in srgb, var(--language-accent, #69d8ff) 25%, transparent),
+    0 0 18px color-mix(in srgb, var(--language-accent, #69d8ff) 12%, transparent);
 }
 .hero-form {
   display: flex;
@@ -804,6 +805,146 @@ small {
   width: 260px;
   max-width: 390px;
   box-shadow: 0 7px 20px #16291e22;
+}
+.field-guide {
+  position: absolute;
+  z-index: 4;
+  top: 88px;
+  right: 0;
+  width: min(300px, 30vw);
+  padding: 13px 15px;
+  border: 1px solid #77dfce66;
+  border-right: 3px solid #77dfce;
+  border-radius: 12px 4px 4px 12px;
+  background: linear-gradient(125deg, #163b43f5, #14243af2);
+  box-shadow: 0 8px 26px #07101a55;
+  pointer-events: auto;
+}
+.field-guide .eyebrow {
+  display: block;
+  color: #83e4d4;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+.field-guide-title {
+  display: block;
+  margin-top: 6px;
+  color: #effffb;
+  font-size: 12px;
+}
+.field-guide p {
+  margin: 7px 0;
+  color: #c3d8dc;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.field-guide-skip {
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: #9dbdd0;
+  font-size: 10px;
+}
+.field-guide-skip:hover {
+  color: #fff;
+}
+.skill-progress-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 4px 0 16px;
+}
+.skill-progress-summary > div {
+  padding: 13px 15px;
+  border: 1px solid #69d8ff33;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #1b3857aa, #101c30);
+}
+.skill-progress-summary strong,
+.skill-progress-summary span {
+  display: block;
+}
+.skill-progress-summary strong {
+  color: #a8efff;
+  font-size: 18px;
+}
+.skill-progress-summary span {
+  margin-top: 5px;
+  color: #a8bdd0;
+  font-size: 11px;
+}
+.skill-tracks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.skill-track {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #49638077;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #15273d, #101929);
+}
+.skill-track.playable {
+  border-color: #65d9d377;
+}
+.skill-track.mastered {
+  border-color: #90e5ad99;
+  background: linear-gradient(145deg, #173b37, #101e2d);
+}
+.skill-track .eyebrow {
+  display: block;
+  color: #8adcd6;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.skill-track-name {
+  display: block;
+  margin: 5px 0 9px;
+  color: #eef7ff;
+  font-size: 14px;
+}
+.skill-track-count {
+  color: #b9d3e6;
+  font-size: 11px;
+}
+.skill-track-meter {
+  display: flex;
+  gap: 4px;
+  margin-top: 7px;
+}
+.skill-track-meter span {
+  flex: 1;
+  height: 5px;
+  border-radius: 4px;
+  background: #7695ad33;
+}
+.skill-track-meter .complete {
+  background: #69e2cb;
+  box-shadow: 0 0 8px #69e2cb44;
+}
+.skill-track p {
+  min-height: 32px;
+  margin: 9px 0 0;
+  color: #b6c7d5;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.skill-track.upcoming {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 88px;
+  opacity: 0.72;
+}
+.skill-coming-soon {
+  align-self: flex-start;
+  padding: 4px 7px;
+  border: 1px solid #7695ad44;
+  border-radius: 5px;
+  color: #9eb3c9;
+  font-size: 10px;
 }
 .objective .eyebrow {
   color: #8edfff;
@@ -1156,6 +1297,12 @@ small {
     width: 235px;
     padding: 9px 12px;
   }
+  .field-guide {
+    top: 88px;
+    right: 0;
+    width: min(270px, 38vw);
+    padding: 10px 12px;
+  }
   .location-banner {
     display: none;
   }
@@ -1181,6 +1328,12 @@ small {
   .hud-actions .button {
     font-size: 10px;
     padding: 7px;
+  }
+  .field-guide {
+    top: 175px;
+    left: 4px;
+    right: auto;
+    width: min(340px, calc(100vw - 16px));
   }
   .identity strong {
     max-width: 80px;
