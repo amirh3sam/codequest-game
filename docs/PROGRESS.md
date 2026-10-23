@@ -9,7 +9,7 @@
 - **Audio review:** `agent-sounds` is for Codex/Claude CLI session events and its README restricts the included game voice packs to personal, non-commercial use. Tone.js is a browser audio framework rather than a game sound pack, so the game keeps its original local Web Audio effects without another dependency.
 - **Screenshots:** added live captures of the arcade map, Packet Dash gameplay and task console to the game README and screenshot notes.
 - **Checks:** 231 unit tests, lint, TypeScript, production build and focused Chromium flows for footsteps, Packet Dash, the console opening/output and tablet missions passed.
-- **Release:** follow-up deployment pending; previous production version is `dpl_9bDumTgsnKdHoYFHaoCTqU2DqSoh` at https://codequest-game-inky.vercel.app/.
+- **Release:** source commit `151a44f` is public on `main`. Deployment `dpl_9W195iLJRFdqDV2t7NEe3Uhv7acV` is READY at https://codequest-game-inky.vercel.app/; the live alias returned HTTP 200.
 
 ## 2026-10-23 (touch controls, portable saves and staged hub repair)
 
