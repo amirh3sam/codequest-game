@@ -3,7 +3,7 @@
 - Added a world-space click ripple, persistent destination reticle and dotted route. Amber feedback explains an adjusted destination. Keyboard, D-pad, drag steering, panels and district changes cancel navigation; a stalled route can replan before stopping with feedback. Far-terminal clicks now describe the walk instead of telling the player to walk closer manually.
 - Filled out building collision footprints from the existing audited building bounds, so later-map routes cannot pass through the upper parts of visible buildings. Skyline geometry remains outside walking bounds, and tree trunks/canopy occlusion remain separate.
 - **Checks:** 270 unit tests, lint, typecheck, production build and diff checks passed. All 13 focused Chromium scenarios passed: real diagonal/blocked map clicks, destination feedback, manual cancellation, mouse drag/facing, mobile holds/taps and rotation, terminal/tree collisions and return transit. Every task and boss in all 23 maps was routed and followed with real collision steps (207 approaches). The route/marker screenshot was visually reviewed.
-- **Release:** validated; publishing to the public repository and existing CodeQuest Vercel project.
+- **Release:** source commit `44dcd8c` is public on `main`. Deployment `dpl_Dwm9wEu6E1S4kVPois4sZXjCrAXp` is READY at https://codequest-game-inky.vercel.app; an anonymous request confirmed bundle `index-2Fav-7-x.js`. A production mouse click toward (700, 610) arrived and saved at (699.75, 609.75), with no browser errors.
 - **Blockers:** none.
 
 ## 2026-10-24 (detailed city architecture and task monitor startup)
