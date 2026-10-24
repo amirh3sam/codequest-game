@@ -26,7 +26,7 @@
 - Added a physical, illustrated portal beside each story district boss. It stays offline and noninteractive until that boss is defeated; an open portal takes the player to the world map to choose an unlocked destination. Removed direct HUD and victory teleport shortcuts.
 - Fixed vertical mouse-click movement by snapping near-vertical click targets to the player's horizontal axis, so up/down movement selects the proper single-character sprite frames.
 - **Checks:** 251 unit tests passed; lint, typecheck, production build and diff checks passed. Eight focused Chromium checks passed for portal lock/unlock and destination selection, vertical mouse-click sprites, category gates and 8-task boss progression.
-- **Release:** pending public commit and production deployment.
+- **Release:** source commit `a72269d` is public on `main`. Production deployment `dpl_6LMjhXc3oMk4QwEat5rjsoeaH5Gt` is READY at https://codequest-game-inky.vercel.app; `vercel curl` confirmed the production alias serves bundle `index-CswZd-m-.js`.
 - **Blockers:** none.
 
 ## 2026-10-23 (all seven story districts and direct map access)
