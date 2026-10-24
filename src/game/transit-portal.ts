@@ -2,6 +2,8 @@ import type Phaser from "phaser";
 import type { Position } from "../core/state";
 import type { Solid } from "./collision";
 
+const PORTAL_SCALE = 0.65;
+
 /** A physical city transit building with a holographic doorway and raised landing pad. */
 export class TransitPortal {
   readonly view: Phaser.GameObjects.Container;
@@ -14,7 +16,7 @@ export class TransitPortal {
   private active = false;
 
   constructor(scene: Phaser.Scene, reducedMotion: boolean, use: () => void) {
-    this.view = scene.add.container(0, 0).setName("level-portal");
+    this.view = scene.add.container(0, 0).setScale(PORTAL_SCALE).setName("level-portal");
     this.art = scene.add.graphics();
     this.field = scene.add.graphics();
     this.name = scene.add
@@ -57,7 +59,7 @@ export class TransitPortal {
     this.active = active;
     this.view
       .setPosition(position.x, position.y)
-      .setDepth(position.y + 12)
+      .setDepth(position.y + 12 * PORTAL_SCALE)
       .setVisible(visible);
     this.name.setText(`TRANSIT / ${String(level).padStart(2, "0")}`);
     this.status
@@ -128,6 +130,12 @@ export class TransitPortal {
   }
 
   get solid(): Solid {
-    return { id: "level-portal", x: this.position.x - 55, y: this.position.y - 15, width: 110, height: 39 };
+    return {
+      id: "level-portal",
+      x: this.position.x - 55 * PORTAL_SCALE,
+      y: this.position.y - 15 * PORTAL_SCALE,
+      width: 110 * PORTAL_SCALE,
+      height: 39 * PORTAL_SCALE,
+    };
   }
 }

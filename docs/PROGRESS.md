@@ -1,3 +1,9 @@
+## 2026-10-24 (smaller transit buildings)
+- Reduced transit buildings to 65% of their previous width and height across all 23 maps. Their click areas scale with the artwork, and collision footprints use the same scale.
+- **Checks:** lint, typecheck, production build and diff checks passed. Chromium confirmed physical portal clicks, return travel and safe portal arrivals in all 23 maps; the smaller artwork was visually reviewed.
+- **Release:** pending public commit and production deployment.
+- **Blockers:** none.
+
 ## 2026-10-24 (23 city maps, return transit and programmable lighting)
 - All 23 world-map levels are playable districts with eight terminals and one boss each (184 tasks, 23 bosses). The 16 category districts have distinct routes, palettes, skylines and topic landmarks. City Progress now lists the same 23 numbered districts. Tablet and map completions share the adventure state, and released seven-map saves migrate with their course checkpoints and drafts.
 - Replaced the simple arch with a raised transit building, glass doorway, steel columns and holographic lighting. Transit is active in every unlocked map, including unfinished districts; choosing an unlocked destination places the developer safely beside its building. Locked destinations remain disabled.
