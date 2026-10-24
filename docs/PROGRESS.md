@@ -4,7 +4,7 @@
 - Added mobile Chromium and WebKit coverage for real touches on both tablet Run and task Run in JavaScript, TypeScript, Python and Java, plus an intentionally incorrect compiler MIME response that reproduces the streaming TypeError and verifies recovery. CI installs WebKit for these checks.
 - **Diagnosis:** current mobile WebKit ran all four production runtimes before the change. The original phone/browser, language and full error text were requested but have not been supplied, so the original device-specific diagnosis remains unconfirmed. The changes address reproduced streaming/startup and short-screen failures.
 - **Checks:** 260 unit tests, lint, typecheck, production build and diff checks passed. All 33 focused browser checks passed, including mobile execution/fallbacks, rotation/touch controls, the full Java runner suite, all four desktop language editors, Explorer resizing and narrow-screen layout. The updated mobile output/status layout was visually reviewed.
-- **Release:** validated; publishing to the public repository and existing CodeQuest Vercel project.
+- **Release:** source commit `74e7272` is public on `main`. Deployment `dpl_CpuTQKFSSwhX5PyxebuWoBQC5GcL` is READY at https://codequest-game-inky.vercel.app; an anonymous request confirmed bundle `index-CsWfStwV.js`. A production mobile WebKit check tapped the real Java Run button and received `Mobile run OK` with no browser errors.
 - **Blockers:** none for publishing these fixes; exact original phone error needs the requested device details if it persists.
 
 ## 2026-10-24 (compact boss panels, mobile landscape play and stable arcade rounds)
