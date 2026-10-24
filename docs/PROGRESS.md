@@ -1,7 +1,7 @@
 ## 2026-10-23 (Study Path Variables unlock consistency)
 - Made the first Study Path topic, Variables & Data Types, available from the start, matching the already-playable Variable Village. The world map and tablet use the same unlock rule; every later category still unlocks after the previous category boss.
 - **Checks:** all 251 unit tests passed; lint and typecheck passed. Chromium verified the first topic opens from a fresh game, subsequent categories remain locked, and category progress remains sequential after story completion.
-- **Release:** pending validation and publication.
+- **Release:** source commit `3899690` is public on `main`. Production deployment `dpl_66r2pePjEED1uAF87kMeT59vkftE` is READY at https://codequest-game-inky.vercel.app/; `vercel curl` confirmed the production alias serves the updated build.
 - **Next:** continue improving game activities and lessons.
 - **Blockers:** none.
 
