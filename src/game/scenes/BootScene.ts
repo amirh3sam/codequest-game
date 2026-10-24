@@ -6,6 +6,7 @@ import { canFightBoss, canSolveTask, type GameState, isAreaUnlocked, type Positi
 import { buildAdventureWorld, type DistrictWorld } from "../adventure-world";
 import { SPRITES, TILESETS } from "../assets";
 import { gameAudio } from "../audio";
+import { ClickDestination } from "../click-destination";
 import { canStandAt, moveWithCollisions, type Solid } from "../collision";
 import { CommunityBeacon } from "../community-beacon";
 import { type ControlScheme, directionKeys } from "../control-scheme";
@@ -14,6 +15,7 @@ import { DistrictLighting } from "../district-lighting";
 import { DroneQuest } from "../drone-quest";
 import { createHeroTextures, type Facing, heroFrame } from "../hero-sprites";
 import { HubSignals } from "../hub-signals";
+import { findWalkingRoute } from "../navigation";
 import { createQuestProps } from "../quest-props";
 import { TransitPortal } from "../transit-portal";
 
@@ -63,6 +65,11 @@ export class BootScene extends Phaser.Scene {
   private walked = 0;
   private touchAxis = { x: 0, y: 0 };
   private tapTarget: Position | null = null;
+  private route: Position[] = [];
+  private clickRequest: Position | null = null;
+  private clickMarker!: ClickDestination;
+  private stalledFor = 0;
+  private navigationRetries = 0;
   private mouseDragPointer: number | null = null;
   private mouseDragStart = { x: 0, y: 0 };
   private mouseSteering = false;
@@ -132,6 +139,7 @@ export class BootScene extends Phaser.Scene {
       this.callbacks?.interact("discovery-beacon");
     });
     this.hubSignals = new HubSignals(this);
+    this.clickMarker = new ClickDestination(this, this.reducedMotion);
     this.prompt = this.add
       .text(480, 512, "", {
         fontFamily: "monospace",
@@ -153,16 +161,8 @@ export class BootScene extends Phaser.Scene {
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (!this.blocked && this.state && pointer.event.target === this.game.canvas) {
         const target = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-        const camera = this.cameras.main;
-        const screenPosition = {
-          x: camera.x + (this.position.x - camera.scrollX) * camera.zoom,
-          y: camera.y + (this.position.y - camera.scrollY) * camera.zoom,
-        };
-        const screenDx = pointer.x - screenPosition.x;
-        const screenDy = pointer.y - screenPosition.y;
-        if (Math.abs(screenDx) < Math.abs(screenDy) * 1.5) target.x = this.position.x;
-        else if (Math.abs(screenDy) < Math.abs(screenDx) * 1.5) target.y = this.position.y;
-        this.tapTarget = target;
+        if (pointer.event instanceof MouseEvent && pointer.button !== 0) return;
+        this.walkTo(target);
         if (pointer.event instanceof MouseEvent && pointer.button === 0) {
           this.mouseDragPointer = pointer.id;
           this.mouseDragStart = { x: pointer.x, y: pointer.y };
@@ -175,8 +175,8 @@ export class BootScene extends Phaser.Scene {
       const dx = pointer.x - this.mouseDragStart.x;
       const dy = pointer.y - this.mouseDragStart.y;
       if (Math.hypot(dx, dy) < 14) return;
+      if (!this.mouseSteering) this.cancelClickMovement();
       this.mouseSteering = true;
-      this.tapTarget = null;
       this.touchAxis = {
         x: Math.abs(dx) >= 14 ? Math.sign(dx) : 0,
         y: Math.abs(dy) >= 14 ? Math.sign(dy) : 0,
@@ -260,16 +260,17 @@ export class BootScene extends Phaser.Scene {
       width: chest ? 48 : id === "arcade" ? 42 : 32,
       height: chest ? 25 : id === "arcade" ? 30 : 18,
     });
-    pad.on("pointerdown", () => {
-      if (!this.blocked) {
+    pad.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      if (!this.blocked && pointer.event.target === this.game.canvas) {
         if (this.distance(marker) <= 68) this.interact(marker);
-        else this.callbacks?.message("Walk closer, then press E to interact.");
+        else this.callbacks?.message("Walking over. Press E when you're nearby.");
       }
     });
     this.markers.push(marker);
   }
   setSession(state: GameState | null, area: AreaContent | null, callbacks: VillageCallbacks): void {
     const previous = this.state;
+    if (!state || previous?.currentArea !== state.currentArea) this.cancelClickMovement();
     this.state = state;
     this.area = area;
     this.callbacks = callbacks;
@@ -416,7 +417,7 @@ export class BootScene extends Phaser.Scene {
     if (blocked) this.cancelHubTour();
     this.blocked = blocked;
     this.touchAxis = { x: 0, y: 0 };
-    this.tapTarget = null;
+    this.cancelClickMovement();
     this.mouseDragPointer = null;
     this.mouseSteering = false;
     this.input.keyboard?.resetKeys();
@@ -428,23 +429,53 @@ export class BootScene extends Phaser.Scene {
   setTouchAxis(x: -1 | 0 | 1, y: -1 | 0 | 1): void {
     if (this.blocked) return;
     this.touchAxis = { x, y };
-    if (x || y) this.tapTarget = null;
+    if (x || y) this.cancelClickMovement();
   }
   setControlScheme(scheme: ControlScheme): void {
     this.controlScheme = scheme;
     this.input.keyboard?.resetKeys();
   }
   touchStep(x: -1 | 0 | 1, y: -1 | 0 | 1): void {
-    this.tapTarget = null;
+    this.cancelClickMovement();
     if (this.blocked || !this.state || !this.area) return;
     const length = Math.hypot(x, y) || 1;
     this.tapTarget = moveWithCollisions(this.position, (x * 36) / length, (y * 36) / length, {
       bounds: districtLayout(this.area.id).bounds,
       solids: this.worldSolids(),
     });
+    this.route = [this.tapTarget];
     this.facing = x ? (x < 0 ? "west" : "east") : y < 0 ? "north" : "south";
     const sprite = this.state.hero.kind === "girl" ? SPRITES.heroGirl : SPRITES.heroBoy;
     this.hero.setTexture(sprite.texture, heroFrame(this.facing));
+  }
+  private cancelClickMovement(): void {
+    this.tapTarget = null;
+    this.route = [];
+    this.clickRequest = null;
+    this.stalledFor = 0;
+    this.navigationRetries = 0;
+    this.clickMarker?.clear();
+  }
+  private walkTo(requested: Position): void {
+    if (this.blocked || !this.state || !this.area) return;
+    const route = findWalkingRoute(this.position, requested, {
+      bounds: districtLayout(this.area.id).bounds,
+      solids: this.worldSolids(),
+    });
+    this.cancelClickMovement();
+    if (!route) {
+      this.callbacks?.message("That spot cannot be reached from here. Choose a clear place on the map.");
+      return;
+    }
+    this.clickMarker.show(this.position, requested, route);
+    if (route.adjusted) this.callbacks?.message("Walking to the nearest reachable spot.");
+    if (!route.points.length) {
+      this.clickMarker.arrive();
+      return;
+    }
+    this.tapTarget = route.destination;
+    this.route = route.points;
+    this.clickRequest = { ...requested };
   }
   focusTablet(): () => void {
     const camera = this.cameras.main,
@@ -583,19 +614,38 @@ export class BootScene extends Phaser.Scene {
     let dy =
       Number(pressed(movement.down) || (arrowAlternate && pressed("DOWN")) || this.touchAxis.y > 0) -
       Number(pressed(movement.up) || (arrowAlternate && pressed("UP")) || this.touchAxis.y < 0);
-    if (!dx && !dy && this.tapTarget) {
-      const tx = this.tapTarget.x - this.position.x,
-        ty = this.tapTarget.y - this.position.y;
-      if (Math.hypot(tx, ty) < 8) this.tapTarget = null;
-      else {
-        dx = Math.sign(tx);
-        dy = Math.sign(ty);
+    const step = (150 * Math.min(delta, 40)) / 1000;
+    const manual = Boolean(dx || dy);
+    if (manual) {
+      if (this.tapTarget) this.cancelClickMovement();
+      const length = Math.hypot(dx, dy) || 1;
+      dx *= step / length;
+      dy *= step / length;
+    } else if (this.tapTarget) {
+      let advanced = false;
+      while (
+        this.route[0] &&
+        Math.hypot(this.route[0].x - this.position.x, this.route[0].y - this.position.y) <= 0.25
+      ) {
+        this.route.shift();
+        advanced = true;
+      }
+      const next = this.route[0];
+      if (next) {
+        const tx = next.x - this.position.x,
+          ty = next.y - this.position.y;
+        const length = Math.hypot(tx, ty);
+        const travel = Math.min(step, length);
+        dx = (tx / length) * travel;
+        dy = (ty / length) * travel;
+        if (advanced && this.clickRequest) this.clickMarker.updatePath(this.position, this.route);
+      } else {
+        this.tapTarget = null;
+        if (this.clickRequest) this.clickMarker.arrive();
+        this.clickRequest = null;
+        this.stalledFor = 0;
       }
     }
-    const length = Math.hypot(dx, dy) || 1;
-    const step = (150 * Math.min(delta, 40)) / 1000;
-    dx *= step / length;
-    dy *= step / length;
     const before = this.position;
     this.position = moveWithCollisions(before, dx, dy, {
       bounds: districtLayout(this.area.id).bounds,
@@ -603,8 +653,22 @@ export class BootScene extends Phaser.Scene {
     });
     const distance = Math.hypot(this.position.x - before.x, this.position.y - before.y);
     const moving = distance > 0.01;
+    if (this.clickRequest && this.tapTarget) {
+      this.stalledFor = moving ? 0 : this.stalledFor + Math.min(delta, 40);
+      if (this.stalledFor >= 200) {
+        const requested = { ...this.clickRequest },
+          attempts = this.navigationRetries + 1;
+        if (attempts <= 2) {
+          this.walkTo(requested);
+          this.navigationRetries = attempts;
+        } else {
+          this.cancelClickMovement();
+          this.callbacks?.message("The route changed. Choose another clear spot to continue.");
+        }
+      }
+    }
     if (moving) this.dirtyPosition = true;
-    if (dx) this.facing = dx < 0 ? "west" : "east";
+    if (Math.abs(dx) >= Math.abs(dy) && dx) this.facing = dx < 0 ? "west" : "east";
     else if (dy) this.facing = dy < 0 ? "north" : "south";
     const previousStep = Math.floor(this.walked / 24);
     this.walked = moving ? this.walked + distance : 0;

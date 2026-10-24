@@ -1,6 +1,8 @@
 import Phaser from "phaser";
 import { loadGame, saveGame } from "./core/save";
 import { createGame } from "./core/state";
+import { canStandAt, moveWithCollisions } from "./game/collision";
+import { findWalkingRoute } from "./game/navigation";
 import { BootScene } from "./game/scenes/BootScene";
 import type { Lang } from "./runners/types";
 import { WorkerHost } from "./runners/worker-host";
@@ -33,5 +35,6 @@ if (import.meta.env.MODE === "e2e") {
     position: () => (game.scene.getScene("boot") as BootScene).getPosition(),
     loadGame,
     saveGame,
+    navigation: { plan: findWalkingRoute, move: moveWithCollisions, stand: canStandAt },
   };
 }

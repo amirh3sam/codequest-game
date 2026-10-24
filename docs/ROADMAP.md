@@ -4,6 +4,7 @@ Each task fits in one session. Tags point to PRD requirements.
 
 ## City maps and programmable lighting (2026-10-24)
 
+- [x] Add visible click destinations and collision-aware walking routes, precise diagonal arrival, blocked-destination fallback and manual-input cancellation; validate every task/boss approach across all 23 maps.
 - [x] Detail existing buildings with glass bays, mullions, doors, solar roofs, vents and rooftop gardens; add street materials and ambient transit beyond walkable routes.
 - [x] Replace the simple task splash with a physical monitor boot sequence, mission preview, language colors and a keyboard/stand; support skip, cancellation, reduced motion and mobile sizes.
 - [x] Keep Run and output reachable on short mobile screens; cover actual tablet/task execution in mobile Chromium and WebKit, including streamed Java compiler failure recovery.

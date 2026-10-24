@@ -35,6 +35,14 @@ with a manual rotate prompt when the browser cannot lock orientation. Touch
 taps use the same directional walking frames and collisions as held movement.
 Every boss has a compact attached status panel, with no long trailing wires.
 
+Clicking or tapping the map places a visible destination reticle and dotted
+route. The developer finds a collision-safe path around buildings, terminals,
+trees, fences and shorelines, then stops precisely at the selected clear point.
+Blocked or disconnected destinations choose a nearby reachable place and use
+an amber reticle with an explanatory message. Keyboard, D-pad, mouse steering,
+menus and district changes cancel the active route. Building collisions cover
+their complete ground footprint; tree canopies keep their existing occlusion.
+
 Buildings use layered facades, occupied window bays, roof services, small gardens
 and inset doors. Street surface details and ambient transit add depth around the
 existing routes. Skyline buildings and the tram corridor sit outside walking

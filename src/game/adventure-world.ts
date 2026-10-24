@@ -3,6 +3,7 @@ import village from "../content/village.json" with { type: "json" };
 import type { AreaId, StoryAreaId, StudyAreaId } from "../core/rules";
 import { dressCampusFacades } from "./city-architecture";
 import type { Solid } from "./collision";
+import { districtLayout } from "./district-layout";
 import { createEnvironmentFrames, type EnvironmentKind, OBJECT_SIZE } from "./environment-objects";
 import { buildLogicWorld } from "./logic-world";
 import { buildStoryWorld } from "./story-worlds";
@@ -25,6 +26,31 @@ export function buildAdventureWorld(
         ? buildCampusWorld(scene, reducedMotion)
         : buildStoryWorld(scene, area as Exclude<StoryAreaId, "variables" | "conditions">, reducedMotion);
   const objects = scene.children.list.filter((object) => !before.has(object));
+  // Building art must block its whole ground footprint, not just a narrow
+  // strip across the front. Tree canopies remain separate from their trunks.
+  const bounds = districtLayout(area).bounds;
+  const rects = new Set(
+    solids.filter((solid) => "x" in solid).map((solid) => `${solid.x}/${solid.y}/${solid.width}/${solid.height}`),
+  );
+  for (const object of objects) {
+    const buildings = object.getData("layout-obstacles") as
+      | { id: string; x: number; y: number; width: number; height: number }[]
+      | undefined;
+    for (const building of buildings ?? []) {
+      if (
+        building.y + building.height <= bounds.top ||
+        building.y >= bounds.bottom ||
+        building.x + building.width <= bounds.left ||
+        building.x >= bounds.right
+      )
+        continue;
+      const key = `${building.x}/${building.y}/${building.width}/${building.height}`;
+      if (!rects.has(key)) {
+        solids.push({ ...building });
+        rects.add(key);
+      }
+    }
+  }
   return {
     solids,
     destroy: () => {
