@@ -4,7 +4,7 @@
 - Short direction taps now turn the character immediately and walk through the regular directional animation and collision system. Holds stop without an extra release step; cancelled touches, menu opening, blur and rotation release held controls. Reduced-motion players retain correct directional idle frames.
 - Packet Dash no longer restarts when Jump is pressed after losing its shields or finishing its countdown. Replay requires Run again. The timer counts real active seconds; pause/resume and leaving the tab preserve the round instead of resetting it. The instructions and results explain the 60-second / three-shield limit.
 - **Checks:** 257 unit tests, lint, typecheck, production build and diff checks passed. Focused Chromium checks passed for all 23 map clearances, the full first-district walking/Firewall flow, both characters' real touch holds/taps, reduced motion, interrupted controls, rotation and orientation-lock fallback, arcade countdown/pause/replay, backups, mouse movement, transit and tablet/editor flows in all four languages. Updated the console-opening test to use the current Progress navigation. Representative map and mobile screenshots were visually reviewed.
-- **Release:** validated; publishing to the public repository and existing CodeQuest Vercel project.
+- **Release:** source commit `f68c681` is public on `main`. Deployment `dpl_6frdSpt4u6dv4EMkBdD6myFAUyPZ` is READY at https://codequest-game-inky.vercel.app; an anonymous request confirmed bundle `index-BHN6EfIb.js`. A production Chromium mobile check opened portrait menus, rotated into landscape, visited the 23-card world map and used touch controls without browser errors.
 - **Blockers:** none.
 
 ## 2026-10-24 (object and label clearance across all 23 maps)
