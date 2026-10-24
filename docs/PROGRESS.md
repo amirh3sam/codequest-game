@@ -1,7 +1,7 @@
 ## 2026-10-24 (smaller transit buildings)
 - Reduced transit buildings to 65% of their previous width and height across all 23 maps. Their click areas scale with the artwork, and collision footprints use the same scale.
 - **Checks:** lint, typecheck, production build and diff checks passed. Chromium confirmed physical portal clicks, return travel and safe portal arrivals in all 23 maps; the smaller artwork was visually reviewed.
-- **Release:** pending public commit and production deployment.
+- **Release:** source commit `6a16b99` is public on `main`. Deployment `dpl_3hFnahHQZpcs7KRS7JBL7dMF9fT7` is READY at https://codequest-game-inky.vercel.app; an anonymous request confirmed the production alias serves `index-uhXk63Vf.js`.
 - **Blockers:** none.
 
 ## 2026-10-24 (23 city maps, return transit and programmable lighting)
