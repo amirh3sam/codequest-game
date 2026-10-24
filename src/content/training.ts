@@ -56,7 +56,7 @@ export const MENU_TRAINING = [
   ["Training", "Replay this tour, jump to one topic or review the current district's briefing."],
   [
     "Menu",
-    "Resume, switch adventures, download/load an adventure backup, change accessibility settings or return to the title screen.",
+    "Resume, switch adventures, manage your character, download/load a backup, change accessibility settings or return to the title screen. Manage character lets you rename, restart or delete an adventure; Manage adventures also offers deleting all game data on this device.",
   ],
   [
     "Sound",
@@ -182,7 +182,7 @@ export function welcomeTraining(courier: string): (TrainingChapter & { id: Train
         "Autosave keeps your character, tasks and progress on this browser/device, including after a normal or hard refresh. Different browsers, private browsing and cleared site data do not share that save. Other people opening the public game link have their own adventures.",
         "Menu → Save backup file downloads a .json snapshot to your computer's Downloads folder or the location you choose. Keeping that file on your hard drive is safer than relying on browser storage alone: you can restore it after site data is cleared, a browser is reset, or you copy the file to another computer. Normal refreshes already keep autosaves.",
         "To restore, choose Menu → Load backup file and select your saved .json. It adds a separate adventure without overwriting your other characters. A backup remembers the moment you saved it; it does not update itself. Download a fresh backup after each study session or important milestone.",
-        "Use the tablet's Export project separately to save its coding folders/files, and Import project to restore them. Keep that project file alongside your adventure backup. You can start or switch between several named adventures in different languages.",
+        "Use the tablet's Export project separately to save its coding folders/files, and Import project to restore them. Keep that project file alongside your adventure backup. Manage adventures lets you rename, restart or delete individual characters, or delete all game data from this browser. Back up anything you want to keep before restarting or deleting.",
       ],
       tip: "Try Save → Clear browser data → Load in this safe animation. Only the preview is cleared. The game has no account or automatic cloud sync; keep your downloaded backups on disk and make new ones as you progress.",
     },

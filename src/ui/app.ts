@@ -8,7 +8,15 @@ import { STUDY_CURRICULUM, STUDY_TOTAL_TASKS } from "../content/study-curriculum
 import { districtTraining, welcomeTraining } from "../content/training";
 import village from "../content/village.json" with { type: "json" };
 import { studyAreaId, studyTopicForArea, WORLD_LEVELS } from "../content/world-levels";
-import { loadAdventures, saveAdventure } from "../core/adventures";
+import {
+  cleanAdventureData,
+  deleteAdventure,
+  deleteAllGameData,
+  type ManagementResult,
+  renameAdventure,
+  restartAdventure,
+} from "../core/adventure-management";
+import { ADVENTURES_KEY, loadAdventures, saveAdventure } from "../core/adventures";
 import { makeAdventureBackup, parseAdventureBackup } from "../core/backup";
 import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone-mission";
 import { hubStage, restoreHubSubsystem } from "../core/finale";
@@ -169,6 +177,29 @@ export class GameApp {
       this.tabletCleanup?.();
       this.capturePosition();
     });
+    window.addEventListener("storage", (event) => {
+      if (event.key !== ADVENTURES_KEY || !this.state?.adventureId) return;
+      const state = this.state,
+        id = this.state.adventureId,
+        library = loadAdventures();
+      if (library.status !== "loaded") return;
+      const current = library.adventures.find((entry) => entry.adventureId === id);
+      if (!current) {
+        // Dispose pending editors, then remove any last draft they flushed after the other tab's deletion.
+        this.tabletCleanup?.();
+        this.tabletCleanup = null;
+        this.trainingDismiss = null;
+        this.runToken++;
+        this.runner?.kill();
+        this.state = null;
+        cleanAdventureData({ ...state, adventureId: id });
+        this.intro();
+        this.toast("This adventure was deleted or restarted in another tab. Choose an available adventure.");
+      } else if (current.hero.name !== state.hero.name) {
+        this.state = { ...state, hero: current.hero };
+        this.renderHud();
+      }
+    });
     const library = loadAdventures();
     if (library.status === "loaded" && library.adventures[0]) this.lang = library.adventures[0].lang;
     this.intro();
@@ -321,11 +352,9 @@ export class GameApp {
         }
         grouped.append(group);
       }
-      panel.append(
-        grouped,
-        button("Manage adventures", () => this.adventureLibrary(), "button adventure-library-link"),
-      );
+      panel.append(grouped);
     }
+    panel.append(button("Manage adventures", () => this.adventureLibrary(), "button adventure-library-link"));
     if (library.status !== "loaded")
       panel.append(
         el(
@@ -610,6 +639,7 @@ export class GameApp {
             `${progress.hearts} hearts · ${progress.gems} gems${state.discoveries?.beacon ? " · Signal Maker" : ""}`,
           ),
           button(`Resume ${state.hero.name} · ${language}`, () => this.begin(state), "button primary"),
+          button(`Manage ${state.hero.name}`, () => this.characterSettings(state.adventureId)),
         );
         grid.append(card);
       }
@@ -621,6 +651,7 @@ export class GameApp {
     actions.append(button("Start another adventure", () => this.intro()));
     actions.append(button("Save backup file", () => this.exportAdventure()));
     actions.append(button("Load backup file", () => this.importAdventure()));
+    actions.append(button("Delete all game data", () => this.confirmEraseAll(), "button danger"));
     if (this.state) actions.append(button("Back to current adventure", () => this.close()));
     panel.append(actions);
   }
@@ -633,27 +664,229 @@ export class GameApp {
     if (this.state) controls.prepend(button("Save adventure backup", () => this.exportAdventure()));
     return controls;
   }
-  private exportAdventure(): void {
-    if (!this.state) {
+  private characterSettings(id: string): void {
+    this.capturePosition();
+    const library = loadAdventures();
+    const state =
+      library.status === "loaded" ? library.adventures.find((entry) => entry.adventureId === id) : undefined;
+    if (!state) {
+      this.toast("This adventure couldn't be read. Your saved data has been kept.");
+      return;
+    }
+    const language = LANGUAGES.find((entry) => entry.id === state.lang)?.name ?? state.lang;
+    const panel = this.panel("Manage character", `${state.hero.name} · ${language}`, true);
+    panel.classList.add("character-settings");
+    const identity = el("div", "character-identity");
+    identity.append(
+      this.icon(state.hero.kind === "girl" ? "heroGirl" : "heroBoy", true),
+      el("p", "", "Your name changes across the game. Renaming keeps every mission, project and saved record."),
+    );
+    const form = el("form", "character-rename"),
+      label = el("label", "", "Character name"),
+      input = el("input"),
+      feedback = el("p", "feedback");
+    input.id = "rename-character";
+    input.maxLength = 16;
+    input.value = state.hero.name;
+    input.autocomplete = "off";
+    label.htmlFor = input.id;
+    const save = el("button", "button primary", "Save name");
+    save.type = "submit";
+    feedback.setAttribute("role", "status");
+    input.addEventListener("input", () => {
+      save.disabled = !isValidHeroName(input.value.trim());
+    });
+    form.append(label, input, save, el("small", "", "1–16 letters, numbers or spaces"));
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const result = renameAdventure(id, input.value, now());
+      if (result.status !== "saved" || !result.state) {
+        feedback.textContent =
+          result.status === "invalid"
+            ? "Use 1–16 letters, numbers or spaces. Reopen this panel if the adventure changed in another tab."
+            : "The name couldn't be saved. Your adventure has been kept.";
+        return;
+      }
+      if (this.state?.adventureId === id) this.commit(result.state);
+      this.characterSettings(id);
+      this.toast(`Character renamed to ${result.state.hero.name}.`);
+    });
+    const actions = el("div", "character-actions");
+    actions.append(
+      button("Save this adventure backup", () => this.exportAdventure(state)),
+      button("Restart this adventure", () => this.confirmCharacterChange(id, "restart"), "button danger"),
+      button("Delete this character", () => this.confirmCharacterChange(id, "delete"), "button danger"),
+      button("Back to adventures", () => this.adventureLibrary()),
+    );
+    panel.append(
+      identity,
+      form,
+      feedback,
+      el("h3", "", "Adventure controls"),
+      el(
+        "p",
+        "",
+        "Restart begins again at level 1 with the same name, language and appearance. Delete removes this character and its adventure from this browser. Other adventures stay saved.",
+      ),
+      actions,
+    );
+  }
+  private confirmCharacterChange(id: string, action: "restart" | "delete"): void {
+    const library = loadAdventures();
+    const state =
+      library.status === "loaded" ? library.adventures.find((entry) => entry.adventureId === id) : undefined;
+    if (!state) {
+      this.toast("This adventure is no longer available.");
+      return;
+    }
+    const panel = this.panel(
+      action === "restart" ? "Restart this adventure?" : "Delete this character?",
+      state.hero.name,
+    );
+    panel.classList.add("character-settings");
+    panel.append(
+      el(
+        "p",
+        "",
+        action === "restart"
+          ? "This resets all 23 districts, missions, bosses, hearts/gems, arcade records and browser coding projects/drafts for this adventure. Your name, appearance and language stay the same."
+          : "This permanently removes this character's adventure, missions, records and browser coding projects/drafts from this device.",
+      ),
+      el(
+        "p",
+        "",
+        "Other adventures, files in connected computer folders and downloaded backups are kept. Download an adventure backup and use the tablet's Export project first if you want to keep your work.",
+      ),
+      button("Download backup before continuing", () => this.exportAdventure(state)),
+    );
+    const phrase = action === "restart" ? "RESTART" : "DELETE";
+    const label = el("label", "", `Type ${phrase} to confirm`),
+      input = el("input"),
+      feedback = el("p", "feedback");
+    input.id = "confirm-character-action";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    label.htmlFor = input.id;
+    feedback.setAttribute("role", "status");
+    const confirm = button(
+      action === "restart" ? "Restart permanently" : "Delete permanently",
+      () => {
+        if (input.value !== phrase) return;
+        confirm.disabled = true;
+        const result: ManagementResult =
+          action === "restart" ? restartAdventure(id, crypto.randomUUID(), now()) : deleteAdventure(id);
+        if (result.status !== "saved") {
+          feedback.textContent =
+            "The saved adventure couldn't be updated. Your character has been kept. Try again when browser storage is available.";
+          confirm.disabled = false;
+          return;
+        }
+        const active = this.state?.adventureId === id;
+        if (active) this.state = null; // A pagehide or panel close must never autosave the removed character.
+        if (action === "restart" && result.state) this.begin(result.state, true);
+        else if (active) this.intro();
+        else this.adventureLibrary();
+        this.toast(
+          result.cleanupComplete
+            ? action === "restart"
+              ? `${state.hero.name}'s adventure restarted at level 1.`
+              : `${state.hero.name}'s character deleted.`
+            : "Adventure updated. Some browser coding files couldn't be removed; use Delete all game data to retry cleanup.",
+        );
+      },
+      "button danger",
+    );
+    confirm.disabled = true;
+    input.addEventListener("input", () => {
+      confirm.disabled = input.value !== phrase;
+    });
+    const actions = el("div", "panel-actions");
+    actions.append(
+      button("Cancel", () => this.characterSettings(id)),
+      confirm,
+    );
+    panel.append(label, input, feedback, actions);
+  }
+  private confirmEraseAll(): void {
+    const panel = this.panel("Delete all game data?", "Remove your CodeQuest profile from this browser.");
+    panel.classList.add("character-settings");
+    panel.append(
+      el(
+        "p",
+        "",
+        "This erases every saved character, adventure, coding project/draft, arcade record and CodeQuest preference on this browser/device. This cannot be undone here. Downloaded backups and files in computer folders are kept; other players and browsers are unaffected.",
+      ),
+      el(
+        "p",
+        "",
+        "To keep anything, cancel and download each adventure's backup and export its tablet projects first. You can delete just one character from Manage adventures instead.",
+      ),
+    );
+    const label = el("label", "", "Type DELETE ALL to confirm"),
+      input = el("input"),
+      feedback = el("p", "feedback");
+    label.htmlFor = "erase-profile";
+    input.id = label.htmlFor;
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    feedback.setAttribute("role", "status");
+    const confirm = button(
+      "Delete all data permanently",
+      () => {
+        if (input.value !== "DELETE ALL") return;
+        // Flush panel cleanup before clearing storage; stop in-memory autosave before reload.
+        this.tabletCleanup?.();
+        this.tabletCleanup = null;
+        this.trainingDismiss = null;
+        this.runToken++;
+        this.runner?.kill();
+        this.state = null;
+        if (deleteAllGameData()) window.location.reload();
+        else {
+          this.scene.setSession(null, null, this.callbacks);
+          this.hud.hidden = true;
+          this.mobile.hidden = true;
+          this.syncMobileViewport();
+          panel.querySelector(".close-button")?.remove();
+          feedback.textContent =
+            "Some game data couldn't be removed. Keep this panel open and retry, or return to the title screen to inspect what remains.";
+          confirm.textContent = "Retry deleting all game data";
+        }
+      },
+      "button danger",
+    );
+    confirm.disabled = true;
+    input.addEventListener("input", () => {
+      confirm.disabled = input.value !== "DELETE ALL";
+    });
+    const actions = el("div", "panel-actions");
+    actions.append(
+      button("Cancel", () => (this.state ? this.adventureLibrary() : this.intro())),
+      confirm,
+    );
+    panel.append(label, input, feedback, actions);
+  }
+  private exportAdventure(state = this.state): void {
+    if (!state) {
       this.toast("Start or continue an adventure before saving a backup file.");
       return;
     }
     let tabletDraft: string | undefined;
     try {
       tabletDraft =
-        localStorage.getItem(`codequest:tablet:v2:${this.state.adventureId}`) ??
-        (this.state.adventureId?.startsWith("legacy-")
-          ? (localStorage.getItem(`codequest:tablet:v1:${this.state.lang}`) ?? undefined)
+        localStorage.getItem(`codequest:tablet:v2:${state.adventureId}`) ??
+        (state.adventureId?.startsWith("legacy-")
+          ? (localStorage.getItem(`codequest:tablet:v1:${state.lang}`) ?? undefined)
           : undefined);
     } catch {
       /* Optional draft. */
     }
     const url = URL.createObjectURL(
-      new Blob([JSON.stringify(makeAdventureBackup(this.state, tabletDraft), null, 2)], { type: "application/json" }),
+      new Blob([JSON.stringify(makeAdventureBackup(state, tabletDraft), null, 2)], { type: "application/json" }),
     );
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `CodeQuest-${this.state.lang}-${this.state.hero.name.replace(/[^a-z0-9]+/gi, "-")}.json`;
+    anchor.download = `CodeQuest-${state.lang}-${state.hero.name.replace(/[^a-z0-9]+/gi, "-")}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     this.toast("Adventure backup downloaded to your device.");
@@ -1335,6 +1568,7 @@ export class GameApp {
     actions.append(
       button("Resume adventure", () => this.close(), "button primary"),
       button("Switch adventure", () => this.adventureLibrary()),
+      button("Manage character", () => this.state?.adventureId && this.characterSettings(this.state.adventureId)),
       button("Save backup file", () => this.exportAdventure()),
       button("Load backup file", () => this.importAdventure()),
       button("World map", () => this.worldMap()),

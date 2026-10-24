@@ -3261,6 +3261,59 @@ small {
 .adventure-library-link {
   margin-bottom: 14px;
 }
+.character-settings {
+  line-height: 1.6;
+}
+.character-identity {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 12px 0;
+}
+.character-identity .sprite {
+  width: 80px;
+  height: 88px;
+  flex-shrink: 0;
+}
+.character-rename {
+  display: grid;
+  gap: 10px;
+  max-width: 480px;
+  margin: 18px 0;
+}
+.character-settings label {
+  display: block;
+  margin: 15px 0 6px;
+  font-weight: 700;
+}
+.character-settings input {
+  width: min(100%, 480px);
+  box-sizing: border-box;
+  padding: 12px;
+  font: inherit;
+  border: 1px solid #7091ac;
+  border-radius: 8px;
+  background: #0b182c;
+  color: #eef6ff;
+}
+.character-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+.button.danger {
+  border-color: #b37486;
+  background: #512d43;
+  color: #ffe2e9;
+}
+.button.danger:hover {
+  background: #693b52;
+}
+.button.danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .title-adventures {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));

@@ -38,3 +38,17 @@ Welcome-tour preferences and last chapter are device-local under
 `training.districts` state field; existing version-1 saves remain supported.
 Adventure backups and tablet project exports are separate; the training explains
 both and does not imply an account or automatic cloud synchronization.
+
+Character controls are available at **Menu → Manage character**, or from the title
+screen's **Manage adventures → Manage [name]**. Rename keeps the adventure ID,
+missions, records and coding files. Restart keeps the name, appearance and
+language but creates a fresh adventure at level 1, resetting all district progress
+and removing the old adventure's browser coding work. Delete removes that
+character and its browser data. Other adventures stay intact.
+
+Restart/Delete require typing `RESTART`/`DELETE`, and offer a backup download
+before continuing. **Manage adventures → Delete all game data** removes the local
+profile: every character, browser project/draft and preference. It requires
+`DELETE ALL` and reloads the title screen. These actions do not remove downloaded
+backups or files in connected computer folders. Other open tabs retire the old
+adventure and discard pending drafts when it is removed.

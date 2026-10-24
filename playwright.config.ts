@@ -36,7 +36,7 @@ export default defineConfig({
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
     {
       name: "mobile-webkit",
-      testMatch: ["**/mobile-runner.spec.ts", "**/training-mobile.spec.ts"],
+      testMatch: ["**/mobile-runner.spec.ts", "**/training-mobile.spec.ts", "**/character-management-mobile.spec.ts"],
       use: { ...devices["iPhone 13"], browserName: "webkit" },
     },
   ],
