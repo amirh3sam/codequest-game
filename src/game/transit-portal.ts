@@ -1,5 +1,6 @@
 import type Phaser from "phaser";
 import type { Position } from "../core/state";
+import { containsClickShape, TRANSIT_CLICK_SHAPE } from "./click-shapes";
 import type { Solid } from "./collision";
 
 const PORTAL_SCALE = 0.65;
@@ -39,6 +40,18 @@ export class TransitPortal {
       })
       .setOrigin(0.5);
     this.zone = scene.add.zone(0, -42, 124, 151).setName("level-portal-zone");
+    this.zone
+      .setInteractive({
+        useHandCursor: true,
+        hitArea: TRANSIT_CLICK_SHAPE,
+        hitAreaCallback: (_area: unknown, x: number, y: number) =>
+          containsClickShape(
+            TRANSIT_CLICK_SHAPE,
+            x - this.zone.displayOriginX + this.zone.x,
+            y - this.zone.displayOriginY + this.zone.y,
+          ),
+      })
+      .disableInteractive(true);
     this.zone.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (this.active && pointer.event.target === scene.game.canvas) use();
     });
@@ -65,8 +78,8 @@ export class TransitPortal {
     this.status
       .setText(active ? "ONLINE · CHOOSE A MAP" : "DESTINATION LOCKED")
       .setColor(active ? "#a1ffea" : "#88a3bc");
-    if (active) this.zone.setInteractive({ useHandCursor: true });
-    else this.zone.disableInteractive();
+    if (active) this.zone.setInteractive();
+    else this.zone.disableInteractive(true);
     const glow = active ? 0x51efd2 : 0x657a95;
     const art = this.art.clear();
     const polygon = (points: [number, number][]) => {

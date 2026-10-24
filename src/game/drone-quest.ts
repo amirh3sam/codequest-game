@@ -30,7 +30,9 @@ export class DroneQuest {
     this.courierAvatar = scene.add
       .image(0, 4, SPRITES.heroGirl.texture, SPRITES.heroGirl.frame)
       .setOrigin(0.5, 1)
-      .setScale(0.6);
+      .setScale(0.6)
+      .setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 40 })
+      .on("pointerdown", () => interact(courier));
     kai.add(this.courierAvatar);
     const parcel = scene.add.graphics().fillStyle(0xffbd6a).fillRoundedRect(12, -27, 15, 18, 3);
     parcel.lineStyle(2, 0xffe5b1).lineBetween(19, -26, 19, -10);
@@ -45,10 +47,6 @@ export class DroneQuest {
       })
       .setOrigin(0.5);
     kai.add(this.courierName);
-    kai
-      .setSize(60, 90)
-      .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => interact(courier));
     this.objects.push(kai);
 
     const yard = scene.add.container(0, 0).setDepth(2).setName("courier-yard");

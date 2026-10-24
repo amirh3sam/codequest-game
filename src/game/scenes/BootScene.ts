@@ -209,16 +209,13 @@ export class BootScene extends Phaser.Scene {
     const chest = id !== "lesson" && id !== "boss" && id !== "arcade";
     const shadow = this.add.ellipse(x + 3, y, 37, 14, 0x233f34, 0.22).setDepth(1);
     const glow = this.add.circle(x, y - 6, id === "arcade" ? 38 : 33, 0x55cfff, 0.07).setDepth(1);
-    const pad = this.add
-      .circle(x, y, 25, 0x233f34, 0.08)
-      .setStrokeStyle(1, 0x65cfff, 0.5)
-      .setDepth(1)
-      .setInteractive({ useHandCursor: true });
+    const pad = this.add.circle(x, y, 25, 0x233f34, 0.08).setStrokeStyle(1, 0x65cfff, 0.5).setDepth(1);
     const group = this.add.container(x, y).setDepth(y).setName(id);
     const icon = this.add
       .image(0, 4, sprite.texture, sprite.frame)
       .setOrigin(0.5, 1)
-      .setScale(id === "arcade" ? 1 : id === "boss" ? 0.86 : id === "lesson" ? 0.52 : 0.58);
+      .setScale(id === "arcade" ? 1 : id === "boss" ? 0.86 : id === "lesson" ? 0.52 : 0.58)
+      .setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 40 });
     group.add(icon);
     const plate = chest ? this.add.graphics() : null;
     if (plate) {
@@ -260,7 +257,7 @@ export class BootScene extends Phaser.Scene {
       width: chest ? 48 : id === "arcade" ? 42 : 32,
       height: chest ? 25 : id === "arcade" ? 30 : 18,
     });
-    pad.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+    icon.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (!this.blocked && pointer.event.target === this.game.canvas) {
         if (this.distance(marker) <= 68) this.interact(marker);
         else this.callbacks?.message("Walking over. Press E when you're nearby.");
@@ -413,6 +410,7 @@ export class BootScene extends Phaser.Scene {
     }
   }
   setBlocked(blocked: boolean): void {
+    if (blocked) this.input.resetCursor();
     if (blocked) this.cancelDelivery();
     if (blocked) this.cancelHubTour();
     this.blocked = blocked;

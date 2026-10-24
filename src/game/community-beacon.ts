@@ -2,6 +2,7 @@ import type Phaser from "phaser";
 import { LIGHT_COLORS, resolveLights } from "../core/map-lighting";
 import type { GameState } from "../core/state";
 import { BEACON_POSITION } from "./beacon-layout";
+import { containsClickShape, LIGHTING_CLICK_SHAPE } from "./click-shapes";
 import { districtLayout } from "./district-layout";
 
 export class CommunityBeacon {
@@ -28,7 +29,12 @@ export class CommunityBeacon {
     this.group.add([this.art, this.title, this.status]);
     this.group
       .setSize(58, 136)
-      .setInteractive({ useHandCursor: true })
+      .setInteractive({
+        useHandCursor: true,
+        hitArea: LIGHTING_CLICK_SHAPE,
+        hitAreaCallback: (_area: unknown, x: number, y: number) =>
+          containsClickShape(LIGHTING_CLICK_SHAPE, x - this.group.displayOriginX, y - this.group.displayOriginY),
+      })
       .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
         if (pointer.event.target === scene.game.canvas) interact();
       });
