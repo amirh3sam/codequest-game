@@ -704,15 +704,12 @@ export function readStudyProgress(adventureId: string): string[] {
   );
 }
 
-export function isStudyLevelUnlocked(
-  adventureId: string,
-  topicId: string,
-  abstractionCloudBossDefeated: boolean,
-): boolean {
+export function isStudyLevelUnlocked(adventureId: string, topicId: string): boolean {
   const index = STUDY_CURRICULUM.findIndex(({ id }) => id === topicId);
   if (index < 0) return false;
   if (readStudyProgress(adventureId).includes(topicId)) return true;
-  if (index === 0) return abstractionCloudBossDefeated;
+  // The Study Path starts with the same Variables topic as the playable opening district.
+  if (index === 0) return true;
   const previousTopic = STUDY_CURRICULUM[index - 1];
   return previousTopic ? readStudyProgress(adventureId).includes(previousTopic.id) : false;
 }

@@ -1,3 +1,10 @@
+## 2026-10-23 (Study Path Variables unlock consistency)
+- Made the first Study Path topic, Variables & Data Types, available from the start, matching the already-playable Variable Village. The world map and tablet use the same unlock rule; every later category still unlocks after the previous category boss.
+- **Checks:** all 251 unit tests passed; lint and typecheck passed. Chromium verified the first topic opens from a fresh game, subsequent categories remain locked, and category progress remains sequential after story completion.
+- **Release:** pending validation and publication.
+- **Next:** continue improving game activities and lessons.
+- **Blockers:** none.
+
 ## 2026-10-23 (locked category level badges)
 - Locked Study Path categories now show a lock icon in the badge instead of a level number. Once a category unlocks, it shows its level number; completed categories show a check mark. Kept the seven existing story districts and all 17 Study Path categories in the map.
 - **Checks:** 251 unit tests passed; lint, typecheck and production build passed. Chromium passed the sequential category unlock and story-district map tests.

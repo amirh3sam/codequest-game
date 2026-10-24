@@ -53,7 +53,6 @@ type TabletHost = {
   adventureId?: string;
   initialStudyTopicId?: string;
   studyLevelOffset?: number;
-  studyPrerequisiteComplete: boolean;
   animate: boolean;
   focusCamera(): () => void;
   panel(title: string, subtitle: string, wide: boolean): HTMLElement;
@@ -1196,7 +1195,7 @@ export function openTablet(host: TabletHost): () => void {
     for (const [index, item] of STUDY_CURRICULUM.entries()) {
       const isComplete = completedTopics.includes(item.id);
       const topicProgress = readStudyTaskProgress(studyAdventureKey, item.id);
-      const isUnlocked = isStudyLevelUnlocked(studyAdventureKey, item.id, host.studyPrerequisiteComplete);
+      const isUnlocked = isStudyLevelUnlocked(studyAdventureKey, item.id);
       const progressLabel = isComplete ? "✓" : topicProgress >= STUDY_TASKS_PER_TOPIC ? "BOSS" : `${topicProgress}/8`;
       const topicButton = button(
         `${progressLabel}  ${String((host.studyLevelOffset ?? 0) + index + 1).padStart(2, "0")}. ${item.title}`,
@@ -1209,11 +1208,7 @@ export function openTablet(host: TabletHost): () => void {
           (isComplete ? " complete" : topicProgress > 0 ? " in-progress" : ""),
       );
       topicButton.disabled = !isUnlocked;
-      if (!isUnlocked)
-        topicButton.title =
-          index === 0
-            ? "Complete Abstraction Cloud to unlock this level."
-            : "Defeat the previous category boss to unlock this level.";
+      if (!isUnlocked) topicButton.title = "Defeat the previous category boss to unlock this level.";
       topicButton.setAttribute("aria-current", String(item.id === topic?.id));
       navigation.append(topicButton);
     }
@@ -1221,7 +1216,7 @@ export function openTablet(host: TabletHost): () => void {
       const taskProgress = readStudyTaskProgress(studyAdventureKey, topic.id);
       const isComplete = completedTopics.includes(topic.id);
       const topicIndex = STUDY_CURRICULUM.indexOf(topic);
-      const isUnlocked = isStudyLevelUnlocked(studyAdventureKey, topic.id, host.studyPrerequisiteComplete);
+      const isUnlocked = isStudyLevelUnlocked(studyAdventureKey, topic.id);
       const levelNumber = (host.studyLevelOffset ?? 0) + topicIndex + 1;
       const topicNumber = String(levelNumber).padStart(2, "0");
       detail.append(
@@ -1234,13 +1229,7 @@ export function openTablet(host: TabletHost): () => void {
       if (!isUnlocked) {
         detail.append(
           el("strong", "study-level-locked", "Level locked"),
-          el(
-            "p",
-            "",
-            topicIndex === 0
-              ? "Complete the Abstraction Cloud boss to unlock level 8."
-              : `Defeat the boss in level ${(host.studyLevelOffset ?? 0) + topicIndex} to unlock this category.`,
-          ),
+          el("p", "", `Defeat the boss in level ${(host.studyLevelOffset ?? 0) + topicIndex} to unlock this category.`),
         );
       } else if (isComplete) {
         detail.append(
@@ -1258,7 +1247,7 @@ export function openTablet(host: TabletHost): () => void {
         );
         const portalDoors = el("div", "study-portal-doors");
         for (const [portalIndex, portalTopic] of STUDY_CURRICULUM.entries()) {
-          if (!isStudyLevelUnlocked(studyAdventureKey, portalTopic.id, host.studyPrerequisiteComplete)) continue;
+          if (!isStudyLevelUnlocked(studyAdventureKey, portalTopic.id)) continue;
           const portalLevel = String((host.studyLevelOffset ?? 0) + portalIndex + 1).padStart(2, "0");
           portalDoors.append(
             button(

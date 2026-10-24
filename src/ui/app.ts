@@ -978,7 +978,6 @@ export class GameApp {
       adventureId: this.state.adventureId,
       initialStudyTopicId: studyTopicId,
       studyLevelOffset,
-      studyPrerequisiteComplete: this.state.areas.abstraction.bossDefeated,
       discovery:
         this.area.id === "variables"
           ? {
@@ -1322,7 +1321,7 @@ export class GameApp {
     if (!this.state) return;
     const panel = this.panel(
         "Your journey",
-        `Level 8 unlocks after Abstraction Cloud. Then defeat each category boss to unlock the next level. Every category has eight tasks plus its boss.`,
+        `Variables & Data Types is open from the start. Defeat each category boss to unlock the next level. Every category has eight tasks plus its boss.`,
         true,
       ),
       adventureKey = this.state.adventureId ?? `guest-${this.state.lang}`,
@@ -1339,7 +1338,7 @@ export class GameApp {
       el(
         "p",
         "world-map-hint",
-        "Level 8 unlocks after Abstraction Cloud. Then defeat each category boss to unlock the next level; every category has eight tasks plus its boss.",
+        "Variables & Data Types is open from the start. Then defeat each category boss to unlock the next level; every category has eight tasks plus its boss.",
       ),
     );
     for (const [index, area] of village.worldAreas.entries()) {
@@ -1371,7 +1370,7 @@ export class GameApp {
     for (const [index, topic] of STUDY_CURRICULUM.entries()) {
       const taskProgress = readStudyTaskProgress(adventureKey, topic.id),
         isComplete = completedSkillLevels.has(topic.id),
-        unlocked = isStudyLevelUnlocked(adventureKey, topic.id, this.state.areas.abstraction.bossDefeated),
+        unlocked = isStudyLevelUnlocked(adventureKey, topic.id),
         skill = button(
           "",
           () => this.tablet(false, topic.id, village.worldAreas.length),
@@ -1389,9 +1388,7 @@ export class GameApp {
           "small",
           "",
           !unlocked
-            ? index === 0
-              ? "Locked · complete Abstraction Cloud to unlock level 8"
-              : `Locked · defeat the previous category boss to unlock level ${village.worldAreas.length + index + 1}`
+            ? `Locked · defeat the previous category boss to unlock level ${village.worldAreas.length + index + 1}`
             : isComplete
               ? "Boss defeated · level complete"
               : taskProgress >= STUDY_TASKS_PER_TOPIC

@@ -5,8 +5,7 @@ _Last updated: 2026-10-23 · Status: all seven playable city districts plus gate
 Current direction: the public release includes all seven story districts in
 Java, JavaScript, TypeScript and Python. Districts 3–7 now have eight playable
 coding missions, a boss, their own themed route and save-safe sequential unlocks.
-Defeating Abstraction Cloud opens category level 8; levels 8–24 then unlock
-one at a time. The user's latest priority is deeper education and enjoyable
+The Variables & Data Types Study Path category (level 8) is open from the start, matching playable Variable Village. Completing each category boss unlocks the next category through level 24. The user's latest priority is deeper education and enjoyable
 gameplay, with code visibly repairing the city. The stranded-drone
 pilot in [GAME-DESIGN.md](GAME-DESIGN.md) now connects guided practice to a world
 repair. The developer tablet now opens through a short illustrated 2D animation:
