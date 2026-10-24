@@ -3,7 +3,7 @@
 - Clearing a district boss exposes a direct Teleport button to the next unlocked district in both the victory panel and persistent HUD. The level-one portal goes directly to Logic Junction without opening the map or menu.
 - Added player sprite identity and mouse movement checks for all four directions. Vertical drags move the same single player sprite and select the north/south frames; the other character on level one is the intended opposite-gender courier.
 - **Checks:** 251 unit tests passed; lint, typecheck, and `git diff --check` passed. All 16 focused Chromium tests passed, covering category progress, beacon persistence, first-level portal travel, and mouse movement.
-- **Release:** pending production build and publication.
+- **Release:** source commit `011b99d` is public on `main`. Production deployment `dpl_AjpesDffAmLDzkt26EzopT6kaGkX` is READY at https://codequest-game-inky.vercel.app/; `vercel curl` confirmed the alias serves the new bundle.
 - **Next:** continue the game improvement roadmap.
 - **Blockers:** none.
 ## 2026-10-23 (Study Path Variables unlock consistency)
