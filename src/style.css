@@ -1878,6 +1878,7 @@ small {
 .studio-body {
   flex: 1;
   min-height: 0;
+  overflow: auto;
 }
 .studio-body > [role="tabpanel"] {
   height: 100%;
@@ -2510,6 +2511,7 @@ small {
 }
 .studio-status {
   display: flex;
+  flex-shrink: 0;
   justify-content: space-between;
   gap: 12px;
   padding: 8px 14px;
@@ -2630,6 +2632,9 @@ small {
   padding: 0;
   background: #060d1699;
   backdrop-filter: none;
+}
+.tablet-overlay:not([hidden]) ~ .toast {
+  visibility: hidden;
 }
 .tablet-waiting {
   visibility: hidden;
@@ -3182,6 +3187,60 @@ small {
   #ui .mobile-controls,
   #ui .toast {
     visibility: hidden;
+  }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+  .overlay.tablet-overlay {
+    padding: 0;
+  }
+  .tablet-shell {
+    max-height: 100dvh;
+    border-width: 4px;
+    padding: 6px 8px;
+  }
+  .tablet-shell .panel-heading {
+    flex-shrink: 0;
+  }
+  .tablet-shell .panel-heading h2 {
+    font-size: 17px;
+  }
+  .tablet-shell > .subtitle {
+    display: none;
+  }
+  .studio-title {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    font-size: 9px;
+  }
+  .studio-title small,
+  .studio-toolbar > span {
+    display: none;
+  }
+  .studio-tab {
+    padding: 8px 12px;
+  }
+  .studio-editor-pane {
+    min-height: 370px;
+  }
+  .studio-code-grid {
+    min-height: 120px;
+  }
+  .studio-toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 6px 8px;
+  }
+  .studio-toolbar .button {
+    min-height: 36px;
+    padding: 8px 10px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .studio-inline-console {
+    flex-basis: 88px;
+  }
+  .studio-status {
+    padding: 4px 10px;
   }
 }
 .sound-settings {

@@ -191,6 +191,63 @@ describe("WorkerHost runner failures", () => {
   });
   afterEach(() => vi.useRealTimers());
 
+  it("reports a constructor TypeError through warmup's promise and can retry", async () => {
+    let attempts = 0;
+    const host = new WorkerHost("java", {
+      factory: () => {
+        if (++attempts === 1) throw new TypeError("Worker could not start");
+        return new FakeWorker() as unknown as Worker;
+      },
+    });
+    await expect(host.warmup()).rejects.toThrow("Worker could not start");
+    const retry = host.run("code");
+    await flush();
+    const worker = FakeWorker.all[0];
+    worker.reply({ warm: true });
+    await flush();
+    worker.reply(ok(worker.runRequests[0].id, "recovered"));
+    expect((await retry).stdout).toBe("recovered");
+  });
+
+  it("does not cache a synchronous warmup message failure", async () => {
+    let attempts = 0;
+    const host = new WorkerHost("java", {
+      factory: () => {
+        const worker = new FakeWorker();
+        if (++attempts === 1)
+          worker.postMessage = () => {
+            throw new TypeError("Worker was interrupted");
+          };
+        return worker as unknown as Worker;
+      },
+    });
+    expect((await host.run("first")).runnerError).toContain("Worker was interrupted");
+    expect(FakeWorker.all[0].terminated).toBe(true);
+    const retry = host.run("second");
+    await flush();
+    const worker = FakeWorker.all[1];
+    worker.reply({ warm: true });
+    await flush();
+    worker.reply(ok(worker.runRequests[0].id, "recovered"));
+    expect((await retry).stdout).toBe("recovered");
+  });
+
+  it("settles a failed run message and keeps the queue usable", async () => {
+    const { host, w } = await warmHost();
+    w.postMessage = () => {
+      throw new TypeError("Worker was interrupted");
+    };
+    expect((await host.run("first")).runnerError).toBe("Worker was interrupted");
+    expect(w.terminated).toBe(true);
+    const retry = host.run("second");
+    await flush();
+    const worker = FakeWorker.all[1];
+    worker.reply({ warm: true });
+    await flush();
+    worker.reply(ok(worker.runRequests[0].id, "recovered"));
+    expect((await retry).stdout).toBe("recovered");
+  });
+
   it("replaces a worker that reports runnerError", async () => {
     const { host, w } = await warmHost();
     const p = host.run("code");

@@ -34,11 +34,22 @@ async function fetchBytes(file: string): Promise<Int8Array> {
   return new Int8Array(await res.arrayBuffer());
 }
 
+async function loadCompiler(load: LoadFn) {
+  try {
+    return await load(`${base}compiler.wasm`);
+  } catch (error) {
+    // Some mobile browsers/proxies reject streaming compilation (including an
+    // unexpected MIME type). The same compiler can still load from its bytes.
+    if (!(error instanceof TypeError)) throw error;
+    return load(await fetchBytes("compiler.wasm"));
+  }
+}
+
 function init() {
   ready ??= (async () => {
     const { load } = (await import(/* @vite-ignore */ `${base}compiler.wasm-runtime.js`)) as { load: LoadFn };
     const [teavm, sdk, classlib] = await Promise.all([
-      load(`${base}compiler.wasm`),
+      loadCompiler(load),
       fetchBytes("compile-classlib-teavm.bin"),
       fetchBytes("runtime-classlib-teavm.bin"),
     ]);

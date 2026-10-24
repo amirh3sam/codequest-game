@@ -46,10 +46,18 @@ export class WorkerHost {
    */
   warmup(): Promise<void> {
     if (this.warm) return this.warm;
-    const w = this.factory();
+    let w: Worker;
+    try {
+      w = this.factory();
+    } catch (error) {
+      return Promise.reject(error);
+    }
     this.worker = w;
     const warm = new Promise<void>((resolve, reject) => {
+      let settled = false;
       const done = (err?: Error) => {
+        if (settled) return;
+        settled = true;
         clearTimeout(timer);
         w.removeEventListener("message", onMsg);
         w.removeEventListener("error", onError);
@@ -68,9 +76,18 @@ export class WorkerHost {
       this.abortWarm = done;
       w.addEventListener("message", onMsg);
       w.addEventListener("error", onError);
-      w.postMessage({ warmup: true });
+      try {
+        w.postMessage({ warmup: true });
+      } catch (error) {
+        done(error instanceof Error ? error : new Error(String(error)));
+      }
     });
     this.warm = warm;
+    // A synchronous postMessage failure can settle before `warm` is assigned.
+    // Clear that rejected promise so the next Run can start a fresh worker.
+    void warm.catch(() => {
+      if (this.warm === warm) this.warm = null;
+    });
     return warm;
   }
 
@@ -137,7 +154,12 @@ export class WorkerHost {
       this.abortRun = () => finish(runnerFailure(id, "Runner was restarted"));
       w.addEventListener("message", onMsg);
       w.addEventListener("error", onError);
-      w.postMessage({ id, code, stdin, files, entryPath });
+      try {
+        w.postMessage({ id, code, stdin, files, entryPath });
+      } catch (error) {
+        finish(runnerFailure(id, error instanceof Error ? error.message : String(error)));
+        if (this.worker === w) this.kill();
+      }
     });
   }
 

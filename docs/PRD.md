@@ -35,6 +35,12 @@ with a manual rotate prompt when the browser cannot lock orientation. Touch
 taps use the same directional walking frames and collisions as held movement.
 Every boss has a compact attached status panel, with no long trailing wires.
 
+On short landscape screens the tablet keeps Run and output inside a scrollable
+workspace, clear of its status bar. Mobile execution is checked with real touch
+input in Chromium and WebKit. Java can fall back to loading its compiler from
+bytes if streaming fails; failed worker startup/message attempts can be retried
+without leaving the run queue stuck or changing coding hearts.
+
 Packet Dash runs for 60 active seconds or until its three shields are depleted.
 Jump cannot restart a finished round; replay requires Run again. Pause/resume
 and backgrounding preserve the round's timer, score, pickups and shields.

@@ -1,3 +1,12 @@
+## 2026-10-24 (mobile Run startup recovery and reachable tablet controls)
+- Added a buffered Java compiler loading fallback when streaming raises TypeError, using the same local compiler and files. Worker constructor, warmup-message and run-message failures now settle safely and permit fresh attempts instead of leaving a rejected warmup or run queue stuck.
+- Fixed the short landscape tablet layout: compact device chrome, scrollable workspace content, stable status bar and reachable Run/output. General map toasts stay out of the tablet. Existing mobile menu actions remain intact.
+- Added mobile Chromium and WebKit coverage for real touches on both tablet Run and task Run in JavaScript, TypeScript, Python and Java, plus an intentionally incorrect compiler MIME response that reproduces the streaming TypeError and verifies recovery. CI installs WebKit for these checks.
+- **Diagnosis:** current mobile WebKit ran all four production runtimes before the change. The original phone/browser, language and full error text were requested but have not been supplied, so the original device-specific diagnosis remains unconfirmed. The changes address reproduced streaming/startup and short-screen failures.
+- **Checks:** 260 unit tests, lint, typecheck, production build and diff checks passed. All 33 focused browser checks passed, including mobile execution/fallbacks, rotation/touch controls, the full Java runner suite, all four desktop language editors, Explorer resizing and narrow-screen layout. The updated mobile output/status layout was visually reviewed.
+- **Release:** validated; publishing to the public repository and existing CodeQuest Vercel project.
+- **Blockers:** none for publishing these fixes; exact original phone error needs the requested device details if it persists.
+
 ## 2026-10-24 (compact boss panels, mobile landscape play and stable arcade rounds)
 - Removed the Firewall's long trailing wires. All 23 bosses now carry a compact front-mounted status panel that moves and depth-sorts with the building. Power/signal/core preserve the staged first-level repair; later panels show power, task readiness and boss completion.
 - Mobile city play now has a single compact status bar and hamburger menu. Quests, field guide and all adventure tools live in that menu. Portrait hides and pauses the city while menus remain usable; landscape restores exploration. Fullscreen landscape is requested when supported, with a usable manual-rotation fallback.

@@ -71,7 +71,7 @@ npm run dev          # open http://localhost:5173
 | Task | Command |
 |---|---|
 | Unit tests | `npm test` |
-| E2E tests | `npx playwright install chromium` (once), then `npm run test:e2e` |
+| E2E tests | `npx playwright install chromium webkit` (once), then `npm run test:e2e` |
 | Lint / format | `npm run lint` / `npm run lint:fix` |
 | Type-check | `npm run typecheck` |
 | Ruflo project tooling | `npm run ruflo -- <command>` ([setup](docs/RUFLO.md)) |

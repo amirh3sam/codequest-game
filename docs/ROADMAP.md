@@ -4,6 +4,7 @@ Each task fits in one session. Tags point to PRD requirements.
 
 ## City maps and programmable lighting (2026-10-24)
 
+- [x] Keep Run and output reachable on short mobile screens; cover actual tablet/task execution in mobile Chromium and WebKit, including streamed Java compiler failure recovery.
 - [x] Replace trailing boss wires with attached status panels throughout the city.
 - [x] Move mobile quests, guide and tools into a hamburger menu; reserve portrait for menus and landscape for city exploration.
 - [x] Animate short touch steps with correct facing, cancel held controls cleanly and preserve reduced-motion behavior.
