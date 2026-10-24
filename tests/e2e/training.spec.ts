@@ -12,6 +12,7 @@ async function start(page: Page, lang: Lang = "javascript") {
   await page.goto("/");
   await page.locator(`[data-language="${lang}"]`).click();
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
+  await page.getByRole("button", { name: "Open detailed handbook", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "CodeQuest training", exact: true })).toBeVisible();
 }
 async function chapter(page: Page, title: string) {

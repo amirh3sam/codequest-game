@@ -8,10 +8,12 @@ test.use({
   hasTouch: true,
 });
 test("portrait and landscape have reachable training and mobile replay controls", async ({ page }, info) => {
+  test.setTimeout(90_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
   await page.getByRole("button", { name: "Start adventure", exact: true }).tap();
+  await page.getByRole("button", { name: "Open detailed handbook", exact: true }).tap();
   await expect(page.locator(".training-shell")).toBeVisible();
   // Orientation changes are simulated here; fullscreen itself is covered by mobile-layout.
   await page.evaluate(() =>

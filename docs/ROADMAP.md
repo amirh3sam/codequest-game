@@ -4,6 +4,7 @@ Each task fits in one session. Tags point to PRD requirements.
 
 ## City maps and programmable lighting (2026-10-24)
 
+- [x] Add a character-led guided tour inspired by amirhesamtech.com, with animated captions, live control highlights/arrows, actual menu/tablet navigation, saved resume and phone-safe placement; retain the detailed handbook.
 - [x] Let players rename, restart or delete individual characters and erase the local profile with explicit confirmation, scoped cleanup, backup reminders and protection against old saves reappearing.
 - [x] Add first-visit interactive 2D training, all-menu/tablet explanations, safe real-code exercises and per-district lesson briefings; remember progress and provide replay/skip controls on desktop and mobile.
 - [x] Add visible click destinations and collision-aware walking routes, precise diagonal arrival, blocked-destination fallback and manual-input cancellation; validate every task/boss approach across all 23 maps.

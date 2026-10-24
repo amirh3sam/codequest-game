@@ -1,6 +1,7 @@
 import { adventureStoryBeat } from "../content/adventure-story";
 import { BEACON_EVENTS } from "../content/community-beacon";
 import { dronePilot } from "../content/drone-pilot";
+import { cityGuide, type GuideStep, type GuideView, TITLE_GUIDE } from "../content/guided-tour";
 import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
 import { PROJECT_QUESTS, readProjectQuestProgress } from "../content/project-quests";
 import type { AreaContent, Boss, Task } from "../content/schema";
@@ -20,6 +21,7 @@ import { ADVENTURES_KEY, loadAdventures, saveAdventure } from "../core/adventure
 import { makeAdventureBackup, parseAdventureBackup } from "../core/backup";
 import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone-mission";
 import { hubStage, restoreHubSubsystem } from "../core/finale";
+import { readGuideProgress, saveGuideProgress } from "../core/guided-tour";
 import { setDistrictLights } from "../core/map-lighting";
 import { GEM_REWARD, isValidHeroName, STORY_AREA_IDS, STUDY_AREA_IDS } from "../core/rules";
 import { loadGame, saveGame } from "../core/save";
@@ -56,6 +58,7 @@ import { openArcade } from "./arcade";
 import { beginnerHint, diagnosticLine, focusEditorLine } from "./debug-guidance";
 import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
+import { openGuidedTour } from "./guided-tour";
 import { openHubFinale } from "./hub-finale";
 import { openLightingConsole } from "./lighting-console";
 import { mobileControls } from "./mobile-controls";
@@ -96,6 +99,7 @@ export class GameApp {
   private toastTimer = 0;
   private tabletCleanup: (() => void) | null = null;
   private trainingDismiss: (() => void) | null = null;
+  private guideCleanup: (() => void) | null = null;
   private tabletNavigation = false;
   private onboardingStage = 3;
   private onboardingOrigin: Position | null = null;
@@ -138,6 +142,7 @@ export class GameApp {
         !event.altKey &&
         !event.repeat &&
         this.state &&
+        !this.guideCleanup &&
         this.overlay.hidden &&
         !document.activeElement?.matches("input,textarea,select")
       ) {
@@ -174,6 +179,8 @@ export class GameApp {
       }
     });
     window.addEventListener("pagehide", () => {
+      this.guideCleanup?.();
+      this.guideCleanup = null;
       this.tabletCleanup?.();
       this.capturePosition();
     });
@@ -186,6 +193,8 @@ export class GameApp {
       const current = library.adventures.find((entry) => entry.adventureId === id);
       if (!current) {
         // Dispose pending editors, then remove any last draft they flushed after the other tab's deletion.
+        this.guideCleanup?.();
+        this.guideCleanup = null;
         this.tabletCleanup?.();
         this.tabletCleanup = null;
         this.trainingDismiss = null;
@@ -274,6 +283,8 @@ export class GameApp {
     return panel;
   }
   private intro(): void {
+    this.guideCleanup?.();
+    this.guideCleanup = null;
     this.capturePosition();
     this.tabletNavigation = false;
     this.runToken++;
@@ -444,6 +455,7 @@ export class GameApp {
       el("p", "intro-footer", "Start as many adventures as you like. Each keeps its own progress on this device."),
       this.backupControls(),
       button("How to play · Interactive training", () => this.training()),
+      button("Guide tour", () => this.guidedTour()),
       this.soundToggle(),
     );
   }
@@ -490,7 +502,11 @@ export class GameApp {
         : "Welcome back! Your adventure is ready.",
     );
     const training = readTrainingSettings();
-    if (!existing && (training.welcome === "new" || training.welcome === "in-progress"))
+    const guide = readGuideProgress();
+    if (!existing && training.welcome === "new" && guide.status === "new") this.guidedTour();
+    else if (!existing && training.welcome !== "in-progress" && guide.status === "in-progress")
+      this.guidedTour(guide.index);
+    else if (!existing && (training.welcome === "new" || training.welcome === "in-progress"))
       this.training(training.chapter);
     else if (training.autoDistricts && !state.training?.districts.includes(state.currentArea))
       this.training(undefined, true);
@@ -1001,6 +1017,7 @@ export class GameApp {
       button("Progress", () => this.journal()),
       button("World map", () => this.worldMap()),
       button("Training", () => this.training()),
+      button("Guide tour", () => this.guidedTour()),
       button("Menu", () => this.pause()),
       this.soundToggle(),
     );
@@ -1023,6 +1040,11 @@ export class GameApp {
     actions.className = "mobile-menu-actions";
     panel.append(
       button("Resume adventure", () => this.close(), "button primary"),
+      el(
+        "p",
+        "mobile-player-stats",
+        `${progress.hearts} hearts · ${progress.gems} gems · ${progress.solved.length}/8 tasks`,
+      ),
       actions,
     );
   }
@@ -1574,6 +1596,7 @@ export class GameApp {
       button("World map", () => this.worldMap()),
       button("Accessibility & controls", () => this.accessibility()),
       button("Training handbook", () => this.training()),
+      button("Guide tour", () => this.guidedTour()),
       button("Read the lesson", () => this.lesson()),
       button("Title screen", () => this.intro()),
     );
@@ -1748,6 +1771,73 @@ export class GameApp {
     this.toast(`Arrived at ${this.area.name} transit. Choose a terminal or open the world map to travel again.`);
     if (readTrainingSettings().autoDistricts && !this.state?.training?.districts.includes(id))
       this.training(undefined, true);
+  }
+  private guidedTour(initial = 0): void {
+    this.guideCleanup?.();
+    this.guideCleanup = null;
+    this.capturePosition();
+    this.tabletNavigation = false;
+    const inCity = !!this.state,
+      courier = inCity ? this.courierName() : this.heroKind === "boy" ? "Ava" : "Kai";
+    const kind = (this.state?.hero.kind ?? this.heroKind) === "boy" ? "girl" : "boy";
+    let view: GuideView | undefined;
+    const cleanup = openGuidedTour({
+      background: this.root,
+      steps: inCity ? cityGuide(courier) : TITLE_GUIDE,
+      initial,
+      name: courier,
+      artwork: this.scene.textures.get(`hero-walk-${kind}`).getSourceImage() as CanvasImageSource,
+      prepare: (step: GuideStep) => {
+        if (step.view === "tablet" && view === "tablet" && this.overlay.querySelector(".tablet-studio")) {
+          this.overlay.querySelectorAll<HTMLButtonElement>(".studio-tab")[step.tab ?? 0]?.click();
+        } else {
+          if (step.view === "world") this.close();
+          else if (step.view === "tools") {
+            if (matchMedia("(pointer: coarse)").matches || innerWidth < 800) this.mobileMenu();
+            else this.close();
+          } else if (step.view === "tablet") this.tablet(false, undefined, STORY_AREA_IDS.length, step.tab ?? 0);
+          else if (step.view === "map") this.worldMap();
+          else if (step.view === "lighting") this.communityBeacon();
+          else if (step.view === "arcade") this.packetDash();
+          else if (step.view === "menu") this.pause();
+          else if (step.view === "comfort") this.accessibility();
+          else if (step.view === "character" && this.state?.adventureId) this.characterSettings(this.state.adventureId);
+        }
+        view = step.view;
+        this.scene.setBlocked(true);
+        this.mobile.hidden = !inCity || step.view !== "world" || matchMedia("(orientation: portrait)").matches;
+      },
+      progress: (index) => {
+        if (inCity) saveGuideProgress({ version: 1, status: "in-progress", index });
+      },
+      done: (reason) => {
+        this.guideCleanup?.();
+        this.guideCleanup = null;
+        if (inCity) {
+          const guide = readGuideProgress();
+          saveGuideProgress({ ...guide, status: reason === "complete" ? "complete" : "skipped" });
+          if (reason !== "handbook") {
+            const settings = readTrainingSettings();
+            if (reason === "complete") {
+              settings.welcome = "complete";
+              this.advanceOnboarding(3);
+            } else if (settings.welcome !== "complete") {
+              settings.welcome = "skipped";
+              settings.autoDistricts = false;
+            }
+            writeTrainingSettings(settings);
+            if (this.state) this.commit(markDistrictTrained(this.state));
+          }
+        }
+        if (reason === "handbook") this.training("welcome");
+        else if (this.state) {
+          this.close();
+          void this.viewport.requestLandscape();
+        } else this.intro();
+      },
+      download: () => this.exportAdventure(),
+    });
+    this.guideCleanup = cleanup;
   }
   private training(chapter?: string, district = false, returnTab?: number): void {
     this.tabletNavigation = false;

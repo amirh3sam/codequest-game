@@ -1,10 +1,30 @@
 # Player training
 
-New developers enter a 13-chapter interactive handbook after choosing a language,
-character and name. Its 2D scenes use the game's developer sprites, city artwork
-and illustrated wrist tablet. Players control the pace with Back/Next, a chapter
-index, pause/replay animation controls and Skip training. Navigation stays visible
-while the lesson scrolls, including on phones. Device Reduce Motion is respected.
+New developers enter a 24-step character-led **Guide tour** after choosing a
+language, character and name. Ava or Kai appears beside a speech bubble with
+animated captions, glowing spotlights and arrows pointing at the real controls.
+The tour opens the actual tablet tabs, world map, lighting console, arcade lobby,
+backup menu, character settings and accessibility controls. It explains each one
+without running or replacing code, grading missions or spending hearts/gems.
+The visual reference is the guided site tour at https://amirhesamtech.com/; the
+implementation uses CodeQuest's own developer artwork and game controls.
+
+Back/Next, topic selection, Show all text, Skip and Escape control the pace. The
+full caption is available to screen readers immediately; long captions can scroll
+with touch or keyboard. Phone placement scrolls targets into view and adapts the
+bubble so it stays separate from the highlighted region in portrait/landscape.
+Reduce Motion shows complete captions without animation; large-text and contrast
+preferences apply. Refresh resumes an unfinished city tour. Returning existing
+players can opt in, and prior handbook sessions continue where they stopped.
+
+The title screen also has a seven-step Guide tour covering languages, avatar/name
+selection, saved adventures and backups. Replaying it does not create a character.
+In the city, **Guide tour** is in the HUD, mobile menu and pause menu.
+
+**Training** opens the separate 13-chapter interactive handbook. Its 2D scenes use
+the game's developer sprites, city artwork and illustrated wrist tablet. Players
+control the pace with Back/Next, a chapter index, pause/replay animation controls
+and Skip training. The guide's **Open detailed handbook** provides direct access.
 
 The chapters cover the city's goal; keyboard/mouse/touch movement; the courier;
 real Run versus graded Submit, hearts and rewards; every HUD/mobile menu; all eight
@@ -34,7 +54,8 @@ refreshes preserve autosave, downloaded backups are point-in-time snapshots that
 must be renewed, and tablet project files need their separate export.
 
 Welcome-tour preferences and last chapter are device-local under
-`codequest:training:v1`. Per-adventure district history is the optional
+`codequest:training:v1`; the character-led tour uses `codequest:guide-tour:v1`.
+Per-adventure district history is the optional
 `training.districts` state field; existing version-1 saves remain supported.
 Adventure backups and tablet project exports are separate; the training explains
 both and does not imply an account or automatic cloud synchronization.
