@@ -1,4 +1,4 @@
-import type { AreaId } from "../core/rules";
+import { type AreaId, STUDY_AREA_IDS, type StoryAreaId } from "../core/rules";
 import type { Lang } from "../runners/types";
 import java from "./data/java/01-variables.json" with { type: "json" };
 import javaConditions from "./data/java/02-conditions.json" with { type: "json" };
@@ -10,6 +10,7 @@ import typescript from "./data/typescript/01-variables.json" with { type: "json"
 import typescriptConditions from "./data/typescript/02-conditions.json" with { type: "json" };
 import { createStoryDistrict, storyDistrictIds } from "./district-curriculum";
 import { type AreaContent, isAreaContent } from "./schema";
+import { createStudyDistrict } from "./world-levels";
 
 const areas: Record<Lang, unknown> = { java, javascript, python, typescript };
 const conditions: Record<Lang, unknown> = {
@@ -24,11 +25,15 @@ const storyDistricts = Object.fromEntries(
     id,
     Object.fromEntries(languages.map((lang) => [lang, createStoryDistrict(id, lang)])),
   ]),
-) as Record<Exclude<AreaId, "variables" | "conditions">, Record<Lang, unknown>>;
+) as Record<Exclude<StoryAreaId, "variables" | "conditions">, Record<Lang, unknown>>;
+const studyDistricts = Object.fromEntries(
+  STUDY_AREA_IDS.map((id) => [id, Object.fromEntries(languages.map((lang) => [lang, createStudyDistrict(id, lang)]))]),
+) as Record<(typeof STUDY_AREA_IDS)[number], Record<Lang, unknown>>;
 const districts: Partial<Record<AreaId, Record<Lang, unknown>>> = {
   variables: areas,
   conditions,
   ...storyDistricts,
+  ...studyDistricts,
 };
 export function isAreaAvailable(id: AreaId): boolean {
   return districts[id] !== undefined;

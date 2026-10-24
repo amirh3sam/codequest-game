@@ -80,6 +80,7 @@ test("completes all eight tasks, buys a hint and defeats the boss", async ({ pag
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Variable District is online!" })).toBeVisible();
   await expect(page.locator(".location-name")).toHaveText("Variable District");
+  await page.getByRole("button", { name: "Explore the district", exact: true }).click();
   await page.evaluate(() => {
     const scene = (
       window as unknown as {
@@ -100,11 +101,11 @@ test("completes all eight tasks, buys a hint and defeats the boss", async ({ pag
     scene.interactTouch();
   });
   await expect(page.getByRole("heading", { name: "Your journey" })).toBeVisible();
-  await page.getByRole("button", { name: /Logic Junction.*Explore district/ }).click();
+  await page.locator('.world-node[data-level-id="conditions"]').click();
   await expect(page.locator(".location-name")).toHaveText("Logic Junction");
   await page.getByRole("button", { name: "World map", exact: true }).click();
   await expect(page.locator(".world-node").filter({ hasText: "Logic Junction" })).toBeEnabled();
-  await expect(page.locator(".world-node").filter({ hasText: "Logic Junction" })).toContainText("Explore district");
+  await expect(page.locator(".world-node").filter({ hasText: "Logic Junction" })).toContainText("explore district");
 });
 
 test("losing the last heart resets the area and keeps the lesson found", async ({ page }) => {

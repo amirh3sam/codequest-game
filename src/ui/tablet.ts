@@ -54,6 +54,12 @@ type TabletHost = {
   initialStudyTopicId?: string;
   studyLevelOffset?: number;
   studyPrerequisiteComplete?: boolean;
+  studyWorld?: {
+    read(topicId: string): { tasks: number; boss: boolean; unlocked: boolean };
+    complete(topicId: string, taskIndex: number, boss: boolean): boolean;
+    visit(topicId: string): void;
+    showMap(): void;
+  };
   animate: boolean;
   focusCamera(): () => void;
   panel(title: string, subtitle: string, wide: boolean): HTMLElement;
@@ -1175,9 +1181,28 @@ export function openTablet(host: TabletHost): () => void {
   let activeStudyId =
     STUDY_CURRICULUM.find(({ id }) => id === host.initialStudyTopicId)?.id ?? STUDY_CURRICULUM[0]?.id ?? "";
   const studyAdventureKey = host.adventureId ?? `guest-${host.lang}`;
+  const courseTaskCount = (topicId: string) =>
+    host.studyWorld?.read(topicId).tasks ?? readStudyTaskProgress(studyAdventureKey, topicId);
+  const completedCourseTopics = () =>
+    host.studyWorld
+      ? STUDY_CURRICULUM.filter((topic) => host.studyWorld?.read(topic.id).boss).map((topic) => topic.id)
+      : readStudyProgress(studyAdventureKey);
+  const completedCourseTasks = () =>
+    host.studyWorld
+      ? STUDY_CURRICULUM.reduce((total, topic) => total + courseTaskCount(topic.id), 0)
+      : readCompletedStudyTasks(studyAdventureKey);
+  const courseUnlocked = (topicId: string) =>
+    host.studyWorld?.read(topicId).unlocked ??
+    isStudyLevelUnlocked(studyAdventureKey, topicId, Boolean(host.studyPrerequisiteComplete));
+  const saveCourseTask = (topicId: string, count: number) =>
+    host.studyWorld
+      ? host.studyWorld.complete(topicId, count - 1, false)
+      : saveStudyTaskProgress(studyAdventureKey, topicId, count);
+  const saveCourseBoss = (topicId: string) =>
+    host.studyWorld ? host.studyWorld.complete(topicId, 8, true) : saveStudyBossProgress(studyAdventureKey, topicId);
   const renderStudyPath = () => {
-    const completedTopics = readStudyProgress(studyAdventureKey);
-    const totalTasks = readCompletedStudyTasks(studyAdventureKey);
+    const completedTopics = completedCourseTopics();
+    const totalTasks = completedCourseTasks();
     const topic = STUDY_CURRICULUM.find(({ id }) => id === activeStudyId) ?? STUDY_CURRICULUM[0];
     studyPane.replaceChildren();
     studyPane.append(
@@ -1195,8 +1220,8 @@ export function openTablet(host: TabletHost): () => void {
     navigation.setAttribute("aria-label", "Study topics");
     for (const [index, item] of STUDY_CURRICULUM.entries()) {
       const isComplete = completedTopics.includes(item.id);
-      const topicProgress = readStudyTaskProgress(studyAdventureKey, item.id);
-      const isUnlocked = isStudyLevelUnlocked(studyAdventureKey, item.id, Boolean(host.studyPrerequisiteComplete));
+      const topicProgress = courseTaskCount(item.id);
+      const isUnlocked = courseUnlocked(item.id);
       const progressLabel = isComplete ? "✓" : topicProgress >= STUDY_TASKS_PER_TOPIC ? "BOSS" : `${topicProgress}/8`;
       const topicButton = button(
         `${progressLabel}  ${String((host.studyLevelOffset ?? 0) + index + 1).padStart(2, "0")}. ${item.title}`,
@@ -1214,10 +1239,10 @@ export function openTablet(host: TabletHost): () => void {
       navigation.append(topicButton);
     }
     if (topic) {
-      const taskProgress = readStudyTaskProgress(studyAdventureKey, topic.id);
+      const taskProgress = courseTaskCount(topic.id);
       const isComplete = completedTopics.includes(topic.id);
       const topicIndex = STUDY_CURRICULUM.indexOf(topic);
-      const isUnlocked = isStudyLevelUnlocked(studyAdventureKey, topic.id, Boolean(host.studyPrerequisiteComplete));
+      const isUnlocked = courseUnlocked(topic.id);
       const levelNumber = (host.studyLevelOffset ?? 0) + topicIndex + 1;
       const topicNumber = String(levelNumber).padStart(2, "0");
       detail.append(
@@ -1227,6 +1252,15 @@ export function openTablet(host: TabletHost): () => void {
         el("p", "study-try-it", topic.tryIt),
         el("aside", "study-key-idea", topic.idea),
       );
+      if (isUnlocked && host.studyWorld)
+        detail.append(
+          button(
+            `Explore level ${topicNumber} map`,
+            () => host.studyWorld?.visit(topic.id),
+            "button primary study-visit-map",
+          ),
+          button("Open world map", () => host.studyWorld?.showMap()),
+        );
       if (!isUnlocked) {
         detail.append(
           el("strong", "study-level-locked", "Level locked"),
@@ -1244,19 +1278,25 @@ export function openTablet(host: TabletHost): () => void {
         const portals = el("section", "study-portals");
         portals.append(
           el("span", "eyebrow", "LEVEL PORTALS"),
-          el("p", "", "The boss opened these doors. Teleport to any unlocked category level."),
+          el(
+            "p",
+            "",
+            "Transit is online in every unlocked district. Visit a map to arrive beside its transit building.",
+          ),
         );
         const portalDoors = el("div", "study-portal-doors");
         for (const [portalIndex, portalTopic] of STUDY_CURRICULUM.entries()) {
-          if (!isStudyLevelUnlocked(studyAdventureKey, portalTopic.id, Boolean(host.studyPrerequisiteComplete)))
-            continue;
+          if (!courseUnlocked(portalTopic.id)) continue;
           const portalLevel = String((host.studyLevelOffset ?? 0) + portalIndex + 1).padStart(2, "0");
           portalDoors.append(
             button(
               `↗ Teleport · ${portalLevel} · ${portalTopic.title}`,
               () => {
-                activeStudyId = portalTopic.id;
-                renderStudyPath();
+                if (host.studyWorld) host.studyWorld.visit(portalTopic.id);
+                else {
+                  activeStudyId = portalTopic.id;
+                  renderStudyPath();
+                }
               },
               "study-portal-door",
             ),
@@ -1341,7 +1381,7 @@ export function openTablet(host: TabletHost): () => void {
               resultFeedback.textContent = `${beginnerHint(error.message, host.lang)} Practice is free; fix it and try again.`;
             } else if (result.stdout.trim() === task.output && prediction.value.trim() === task.output) {
               if (isBossChallenge) {
-                if (!saveStudyBossProgress(studyAdventureKey, topic.id)) {
+                if (!saveCourseBoss(topic.id)) {
                   resultFeedback.textContent =
                     "Correct! Browser storage is unavailable, so the boss result could not be saved.";
                 } else {
@@ -1353,16 +1393,16 @@ export function openTablet(host: TabletHost): () => void {
                     levelButton.textContent = `✓  ${topicNumber}. ${topic.title}`;
                   }
                   if (overview) {
-                    overview.textContent = `${readCompletedStudyTasks(studyAdventureKey)} / ${STUDY_TOTAL_TASKS} category tasks complete · ${readStudyProgress(studyAdventureKey).length} / ${STUDY_CURRICULUM.length} bosses defeated · saves with this adventure`;
+                    overview.textContent = `${completedCourseTasks()} / ${STUDY_TOTAL_TASKS} category tasks complete · ${completedCourseTopics().length} / ${STUDY_CURRICULUM.length} bosses defeated · saves with this adventure`;
                   }
                   resultFeedback.textContent = "Boss defeated! Your level is complete.";
                   nextTaskButton.hidden = false;
                 }
-              } else if (!saveStudyTaskProgress(studyAdventureKey, topic.id, levelIndex + 1)) {
+              } else if (!saveCourseTask(topic.id, levelIndex + 1)) {
                 resultFeedback.textContent =
                   "Correct! Browser storage is unavailable, so the checkpoint could not be saved.";
               } else {
-                const currentLevelProgress = readStudyTaskProgress(studyAdventureKey, topic.id);
+                const currentLevelProgress = courseTaskCount(topic.id);
                 const levelButton = studyPane.querySelector<HTMLButtonElement>(".study-topic-button.active");
                 const overview = studyPane.querySelector<HTMLElement>(".study-overview");
                 if (levelButton) {
@@ -1370,7 +1410,7 @@ export function openTablet(host: TabletHost): () => void {
                   levelButton.textContent = `${currentLevelProgress >= STUDY_TASKS_PER_TOPIC ? "BOSS" : `${currentLevelProgress}/8`}  ${topicNumber}. ${topic.title}`;
                 }
                 if (overview) {
-                  overview.textContent = `${readCompletedStudyTasks(studyAdventureKey)} / ${STUDY_TOTAL_TASKS} category tasks complete · ${readStudyProgress(studyAdventureKey).length} / ${STUDY_CURRICULUM.length} bosses defeated · saves with this adventure`;
+                  overview.textContent = `${completedCourseTasks()} / ${STUDY_TOTAL_TASKS} category tasks complete · ${completedCourseTopics().length} / ${STUDY_CURRICULUM.length} bosses defeated · saves with this adventure`;
                 }
                 resultFeedback.textContent = `Task ${levelIndex + 1}/8 complete. Your code and prediction match.`;
                 nextTaskButton.hidden = false;

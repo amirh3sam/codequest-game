@@ -1,9 +1,9 @@
 import type Phaser from "phaser";
 import village from "../content/village.json" with { type: "json" };
-import type { AreaId } from "../core/rules";
+import type { StoryAreaId as CityAreaId } from "../core/rules";
 import type { Solid } from "./collision";
 
-type StoryAreaId = Exclude<AreaId, "variables" | "conditions">;
+type StoryAreaId = Exclude<CityAreaId, "variables" | "conditions">;
 type Theme = Readonly<{ ground: number; path: number; accent: number; glow: number; label: string }>;
 
 const THEMES: Readonly<Record<StoryAreaId, Theme>> = {

@@ -1,3 +1,12 @@
+## 2026-10-24 (23 city maps, return transit and programmable lighting)
+- All 23 world-map levels are playable districts with eight terminals and one boss each (184 tasks, 23 bosses). The 16 category districts have distinct routes, palettes, skylines and topic landmarks. City Progress now lists the same 23 numbered districts. Tablet and map completions share the adventure state, and released seven-map saves migrate with their course checkpoints and drafts.
+- Replaced the simple arch with a raised transit building, glass doorway, steel columns and holographic lighting. Transit is active in every unlocked map, including unfinished districts; choosing an unlocked destination places the developer safely beside its building. Locked destinations remain disabled.
+- Reworked the Community Beacon as a lighting console for every district. Real code can print online/offline and a color, controlling the two route rails and terminal lights for the whole map or an individual task. Per-map settings survive travel, reload, resets and backups. Examples and a circuit preview explain the effect; invalid output cannot change the lights.
+- Corrected category terminal numbers and suppressed the opening courier guide in later districts.
+- **Checks:** 257 unit tests, typecheck, lint, production build and diff checks passed. All 19 focused Chromium scenarios passed, including all 23 map visits, safe transit arrivals, return travel before boss completion, shared map/tablet progress, all category reference and boss programs in four languages, and per-map lighting power/color persistence.
+- **Release:** pending final validation, public commit and production deployment.
+- **Blockers:** none.
+
 ## 2026-10-23 (complete coding progress, beacon status, and district portals)
 - Coding Progress now lists all seven city districts and all 17 Study Path categories. Every category shows its 0–8 task meter, locked/available state and boss result; the summary counts all 136 category tasks and 17 bosses. The Community Helper badge now names the selected event and shows ON AIR when lit, including after reload.
 - Clearing a district boss exposes a direct Teleport button to the next unlocked district in both the victory panel and persistent HUD. The level-one portal goes directly to Logic Junction without opening the map or menu.

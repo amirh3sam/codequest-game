@@ -3099,3 +3099,63 @@ small {
 #ui[data-high-contrast="true"] :is(.subtitle, .panel p, .skill-track p, .game-footer, .field-guide p) {
   color: #fff;
 }
+.lighting-target {
+  width: 100%;
+  padding: 12px;
+  color: #e2f3ff;
+  background: #102238;
+  border: 1px solid #456582;
+  border-radius: 8px;
+  font: inherit;
+}
+.lighting-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 18px 0;
+}
+.lighting-color-example::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--circuit-color);
+  box-shadow: 0 0 9px var(--circuit-color);
+}
+.lighting-circuit-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.lighting-circuit {
+  padding: 11px;
+  background: #0b192c;
+  border-top: 2px solid var(--circuit-color);
+  border-bottom: 2px solid var(--circuit-color);
+  border-radius: 8px;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--circuit-color) 15%, transparent);
+}
+.lighting-circuit strong,
+.lighting-circuit small {
+  display: block;
+}
+.lighting-circuit small {
+  margin-top: 5px;
+  color: var(--circuit-color);
+  font-size: 11px;
+}
+.lighting-circuit.offline {
+  border-color: #435365;
+  box-shadow: none;
+  opacity: 0.66;
+}
+.lighting-console .code-editor {
+  min-height: 170px;
+}
+.world-transit-status {
+  color: #91dfcb;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}

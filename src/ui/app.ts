@@ -4,22 +4,15 @@ import { dronePilot } from "../content/drone-pilot";
 import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
 import { PROJECT_QUESTS, readProjectQuestProgress } from "../content/project-quests";
 import type { AreaContent, Boss, Task } from "../content/schema";
-import {
-  isStudyLevelUnlocked,
-  readCompletedStudyTasks,
-  readStudyProgress,
-  readStudyTaskProgress,
-  STUDY_CURRICULUM,
-  STUDY_TASKS_PER_TOPIC,
-  STUDY_TOTAL_TASKS,
-} from "../content/study-curriculum";
+import { STUDY_CURRICULUM, STUDY_TOTAL_TASKS } from "../content/study-curriculum";
 import village from "../content/village.json" with { type: "json" };
+import { studyAreaId, studyTopicForArea, WORLD_LEVELS } from "../content/world-levels";
 import { loadAdventures, saveAdventure } from "../core/adventures";
 import { makeAdventureBackup, parseAdventureBackup } from "../core/backup";
-import { canLightBeacon, lightBeacon } from "../core/discoveries";
 import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone-mission";
 import { hubStage, restoreHubSubsystem } from "../core/finale";
-import { GEM_REWARD, isValidHeroName } from "../core/rules";
+import { setDistrictLights } from "../core/map-lighting";
+import { GEM_REWARD, isValidHeroName, STORY_AREA_IDS, STUDY_AREA_IDS } from "../core/rules";
 import { loadGame, saveGame } from "../core/save";
 import {
   applySubmissionFailure,
@@ -38,16 +31,17 @@ import {
 import { SPRITES } from "../game/assets";
 import { gameAudio } from "../game/audio";
 import { type ControlScheme, controlHint } from "../game/control-scheme";
+import { portalArrivalPosition } from "../game/district-layout";
 import type { BootScene, VillageCallbacks } from "../game/scenes/BootScene";
 import { executionError, grade } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
 import { WorkerHost } from "../runners/worker-host";
 import { openArcade } from "./arcade";
-import { openCommunityBeacon } from "./community-beacon";
 import { beginnerHint, diagnosticLine, focusEditorLine } from "./debug-guidance";
 import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
 import { openHubFinale } from "./hub-finale";
+import { openLightingConsole } from "./lighting-console";
 import { mobileControls } from "./mobile-controls";
 import { openTablet } from "./tablet";
 import { presentTaskConsoleOpening } from "./task-console-opening";
@@ -407,7 +401,7 @@ export class GameApp {
     if (!isAreaAvailable(state.currentArea)) state = enterArea(state, "variables", now());
     const area = loadArea(state.lang, state.currentArea);
     if (
-      village.worldAreas.some(
+      WORLD_LEVELS.some(
         ({ id }) =>
           isAreaAvailable(id as GameState["currentArea"]) &&
           !state.areas[id as GameState["currentArea"]].solved.every(
@@ -445,8 +439,11 @@ export class GameApp {
     return state?.adventureId ? `codequest:onboarding:v1:${state.adventureId}` : null;
   }
   private readOnboarding(state: GameState): number {
+    if (state.currentArea !== "variables" || state.areas.variables.bossDefeated) return 3;
     try {
-      const value = Number(localStorage.getItem(this.onboardingKey(state) ?? ""));
+      const stored = localStorage.getItem(this.onboardingKey(state) ?? "");
+      if (stored === null) return 3;
+      const value = Number(stored);
       return Number.isInteger(value) && value >= 0 && value <= 3 ? value : 3;
     } catch {
       return 3;
@@ -565,7 +562,7 @@ export class GameApp {
       const grid = el("div", "adventure-library");
       for (const state of library.adventures) {
         const progress = state.areas[state.currentArea],
-          area = village.worldAreas.find((entry) => entry.id === state.currentArea);
+          area = WORLD_LEVELS.find((entry) => entry.id === state.currentArea);
         const language = LANGUAGES.find((entry) => entry.id === state.lang)?.name ?? state.lang;
         const card = el("article", "adventure-card");
         card.dataset.adventureId = state.adventureId;
@@ -686,6 +683,7 @@ export class GameApp {
     actions.append(button("Tablet", () => this.tablet()));
     if (this.area.id === "variables") actions.append(button("Mission", () => this.mission()));
     actions.append(
+      button("Lighting", () => this.communityBeacon()),
       button("Lesson", () => this.lesson()),
       button("Progress", () => this.journal()),
       button("World map", () => this.worldMap()),
@@ -735,7 +733,13 @@ export class GameApp {
     if (onboarding) this.hud.append(onboarding);
   }
   private onboardingCard(): HTMLElement | null {
-    if (this.onboardingStage >= 3 || !this.state) return null;
+    if (
+      this.onboardingStage >= 3 ||
+      !this.state ||
+      this.area.id !== "variables" ||
+      this.state.areas.variables.bossDefeated
+    )
+      return null;
     const guide = el("aside", "field-guide");
     guide.setAttribute("aria-label", "First steps guide");
     const stages = [
@@ -928,20 +932,18 @@ export class GameApp {
     return this.state?.hero.kind === "boy" ? "Ava" : "Kai";
   }
   private communityBeacon(): void {
-    if (!this.state || this.area.id !== "variables") return;
+    if (!this.state) return;
     this.capturePosition();
-    openCommunityBeacon({
+    openLightingConsole({
       lang: this.lang,
-      courierName: this.courierName(),
-      choice: this.state.discoveries?.beacon,
-      available: canLightBeacon(this.state),
+      district: this.area.name,
+      lighting: this.state.areas[this.area.id].lighting,
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
       run: (code) => this.practice(code),
-      activate: (choice) => {
-        if (this.state) this.commit(lightBeacon(this.state, choice, now()));
+      apply: (target, command) => {
+        if (this.state) this.commit(setDistrictLights(this.state, target, command, now()));
         gameAudio.play("beacon");
       },
-      courier: () => this.mission(),
       close: () => this.close(),
     });
   }
@@ -957,7 +959,7 @@ export class GameApp {
       if (token === this.runToken) this.busy = false;
     }
   }
-  private tablet(animate = true, studyTopicId?: string, studyLevelOffset = village.worldAreas.length): void {
+  private tablet(animate = true, studyTopicId?: string, studyLevelOffset = STORY_AREA_IDS.length): void {
     if (!this.state) return;
     gameAudio.play("open");
     this.tabletNavigation = false;
@@ -980,21 +982,43 @@ export class GameApp {
       initialStudyTopicId: studyTopicId,
       studyLevelOffset,
       studyPrerequisiteComplete: this.state.areas.abstraction.bossDefeated,
-      discovery:
-        this.area.id === "variables"
-          ? {
-              title: "Community beacon",
-              status: this.state.discoveries?.beacon
-                ? `Signal Maker · ${BEACON_EVENTS[this.state.discoveries.beacon].title} is on air`
-                : canLightBeacon(this.state)
-                  ? "A message from Mina is waiting beyond the courier lane."
-                  : `Help ${this.courierName()} repair the drone to reconnect the courtyard.`,
-              open: () => {
-                this.tabletNavigation = true;
-                this.communityBeacon();
-              },
-            }
-          : undefined,
+      studyWorld: {
+        read: (topicId) => {
+          const id = studyAreaId(topicId);
+          const saved = id && this.state?.areas[id];
+          return {
+            tasks: saved?.solved.length ?? 0,
+            boss: saved?.bossDefeated ?? false,
+            unlocked: Boolean(id && this.state && isAreaUnlocked(this.state, id)),
+          };
+        },
+        complete: (topicId, taskIndex, boss) => {
+          const id = studyAreaId(topicId),
+            state = this.state;
+          if (!id || !state || !isAreaUnlocked(state, id)) return false;
+          const content = loadArea(state.lang, id);
+          const focused = { ...state, currentArea: id };
+          const next = boss
+            ? defeatBoss(focused, content, now())
+            : solveTask(focused, content, content.tasks[taskIndex]?.id ?? "", now());
+          if (next === focused) return false;
+          this.commit({ ...next, currentArea: state.currentArea, position: state.position });
+          return true;
+        },
+        visit: (topicId) => {
+          const id = studyAreaId(topicId);
+          if (id) this.travelTo(id);
+        },
+        showMap: () => this.worldMap(),
+      },
+      discovery: {
+        title: "Community beacon · City lights",
+        status: "Print online/offline and a color to control this map's route lights. No mission prerequisite.",
+        open: () => {
+          this.tabletNavigation = true;
+          this.communityBeacon();
+        },
+      },
       finale:
         this.area.id === "variables" && (canFightBoss(this.state, this.area) || this.state.areas.variables.bossDefeated)
           ? {
@@ -1053,7 +1077,7 @@ export class GameApp {
     if (!this.state) return;
     this.capturePosition();
     const state = this.state;
-    const availableAreas = village.worldAreas.filter(({ id }) => isAreaAvailable(id as GameState["currentArea"]));
+    const availableAreas = WORLD_LEVELS.filter(({ id }) => isAreaAvailable(id));
     const totalMissions = availableAreas.reduce(
       (total, { id }) => total + loadArea(state.lang, id as GameState["currentArea"]).tasks.length,
       0,
@@ -1083,8 +1107,8 @@ export class GameApp {
     const missionSummary = el("div"),
       districtSummary = el("div"),
       studySummary = el("div"),
-      completedTopics = readStudyProgress(adventureKey),
-      completedStudyTasks = readCompletedStudyTasks(adventureKey);
+      completedTopics = STUDY_AREA_IDS.filter((id) => state.areas[id].bossDefeated),
+      completedStudyTasks = STUDY_AREA_IDS.reduce((sum, id) => sum + state.areas[id].solved.length, 0);
     missionSummary.append(el("strong", "", `${solvedMissions} / ${totalMissions} missions`));
     missionSummary.append(el("span", "", "across playable districts"));
     districtSummary.append(el("strong", "", `${restoredDistricts} / ${availableAreas.length} districts restored`));
@@ -1103,7 +1127,8 @@ export class GameApp {
         detail: state.discoveries?.beacon
           ? `${BEACON_EVENTS[state.discoveries.beacon].title} is on air`
           : "Light the community beacon",
-        earned: Boolean(state.discoveries?.beacon),
+        earned:
+          Boolean(state.discoveries?.beacon) || WORLD_LEVELS.some((level) => Boolean(state.areas[level.id].lighting)),
       },
       {
         title: "Badge Builder",
@@ -1113,7 +1138,7 @@ export class GameApp {
       {
         title: "Code Scholar",
         detail: `Practice all ${STUDY_CURRICULUM.length} Study Path topics`,
-        earned: readStudyProgress(adventureKey).length >= STUDY_CURRICULUM.length,
+        earned: completedTopics.length >= STUDY_CURRICULUM.length,
       },
       {
         title: "Skyline Sprinter",
@@ -1141,88 +1166,53 @@ export class GameApp {
     );
     panel.append(el("h3", "badge-heading", "Adventure badges"), badgeGrid);
     const tracks = el("div", "skill-tracks");
-    panel.append(el("h3", "badge-heading", "City districts"));
-    for (const [index, district] of village.worldAreas.entries()) {
-      const id = district.id as GameState["currentArea"],
-        active = isAreaAvailable(id),
+    panel.append(el("h3", "badge-heading", `City districts · ${WORLD_LEVELS.length} maps`));
+    for (const [index, district] of WORLD_LEVELS.entries()) {
+      const id = district.id,
         progress = state.areas[id],
         complete = progress.bossDefeated;
-      const track = el("article", `skill-track${active ? " playable" : " upcoming"}${complete ? " mastered" : ""}`);
+      const unlocked = isAreaUnlocked(state, id),
+        category = studyTopicForArea(id);
+      const track = el(
+        "article",
+        `skill-track${category ? " study-skill-track" : ""}${unlocked ? " playable" : " upcoming"}${complete ? " mastered" : ""}`,
+      );
+      track.dataset.levelId = id;
       track.append(
-        el("span", "eyebrow", `SKILL ${String(index + 1).padStart(2, "0")} · ${district.concept.toUpperCase()}`),
+        el("span", "eyebrow", `LEVEL ${String(index + 1).padStart(2, "0")} · ${district.concept.toUpperCase()}`),
         el("strong", "skill-track-name", district.name),
       );
-      if (active) {
-        const label = el("span", "skill-track-count", `${progress.solved.length} / 8 missions`),
-          meter = el("div", "skill-track-meter");
-        meter.setAttribute("role", "progressbar");
-        meter.setAttribute("aria-label", `${district.name} missions completed`);
-        meter.setAttribute("aria-valuemin", "0");
-        meter.setAttribute("aria-valuemax", "8");
-        meter.setAttribute("aria-valuenow", String(progress.solved.length));
-        for (let step = 0; step < 8; step++) meter.append(el("span", step < progress.solved.length ? "complete" : ""));
-        const next = loadArea(state.lang, id).tasks[progress.solved.length];
-        track.append(
-          label,
-          meter,
-          el(
-            "p",
-            "",
-            complete
-              ? "Skill restored · District boss defeated."
-              : next
-                ? `Next: ${next.title}`
-                : "All missions complete · Visit the district boss.",
-          ),
-        );
-      } else track.append(el("span", "skill-coming-soon", "Coming soon"));
-      tracks.append(track);
-    }
-    panel.append(tracks);
-    panel.append(el("h3", "badge-heading", "Study Path categories"));
-    const studyTracks = el("div", "skill-tracks");
-    for (const [index, topic] of STUDY_CURRICULUM.entries()) {
-      const taskProgress = readStudyTaskProgress(adventureKey, topic.id),
-        isComplete = completedTopics.includes(topic.id),
-        unlocked = isStudyLevelUnlocked(adventureKey, topic.id, this.state.areas.abstraction.bossDefeated),
-        levelNumber = village.worldAreas.length + index + 1,
-        track = el(
-          "article",
-          `skill-track study-skill-track${unlocked ? " playable" : " upcoming"}${isComplete ? " mastered" : ""}`,
-        );
-      track.append(
-        el("span", "eyebrow", `LEVEL ${String(levelNumber).padStart(2, "0")} · STUDY PATH`),
-        el("strong", "skill-track-name", topic.title),
-      );
-      const label = el("span", "skill-track-count", `${taskProgress} / ${STUDY_TASKS_PER_TOPIC} tasks`),
-        meter = el("div", "skill-track-meter");
+      const label = el("span", "skill-track-count", `${progress.solved.length} / 8 ${category ? "tasks" : "missions"}`);
+      const meter = el("div", "skill-track-meter");
       meter.setAttribute("role", "progressbar");
-      meter.setAttribute("aria-label", `${topic.title} Study Path tasks`);
+      meter.setAttribute("aria-label", `${district.name} missions completed`);
       meter.setAttribute("aria-valuemin", "0");
-      meter.setAttribute("aria-valuemax", String(STUDY_TASKS_PER_TOPIC));
-      meter.setAttribute("aria-valuenow", String(taskProgress));
-      for (let step = 0; step < STUDY_TASKS_PER_TOPIC; step++)
-        meter.append(el("span", step < taskProgress ? "complete" : ""));
+      meter.setAttribute("aria-valuemax", "8");
+      meter.setAttribute("aria-valuenow", String(progress.solved.length));
+      for (let step = 0; step < 8; step++) meter.append(el("span", step < progress.solved.length ? "complete" : ""));
+      const next = loadArea(state.lang, id).tasks[progress.solved.length];
       track.append(
         label,
         meter,
         el(
           "p",
           "",
-          isComplete
-            ? "Category mastered · boss defeated."
-            : taskProgress >= STUDY_TASKS_PER_TOPIC
-              ? "8/8 tasks · category boss ready."
-              : unlocked
-                ? `Unlocked · ${STUDY_TASKS_PER_TOPIC - taskProgress} tasks and the boss remain.`
-                : index === 0
-                  ? "Locked · defeat the Abstraction Cloud boss to unlock level 8."
-                  : "Locked · defeat the previous category boss.",
+          complete
+            ? "District restored · boss defeated."
+            : !unlocked
+              ? `Locked · defeat the boss in level ${index}.`
+              : next
+                ? `Next: ${next.title}`
+                : "8/8 tasks · visit the district boss.",
         ),
       );
-      studyTracks.append(track);
+      track.append(
+        el("small", "", unlocked ? "Transit online · return to any unlocked map" : "Transit destination locked"),
+      );
+      if (unlocked) track.append(button(`Visit level ${index + 1}`, () => this.travelTo(id)));
+      tracks.append(track);
     }
-    panel.append(studyTracks);
+    panel.append(tracks);
     if (this.area.id === "variables")
       panel.append(
         button(
@@ -1231,10 +1221,7 @@ export class GameApp {
           "button mission-link",
         ),
       );
-    if (this.area.id === "variables")
-      panel.append(
-        button("Optional discovery · Community beacon", () => this.communityBeacon(), "button mission-link"),
-      );
+    panel.append(button("Community beacon · City lights", () => this.communityBeacon(), "button mission-link"));
     for (const [index, task] of this.area.tasks.entries()) {
       const solved = this.state.areas[this.area.id].solved.includes(task.id),
         available = canSolveTask(this.state, this.area, task.id);
@@ -1379,88 +1366,62 @@ export class GameApp {
   }
   private worldMap(): void {
     if (!this.state) return;
+    const state = this.state;
     const panel = this.panel(
-        "Your journey",
-        `Defeat Abstraction Cloud to unlock level 8. Then defeat each category boss to open the next category; every category has eight tasks plus its boss.`,
-        true,
-      ),
-      adventureKey = this.state.adventureId ?? `guest-${this.state.lang}`,
-      nodes = el("div", "world-nodes level-map-nodes");
-    const completedSkillTasks = readCompletedStudyTasks(adventureKey);
-    const completedSkillLevels = new Set(readStudyProgress(adventureKey));
+      "Your journey",
+      "23 playable city maps. Each district has eight coding tasks, one boss and its own transit building.",
+      true,
+    );
+    const nodes = el("div", "world-nodes level-map-nodes");
+    const solved = WORLD_LEVELS.reduce((total, level) => total + state.areas[level.id].solved.length, 0);
+    const bosses = WORLD_LEVELS.filter((level) => state.areas[level.id].bossDefeated).length;
     panel.append(
-      el("span", "eyebrow", `LEVEL MAP · 7 CITY LEVELS + ${STUDY_CURRICULUM.length} STUDY CATEGORIES`),
+      el("span", "eyebrow", `LEVEL MAP · ${WORLD_LEVELS.length} CITY DISTRICTS`),
       el(
         "h3",
         "world-map-section-title",
-        `${completedSkillTasks} / ${STUDY_TOTAL_TASKS} category tasks · ${readStudyProgress(adventureKey).length} / ${STUDY_CURRICULUM.length} bosses defeated`,
+        `${solved} / ${WORLD_LEVELS.length * 8} tasks · ${bosses} / ${WORLD_LEVELS.length} bosses defeated`,
       ),
       el(
         "p",
         "world-map-hint",
-        "Defeat Abstraction Cloud to unlock level 8. Each category has eight tasks and a boss; beating a category boss unlocks the next.",
+        "Defeat each district boss to unlock the next map. Transit stays online in every unlocked district, so you can return at any time. You arrive beside its transit building.",
       ),
     );
-    for (const [index, area] of village.worldAreas.entries()) {
-      const id = area.id as GameState["currentArea"],
-        unlocked = isAreaUnlocked(this.state, id),
-        completed = this.state.areas[id].bossDefeated;
+    for (const [index, level] of WORLD_LEVELS.entries()) {
+      const progress = state.areas[level.id],
+        unlocked = isAreaUnlocked(state, level.id);
+      const category = studyTopicForArea(level.id);
       const node = button(
         "",
-        () => {
-          if (this.state) {
-            this.commit(enterArea(this.state, id, now()));
-            this.close();
-          }
-        },
-        `world-node${unlocked ? " unlocked" : ""}`,
+        () => this.travelTo(level.id),
+        `world-node${category ? " world-skill-node" : ""}${unlocked ? " unlocked" : " locked"}${progress.bossDefeated ? " complete" : ""}`,
       );
-      node.disabled = !isAreaAvailable(id) || !unlocked;
+      node.dataset.levelId = level.id;
+      node.disabled = !unlocked;
       node.append(
-        el("span", "world-number", completed ? "✓" : unlocked ? String(index + 1) : "🔒"),
-        el("strong", "", area.name),
-        el(
-          "small",
-          "",
-          !unlocked ? "Defeat the previous boss" : isAreaAvailable(id) ? "Explore district" : "Unlocked · coming next",
-        ),
-      );
-      nodes.append(node);
-    }
-    for (const [index, topic] of STUDY_CURRICULUM.entries()) {
-      const taskProgress = readStudyTaskProgress(adventureKey, topic.id),
-        isComplete = completedSkillLevels.has(topic.id),
-        unlocked = isStudyLevelUnlocked(adventureKey, topic.id, this.state.areas.abstraction.bossDefeated),
-        skill = button(
-          "",
-          () => this.tablet(false, topic.id, village.worldAreas.length),
-          `world-node world-skill-node${unlocked ? " unlocked" : " locked"}${isComplete ? " complete" : taskProgress > 0 ? " in-progress" : ""}`,
-        );
-      skill.disabled = !unlocked;
-      skill.append(
-        el(
-          "span",
-          "world-number",
-          !unlocked ? "🔒" : isComplete ? "✓" : String(village.worldAreas.length + index + 1).padStart(2, "0"),
-        ),
-        el("strong", "", topic.title),
+        el("span", "world-number", unlocked ? String(index + 1).padStart(2, "0") : "🔒"),
+        el("strong", "", level.name),
         el(
           "small",
           "",
           !unlocked
-            ? `Locked · defeat the previous category boss to unlock level ${village.worldAreas.length + index + 1}`
-            : isComplete
-              ? "Boss defeated · level complete"
-              : taskProgress >= STUDY_TASKS_PER_TOPIC
-                ? "8/8 tasks · boss ready"
-                : taskProgress
-                  ? `Continue · ${taskProgress}/8 tasks`
-                  : "Start level · 8 tasks + boss",
+            ? `Locked · defeat the boss in level ${index}`
+            : progress.bossDefeated
+              ? "✓ Boss defeated · explore district"
+              : `${progress.solved.length}/8 tasks · ${progress.solved.length === 8 ? "boss ready" : "explore district"}`,
         ),
+        el("small", "world-transit-status", unlocked ? "TRANSIT ONLINE" : "DESTINATION LOCKED"),
       );
-      nodes.append(skill);
+      nodes.append(node);
     }
     panel.append(nodes);
+  }
+  private travelTo(id: GameState["currentArea"]): void {
+    if (!this.state || !isAreaUnlocked(this.state, id)) return;
+    this.commit(enterArea(this.state, id, now(), portalArrivalPosition(id)));
+    this.close();
+    this.toast(`Arrived at ${this.area.name} transit. Choose a terminal or open the world map to travel again.`);
   }
   private draft(task: Pick<Task, "id">, code: string): void {
     if (!this.state) return;
@@ -1695,7 +1656,7 @@ export class GameApp {
     this.tabletCleanup = presentTaskConsoleOpening(panel, task, this.state.hero.name);
   }
   private victory(): void {
-    const next = village.worldAreas[this.area.order];
+    const next = WORLD_LEVELS[this.area.order];
     const panel = this.panel(`${this.area.name} is online!`, "You used your code to reconnect the city.");
     panel.classList.add("victory");
     panel.prepend(this.icon("gem"));

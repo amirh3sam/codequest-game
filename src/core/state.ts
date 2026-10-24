@@ -1,5 +1,6 @@
 import type { Lang } from "../runners/types";
 import type { Discoveries } from "./discoveries";
+import type { DistrictLights } from "./map-lighting";
 import {
   AREA_IDS,
   type AreaId,
@@ -26,6 +27,7 @@ export type AreaState = Readonly<{
   bossDefeated: boolean;
   finaleStage?: 0 | 1 | 2;
   drafts: Readonly<Record<string, string>>;
+  lighting?: DistrictLights;
 }>;
 
 /** Matches the version-1 save shape in docs/ARCHITECTURE.md. */
@@ -91,8 +93,10 @@ function atEntrance(state: GameState): GameState {
   return next;
 }
 
-export function enterArea(state: GameState, areaId: AreaId, updatedAt: string): GameState {
-  if (areaId === state.currentArea || !isAreaUnlocked(state, areaId)) return state;
+export function enterArea(state: GameState, areaId: AreaId, updatedAt: string, arrival?: Position): GameState {
+  if (!isAreaUnlocked(state, areaId)) return state;
+  if (arrival) return { ...state, currentArea: areaId, position: { ...arrival }, updatedAt };
+  if (areaId === state.currentArea) return state;
   return atEntrance({ ...state, currentArea: areaId, updatedAt });
 }
 
@@ -170,7 +174,13 @@ export function resetArea(state: GameState, updatedAt: string): GameState {
   const area = state.areas[state.currentArea];
   // Completed areas remain completed; practice/replay is a separate, later feature.
   if (area.bossDefeated) return state;
-  return atEntrance(updateCurrentArea(state, { ...createAreaState(), lessonsFound: area.lessonsFound }, updatedAt));
+  return atEntrance(
+    updateCurrentArea(
+      state,
+      { ...createAreaState(), lessonsFound: area.lessonsFound, ...(area.lighting ? { lighting: area.lighting } : {}) },
+      updatedAt,
+    ),
+  );
 }
 
 export function applySubmissionFailure(

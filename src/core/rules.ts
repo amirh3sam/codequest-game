@@ -2,7 +2,36 @@
 export const MAX_HEARTS = 3;
 export const TASKS_PER_AREA = 8;
 
-export const AREA_IDS = ["variables", "conditions", "loops", "arrays", "functions", "objects", "abstraction"] as const;
+export const STORY_AREA_IDS = [
+  "variables",
+  "conditions",
+  "loops",
+  "arrays",
+  "functions",
+  "objects",
+  "abstraction",
+] as const;
+export type StoryAreaId = (typeof STORY_AREA_IDS)[number];
+export const STUDY_AREA_IDS = [
+  "study-operators",
+  "study-decision-statements",
+  "study-loops",
+  "study-methods-functions",
+  "study-classes-objects-one",
+  "study-string-class",
+  "study-arrays",
+  "study-array-list",
+  "study-classes-objects-two",
+  "study-encapsulation",
+  "study-inheritance",
+  "study-abstraction-polymorphism",
+  "study-exceptions-errors",
+  "study-collections-framework",
+  "study-maps",
+  "study-extra-topics",
+] as const;
+export type StudyAreaId = (typeof STUDY_AREA_IDS)[number];
+export const AREA_IDS = [...STORY_AREA_IDS, ...STUDY_AREA_IDS] as const;
 export type AreaId = (typeof AREA_IDS)[number];
 
 export const HINT_COSTS = [1, 2, 3] as const;

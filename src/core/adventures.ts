@@ -1,4 +1,4 @@
-import { isAdventureId, isGameState, loadGame, type SaveResult, type SaveStorage } from "./save";
+import { isAdventureId, isGameState, loadGame, migrateGameState, type SaveResult, type SaveStorage } from "./save";
 import type { GameState } from "./state";
 
 export const ADVENTURES_KEY = "codequest:adventures:v1";
@@ -14,7 +14,7 @@ function storageFor(storage?: SaveStorage): SaveStorage {
   return target;
 }
 
-function parseLibrary(raw: string | null): AdventureLibrary {
+function parseLibrary(raw: string | null, storage?: SaveStorage): AdventureLibrary {
   if (raw === null) return { status: "loaded", adventures: [] };
   let data: unknown;
   try {
@@ -27,7 +27,8 @@ function parseLibrary(raw: string | null): AdventureLibrary {
   if (typeof record.version === "number" && record.version !== 1) return { status: "unsupported-version" };
   if (record.version !== 1 || !Array.isArray(record.adventures)) return { status: "corrupt" };
   const entries: Adventure[] = [];
-  for (const state of record.adventures) {
+  for (const entry of record.adventures) {
+    const state = migrateGameState(entry, storage);
     if (
       !isGameState(state) ||
       !isAdventureId(state.adventureId) ||
@@ -43,7 +44,7 @@ function parseLibrary(raw: string | null): AdventureLibrary {
 export function loadAdventures(storage?: SaveStorage): AdventureLibrary {
   try {
     const target = storageFor(storage),
-      library = parseLibrary(target.getItem(ADVENTURES_KEY));
+      library = parseLibrary(target.getItem(ADVENTURES_KEY), target);
     if (library.status !== "loaded") return library;
     const entries = new Map(library.adventures.map((entry) => [entry.adventureId, entry]));
     for (const lang of ["javascript", "typescript", "python", "java"] as const) {

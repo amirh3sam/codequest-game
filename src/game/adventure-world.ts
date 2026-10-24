@@ -1,10 +1,11 @@
 import Phaser from "phaser";
 import village from "../content/village.json" with { type: "json" };
-import type { AreaId } from "../core/rules";
+import type { AreaId, StoryAreaId, StudyAreaId } from "../core/rules";
 import type { Solid } from "./collision";
 import { createEnvironmentFrames, type EnvironmentKind, OBJECT_SIZE } from "./environment-objects";
 import { buildLogicWorld } from "./logic-world";
 import { buildStoryWorld } from "./story-worlds";
+import { buildStudyWorld } from "./study-worlds";
 
 export type DistrictWorld = { solids: Solid[]; destroy(): void };
 
@@ -15,12 +16,13 @@ export function buildAdventureWorld(
 ): DistrictWorld {
   if (!scene.textures.exists("environment-fir")) createEnvironmentFrames(scene);
   const before = new Set(scene.children.list);
-  const solids =
-    area === "conditions"
+  const solids = area.startsWith("study-")
+    ? buildStudyWorld(scene, area as StudyAreaId, reducedMotion)
+    : area === "conditions"
       ? buildLogicWorld(scene, reducedMotion)
       : area === "variables"
         ? buildCampusWorld(scene, reducedMotion)
-        : buildStoryWorld(scene, area);
+        : buildStoryWorld(scene, area as Exclude<StoryAreaId, "variables" | "conditions">);
   const objects = scene.children.list.filter((object) => !before.has(object));
   return {
     solids,

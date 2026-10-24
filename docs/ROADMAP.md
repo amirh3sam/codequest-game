@@ -2,6 +2,13 @@
 
 Each task fits in one session. Tags point to PRD requirements.
 
+## City maps and programmable lighting (2026-10-24)
+
+- [x] Turn every world-map card into one of 23 playable city districts, each with eight tasks and a separate boss.
+- [x] Share task and boss progress between city maps, the tablet and the 23-district progress page; migrate released saves.
+- [x] Add a richer transit building to each map, keep it active in unlocked districts and land returning players beside the destination building.
+- [x] Replace the unclear beacon flow with a free lighting console: program online/offline and colors for whole maps or individual terminal routes, with persistent per-map settings.
+
 ## Current priority: learning through adventure (2026-10-22)
 
 - [x] Add an adventure library for multiple journeys in the same or different languages, preserving old saves and separate practice drafts.

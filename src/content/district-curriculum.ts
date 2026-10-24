@@ -1,9 +1,9 @@
-import type { AreaId } from "../core/rules";
+import type { StoryAreaId as CityAreaId } from "../core/rules";
 import type { Lang } from "../runners/types";
 import type { AreaContent, Boss, Task } from "./schema";
 import { STUDY_CURRICULUM, type StudyTopic, studyBossFor, studyTaskFor } from "./study-curriculum";
 
-const DISTRICT_TOPICS: Readonly<Record<Exclude<AreaId, "variables" | "conditions">, string>> = {
+const DISTRICT_TOPICS: Readonly<Record<Exclude<CityAreaId, "variables" | "conditions">, string>> = {
   loops: "loops",
   arrays: "arrays",
   functions: "methods-functions",
@@ -11,7 +11,7 @@ const DISTRICT_TOPICS: Readonly<Record<Exclude<AreaId, "variables" | "conditions
   abstraction: "abstraction-polymorphism",
 };
 
-const DISTRICT_NAMES: Readonly<Record<Exclude<AreaId, "variables" | "conditions">, string>> = {
+const DISTRICT_NAMES: Readonly<Record<Exclude<CityAreaId, "variables" | "conditions">, string>> = {
   loops: "Loop Transit",
   arrays: "Array Towers",
   functions: "Function Labs",
@@ -19,7 +19,7 @@ const DISTRICT_NAMES: Readonly<Record<Exclude<AreaId, "variables" | "conditions"
   abstraction: "Abstraction Cloud",
 };
 
-const BOSS_NAMES: Readonly<Record<Exclude<AreaId, "variables" | "conditions">, string>> = {
+const BOSS_NAMES: Readonly<Record<Exclude<CityAreaId, "variables" | "conditions">, string>> = {
   loops: "The Infinite Loop",
   arrays: "The Index Warden",
   functions: "The Function Architect",

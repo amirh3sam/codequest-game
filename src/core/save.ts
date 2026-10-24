@@ -1,7 +1,17 @@
 import type { Lang } from "../runners/types";
 import { isBeaconChoice } from "./discoveries";
-import { AREA_IDS, type AreaId, GEM_REWARD, isValidHeroName, MAX_HEARTS, TASKS_PER_AREA } from "./rules";
-import { type AreaState, type GameState, isAreaUnlocked } from "./state";
+import { isDistrictLights } from "./map-lighting";
+import {
+  AREA_IDS,
+  type AreaId,
+  GEM_REWARD,
+  isValidHeroName,
+  MAX_HEARTS,
+  STORY_AREA_IDS,
+  STUDY_AREA_IDS,
+  TASKS_PER_AREA,
+} from "./rules";
+import { type AreaState, createAreaState, type GameState, isAreaUnlocked } from "./state";
 
 export const SAVE_VERSION = 1;
 
@@ -43,6 +53,7 @@ function isInteger(value: unknown, min: number, max: number): value is number {
 
 function isAreaState(value: unknown): value is AreaState {
   if (!isRecord(value) || !Array.isArray(value.solved) || !isRecord(value.drafts)) return false;
+  if (Object.hasOwn(value, "lighting") && !isDistrictLights(value.lighting)) return false;
   if (
     value.solved.length > TASKS_PER_AREA ||
     !value.solved.every((id: unknown) => typeof id === "string" && id.length > 0) ||
@@ -79,7 +90,8 @@ function hasProgress(area: AreaState): boolean {
     area.hintsBought > 0 ||
     area.bossDefeated ||
     (area.finaleStage ?? 0) > 0 ||
-    Object.keys(area.drafts).length > 0
+    Object.keys(area.drafts).length > 0 ||
+    area.lighting !== undefined
   );
 }
 
@@ -148,6 +160,67 @@ function storageError(error: unknown): StorageError {
   return { status: "storage-error", reason: quota ? "quota" : "unavailable" };
 }
 
+/** Upgrade the released seven-map save, preserving its separately saved tablet course. */
+export function migrateGameState(value: unknown, storage?: SaveStorage): unknown {
+  if (!isRecord(value) || !isRecord(value.areas)) return value;
+  const oldAreas = value.areas;
+  if (
+    Object.keys(oldAreas).length !== STORY_AREA_IDS.length ||
+    !STORY_AREA_IDS.every((id) => isAreaState(oldAreas[id]))
+  )
+    return value;
+  const upgraded = {
+    ...value,
+    areas: { ...oldAreas, ...Object.fromEntries(STUDY_AREA_IDS.map((id) => [id, createAreaState()])) },
+  };
+  if (!isGameState(upgraded) || !storage) return upgraded;
+  const key = upgraded.adventureId ?? `legacy-${upgraded.lang}`;
+  const read = (name: string, fallback: unknown): unknown => {
+    try {
+      return JSON.parse(storage.getItem(name) ?? JSON.stringify(fallback));
+    } catch {
+      return fallback;
+    }
+  };
+  const counts = read(`codequest:study-progress:v2:${key}`, {});
+  const legacy = read(`codequest:study-progress:v1:${key}`, []);
+  const bosses = read(`codequest:study-bosses:v1:${key}`, []);
+  let state: GameState = upgraded;
+  for (const id of STUDY_AREA_IDS) {
+    if (!isAreaUnlocked(state, id)) break;
+    const topic = id.slice(6);
+    const storedCount = isRecord(counts) ? counts[topic] : undefined;
+    const count = isInteger(storedCount, 0, 8) ? storedCount : Array.isArray(legacy) && legacy.includes(topic) ? 1 : 0;
+    const solved = Array.from({ length: count }, (_, index) => `${id}-${index + 1}`);
+    const drafts: Record<string, string> = {};
+    for (let index = 0; index <= 8; index++) {
+      try {
+        const draft = storage.getItem(
+          `codequest:study-draft:v2:${key}:${state.lang}:${topic}:${index === 8 ? "boss" : index}`,
+        );
+        if (draft !== null) drafts[index === 8 ? `${id}-boss` : `${id}-${index + 1}`] = draft;
+      } catch {
+        /* Other progress can migrate when draft storage is unavailable. */
+      }
+    }
+    state = {
+      ...state,
+      areas: {
+        ...state.areas,
+        [id]: {
+          ...createAreaState(),
+          solved,
+          drafts,
+          lessonsFound: count > 0,
+          gems: solved.reduce((total, _, index) => total + (index < 3 ? 1 : index < 6 ? 2 : 3), 0),
+          bossDefeated: count === 8 && Array.isArray(bosses) && bosses.includes(topic),
+        },
+      },
+    };
+  }
+  return state;
+}
+
 /** Resolve storage inside the try block: even reading window.localStorage can throw. */
 function browserStorage(): SaveStorage {
   const storage = globalThis.localStorage;
@@ -166,7 +239,7 @@ export function loadGame(lang: Lang, storage?: SaveStorage): LoadResult {
 
   let value: unknown;
   try {
-    value = JSON.parse(raw);
+    value = migrateGameState(JSON.parse(raw), storage ?? browserStorage());
   } catch {
     return { status: "corrupt" };
   }

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import village from "../../src/content/village.json" with { type: "json" };
+import { WORLD_LEVELS } from "../../src/content/world-levels";
 import { SPRITES, TILESETS } from "../../src/game/assets";
 
 test("game boots and shows the canvas", async ({ page }, testInfo) => {
@@ -58,9 +58,11 @@ test("language colors are distinct and the first-run guide follows play", async 
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
   await expect(page.locator(".field-guide-title")).toHaveText("1 / 3 · MOVE");
   await page.keyboard.down("d");
-  await page.waitForTimeout(350);
-  await page.keyboard.up("d");
-  await expect(page.locator(".field-guide-title")).toHaveText("2 / 3 · MEET YOUR COURIER", { timeout: 5000 });
+  try {
+    await expect(page.locator(".field-guide-title")).toHaveText("2 / 3 · MEET YOUR COURIER", { timeout: 5000 });
+  } finally {
+    await page.keyboard.up("d");
+  }
   await page.getByRole("button", { name: "Mission", exact: true }).click();
   await expect(page.locator(".field-guide-title")).toHaveText("3 / 3 · TRY A MISSION");
   await expect(page.locator(".courier-intro")).toContainText("Kai");
@@ -72,10 +74,10 @@ test("language colors are distinct and the first-run guide follows play", async 
   await expect(page.locator(".study-skill-track")).toHaveCount(16);
   await expect(page.locator(".study-skill-track").first()).toContainText("Operators");
   await expect(page.locator(".study-skill-track").first()).toContainText("0 / 8 tasks");
-  await expect(page.locator(".study-skill-track").nth(1)).toContainText("Locked · defeat the previous category boss.");
+  await expect(page.locator(".study-skill-track").nth(1)).toContainText("Locked · defeat the boss in level 8.");
   await expect(page.locator(".skill-progress-summary")).toContainText("0 / 128 Study Path tasks");
   await expect(page.getByText("The city's network has gone dark.")).toBeVisible();
-  await expect(page.locator(".skill-progress-summary")).toContainText(`0 / ${8 * village.worldAreas.length} missions`);
+  await expect(page.locator(".skill-progress-summary")).toContainText(`0 / ${8 * WORLD_LEVELS.length} missions`);
   await expect(page.getByRole("progressbar", { name: "Variable District missions completed" })).toHaveAttribute(
     "aria-valuenow",
     "0",

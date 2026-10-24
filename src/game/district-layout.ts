@@ -1,5 +1,5 @@
 import village from "../content/village.json" with { type: "json" };
-import type { AreaId } from "../core/rules";
+import { type AreaId, STUDY_AREA_IDS, type StoryAreaId } from "../core/rules";
 import type { Position } from "../core/state";
 import type { Bounds } from "./collision";
 
@@ -31,7 +31,7 @@ export const LOGIC_LAYOUT: DistrictLayout = {
   label: { x: 768, y: 475 },
 };
 
-const STORY_LAYOUTS: Readonly<Record<Exclude<AreaId, "variables" | "conditions">, DistrictLayout>> = {
+const STORY_LAYOUTS: Readonly<Record<Exclude<StoryAreaId, "variables" | "conditions">, DistrictLayout>> = {
   loops: {
     spawn: { x: 160, y: 645 },
     bounds: { left: 77, right: 1459, top: 179, bottom: 691 },
@@ -125,8 +125,31 @@ const STORY_LAYOUTS: Readonly<Record<Exclude<AreaId, "variables" | "conditions">
 };
 
 export function districtLayout(area: AreaId = "variables"): DistrictLayout {
+  const studyIndex = STUDY_AREA_IDS.indexOf(area as (typeof STUDY_AREA_IDS)[number]);
+  if (studyIndex >= 0) {
+    const shift = (studyIndex % 4) * 17;
+    const rise = Math.floor(studyIndex / 4) * 12;
+    return {
+      spawn: { x: 175, y: 630 },
+      bounds: { left: 77, right: 1459, top: 179, bottom: 691 },
+      lesson: { x: 225, y: 460 },
+      tasks: [
+        { x: 335 + shift, y: 610 - rise },
+        { x: 510 + shift, y: 510 + rise },
+        { x: 330 + shift, y: 330 + rise },
+        { x: 560 + shift, y: 245 + rise },
+        { x: 1010 - shift, y: 245 + rise },
+        { x: 1200 - shift, y: 420 + rise },
+        { x: 1050 - shift, y: 605 - rise },
+        { x: 770 + shift, y: 620 - rise },
+      ],
+      boss: { x: 1320, y: 265 },
+      arcade: { x: 225, y: 295 },
+      label: { x: 770, y: 200 },
+    };
+  }
   if (area === "conditions") return LOGIC_LAYOUT;
-  if (area !== "variables") return STORY_LAYOUTS[area];
+  if (area !== "variables") return STORY_LAYOUTS[area as Exclude<StoryAreaId, "variables" | "conditions">];
   return {
     spawn: village.spawn,
     bounds: village.walkBounds,
@@ -143,4 +166,9 @@ export function portalPosition(area: AreaId): Position {
   const layout = districtLayout(area);
   const x = layout.boss.x + 86 <= layout.bounds.right - 45 ? layout.boss.x + 86 : layout.boss.x - 86;
   return { x, y: layout.boss.y + 43 };
+}
+
+export function portalArrivalPosition(area: AreaId): Position {
+  const point = portalPosition(area);
+  return { x: point.x, y: point.y + 66 };
 }

@@ -19,7 +19,7 @@ test("Study Path starts with Operators after Abstraction Cloud and unlocks categ
   await expect(firstCategory).toContainText("Operators");
   await expect(firstCategory).toBeDisabled();
   await expect(firstCategory.locator(".world-number")).toHaveText("🔒");
-  await expect(page.locator(".world-map-hint")).toContainText("eight tasks and a boss");
+  await expect(page.locator(".world-map-hint")).toContainText("Transit stays online");
 
   await startAfterAbstractionCloud(page, "javascript");
   await page.getByRole("button", { name: "World map", exact: true }).click();
@@ -27,10 +27,11 @@ test("Study Path starts with Operators after Abstraction Cloud and unlocks categ
   await expect(firstCategoryAfterStory).toBeEnabled();
   await expect(firstCategoryAfterStory.locator(".world-number")).toHaveText("08");
   await expect(page.locator(".world-skill-node").nth(1)).toBeDisabled();
-  await expect(page.locator(".world-skill-node").nth(1)).toContainText(
-    "defeat the previous category boss to unlock level 9",
-  );
+  await expect(page.locator(".world-skill-node").nth(1)).toContainText("defeat the boss in level 8");
   await firstCategoryAfterStory.click();
+  await expect(page.locator(".location-name")).toHaveText("Operators");
+  await page.keyboard.press("t");
+  await page.getByRole("tab", { name: "Study Path", exact: true }).click();
 
   await expect(page.getByRole("tab", { name: "Study Path", exact: true })).toHaveAttribute("aria-selected", "true");
   await expect(page.locator(".study-topic-detail h4")).toHaveText("Operators");

@@ -1,12 +1,34 @@
 # CodeQuest — Product Requirements (PRD)
 
-_Last updated: 2026-10-23 · Status: all seven playable city districts plus gated Java category levels_
+_Last updated: 2026-10-24 · Status: 23 playable city maps in all four languages_
 
-Current direction: the public release includes all seven story districts in
-Java, JavaScript, TypeScript and Python. Districts 3–7 now have eight playable
-coding missions, a boss, their own themed route and save-safe sequential unlocks.
-The duplicate Variables & Data Types Study Path category has been removed because Variable Village already teaches that topic. The 16 remaining categories occupy levels 8–23 and level 8 unlocks after the Abstraction Cloud boss. Each category boss unlocks the next level. The user's latest priority is deeper education and enjoyable
-gameplay, with code visibly repairing the city. The stranded-drone
+Current direction: all 23 world-map cards open playable city districts in Java,
+JavaScript, TypeScript and Python. Every map has eight terminals and one boss:
+184 missions and 23 bosses per adventure. Levels 8–23 are physical category
+maps with distinct routes, skyline colors and topic landmarks. Defeating each
+boss unlocks the next map. The city districts list, world map and tablet course
+share the same saved task and boss progress. Existing seven-map saves and their
+separate tablet checkpoints migrate into the expanded adventure.
+
+Each unlocked district has a solid transit building beside its boss. Its gate
+is usable as soon as the district unlocks, including before that district's
+boss is defeated, so players can return to earlier levels. Clicking the building
+opens the world map with locked destinations disabled. Selecting any unlocked
+destination, including the current map, places the character at a clear landing
+beside that destination's transit building.
+
+The Community Beacon is now a lighting console available in every map through
+the physical kiosk, the HUD's Lighting button and the tablet mission log.
+Players choose the whole district or an individual task's circuit and run real
+code that prints `online`, `offline` and/or a color (`blue`, `green`, `red`,
+`white`, `yellow`, `purple`). The two parallel route rails and the corresponding
+terminal lights change in the world. Commands apply only after successful
+execution and valid output; invalid commands keep the previous settings.
+Whole-district commands replace circuit overrides. Lighting is free and saves
+per map and per adventure, including reloads, travel, area resets and backups.
+
+The user's priority is deeper education and enjoyable gameplay, with code
+visibly changing the city. The stranded-drone
 pilot in [GAME-DESIGN.md](GAME-DESIGN.md) now connects guided practice to a world
 repair. The developer tablet now opens through a short illustrated 2D animation:
 city camera zoom, a wrist tablet lifting into view and settling,
@@ -14,7 +36,7 @@ then a move into the full-screen workspace. Code, Run and output share one page,
 with results below the editor. Its tabs hold practice code, examples,
 console output, mission status and the district guide. Missions use the existing
 grader and heart policy; practice remains free. Reduced motion skips the shot.
-Beginner playtesting precedes further district expansion. Older fantasy names and localhost
+Beginner playtesting remains the next feedback step. Older fantasy names and localhost
 scope below describe the original requirements and will be revised as that
 redesign is implemented. Existing heart, reward and save rules remain the pilot's
 baseline.
@@ -44,18 +66,19 @@ The tablet's Study Path covers 16 Java programming categories from the
 supplied study list, adapted for JavaScript, TypeScript, Python and Java. The
 first five entries (review, general computer/programming introduction, tool
 setup and Hello World) are introductory material rather than Java categories,
-so they are not levels. Each category has eight free coding tasks and one boss
+so they are not levels. Each category has eight coding tasks and one boss
 challenge: 128 tasks and 16 bosses per language. Progress and code
 drafts save per adventure; existing one-task topic completions carry forward
 as task one. The world map shows the seven city districts first, followed by
-the 17 category levels directly after Abstraction Cloud in the same continuous
+the 16 category maps directly after Abstraction Cloud in the same continuous
 level grid. Level 8 stays locked until the Abstraction Cloud boss is defeated;
 each later category stays locked until the preceding category boss is defeated.
-Defeating a category boss opens direct teleport doors to every unlocked category,
-including the next level, so players can travel without returning to the menu.
+A district boss unlocks the next destination; transit buildings already allow
+return travel to every previously unlocked map.
 The category cards share the same layout and visual design as the seven story
-district cards. Choosing an unlocked category opens its matching Study Path
-lesson. On the map, players can
+district cards. Choosing an unlocked category enters its city map. The matching
+Study Path lesson and practice remain available in the tablet, sharing progress
+with that map's terminals and boss. On the map, players can
 click a destination to walk or hold the left mouse button and drag to steer.
 
 ## 1. Problem

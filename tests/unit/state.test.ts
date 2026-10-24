@@ -283,7 +283,7 @@ describe("area progression", () => {
     expect(state.updatedAt).toBe(BEFORE);
   });
 
-  it("unlocks each area only after the previous boss, and stops at the seventh area", () => {
+  it("unlocks all 23 areas sequentially and stops at the final category", () => {
     let state = freeze(newGame());
     for (const [index, id] of AREA_IDS.entries()) {
       expect(isAreaUnlocked(state, id)).toBe(true);
@@ -296,8 +296,8 @@ describe("area progression", () => {
       expect(state.areas[id].bossDefeated).toBe(true);
       if (nextId) expect(isAreaUnlocked(state, nextId)).toBe(true);
     }
-    expect(state.currentArea).toBe("abstraction");
-    expect(Object.keys(state.areas)).toHaveLength(7);
+    expect(state.currentArea).toBe("study-extra-topics");
+    expect(Object.keys(state.areas)).toHaveLength(23);
   });
 
   it("clears old map coordinates but preserves hearts, gems and hints on area changes", () => {

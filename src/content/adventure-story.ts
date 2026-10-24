@@ -1,5 +1,6 @@
 import { isDroneRepaired } from "../core/drone-mission";
 import type { GameState } from "../core/state";
+import { WORLD_LEVELS } from "./world-levels";
 
 export type AdventureStoryBeat = Readonly<{ chapter: string; title: string; message: string }>;
 
@@ -25,6 +26,20 @@ export function adventureStoryBeat(state: GameState): AdventureStoryBeat {
       chapter: "CHAPTER 02 · ROUTE THE SIGNAL",
       title: "Packets are arriving at the wrong gates.",
       message: "Repair Logic Junction with conditions so each message takes the safe route through the city.",
+    };
+  }
+  if (state.currentArea !== "variables") {
+    const index = WORLD_LEVELS.findIndex((level) => level.id === state.currentArea);
+    const level = WORLD_LEVELS[index],
+      next = WORLD_LEVELS[index + 1];
+    if (!level) throw new Error("Unknown current district");
+    const progress = state.areas[state.currentArea];
+    return {
+      chapter: `DISTRICT ${String(index + 1).padStart(2, "0")} / ${WORLD_LEVELS.length} · ${level.concept.toUpperCase()}`,
+      title: progress.bossDefeated ? `${level.name} is online.` : `Reconnect ${level.name}.`,
+      message: progress.bossDefeated
+        ? `${next ? `${next.name} is now unlocked. ` : "Every city relay is online. "}Use the transit building to revisit any unlocked district.`
+        : `Repair ${8 - progress.solved.length} remaining terminals, then defeat the district guardian.${next ? ` The boss opens the route to ${next.name}.` : " This is the final city relay."} Transit back to earlier districts is already available.`,
     };
   }
   if (variableDistrict.bossDefeated)
