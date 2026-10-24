@@ -8,7 +8,7 @@ import { gameAudio } from "../audio";
 import { canStandAt, moveWithCollisions, type Solid } from "../collision";
 import { CommunityBeacon } from "../community-beacon";
 import { type ControlScheme, directionKeys } from "../control-scheme";
-import { districtLayout } from "../district-layout";
+import { districtLayout, portalPosition } from "../district-layout";
 import { DroneQuest } from "../drone-quest";
 import { createHeroTextures, type Facing, heroFrame } from "../hero-sprites";
 import { HubSignals } from "../hub-signals";
@@ -42,6 +42,9 @@ export class BootScene extends Phaser.Scene {
   private districtLabel!: Phaser.GameObjects.Text;
   private droneQuest!: DroneQuest;
   private communityBeacon!: CommunityBeacon;
+  private levelPortal!: Phaser.GameObjects.Container;
+  private portalPosition = { x: 0, y: 0 };
+  private portalActive = false;
   private hubSignals!: HubSignals;
   private world!: DistrictWorld;
   private delivering = false;
@@ -85,6 +88,34 @@ export class BootScene extends Phaser.Scene {
     createHeroTextures(this);
     createQuestProps(this);
     this.createArcadeTexture();
+    this.levelPortal = this.add.container(0, 0).setDepth(3).setName("level-portal");
+    const portalArt = this.add.graphics();
+    portalArt.fillStyle(0x101d35, 0.94).fillRoundedRect(-34, -72, 68, 78, 28);
+    portalArt.lineStyle(6, 0x637187, 0.95).strokeRoundedRect(-34, -72, 68, 78, 28);
+    portalArt.fillStyle(0x283b55, 0.9).fillRoundedRect(-23, -61, 46, 55, 23);
+    portalArt.lineStyle(2, 0x7489a5, 0.8).strokeRoundedRect(-23, -61, 46, 55, 23);
+    this.levelPortal.add(portalArt);
+    const portalLabel = this.add
+      .text(0, -84, "PORTAL · OFFLINE", {
+        fontFamily: "Consolas",
+        fontSize: "10px",
+        color: "#9bacc4",
+        backgroundColor: "#111a2be8",
+        padding: { x: 6, y: 4 },
+      })
+      .setOrigin(0.5);
+    this.levelPortal.add(portalLabel);
+    const portalZone = this.add
+      .zone(0, -36, 72, 80)
+      .setName("level-portal-zone")
+      .setInteractive({ useHandCursor: true });
+    portalZone.on("pointerdown", () => {
+      if (this.portalActive && !this.blocked && this.distance(this.portalPosition) <= 96)
+        this.callbacks?.interact("level-portal");
+    });
+    this.levelPortal.add(portalZone);
+    this.levelPortal.setData("label", portalLabel);
+    this.levelPortal.setData("zone", portalZone);
     this.cameras.main.setBackgroundColor("#7fa55b");
     this.world = buildAdventureWorld(this, this.reducedMotion);
     this.cameras.main.setBounds(0, 0, village.world.width, village.world.height).setRoundPixels(true);
@@ -147,7 +178,17 @@ export class BootScene extends Phaser.Scene {
     for (const name of ["E", "SPACE"]) this.keys[name]?.on("down", () => this.interactClosest());
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (!this.blocked && this.state && pointer.event.target === this.game.canvas) {
-        this.tapTarget = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+        const target = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+        const camera = this.cameras.main;
+        const screenPosition = {
+          x: camera.x + (this.position.x - camera.scrollX) * camera.zoom,
+          y: camera.y + (this.position.y - camera.scrollY) * camera.zoom,
+        };
+        const screenDx = pointer.x - screenPosition.x;
+        const screenDy = pointer.y - screenPosition.y;
+        if (Math.abs(screenDx) < Math.abs(screenDy) * 1.5) target.x = this.position.x;
+        else if (Math.abs(screenDy) < Math.abs(screenDx) * 1.5) target.y = this.position.y;
+        this.tapTarget = target;
         if (pointer.event instanceof MouseEvent && pointer.button === 0) {
           this.mouseDragPointer = pointer.id;
           this.mouseDragStart = { x: pointer.x, y: pointer.y };
@@ -261,6 +302,25 @@ export class BootScene extends Phaser.Scene {
     if (previous?.currentArea !== state?.currentArea) this.cancelDelivery();
     this.droneQuest.sync(state);
     this.communityBeacon.sync(state);
+    if (area) {
+      this.portalPosition = portalPosition(area.id);
+      this.portalActive = Boolean(state?.areas[area.id].bossDefeated);
+      this.levelPortal.setPosition(this.portalPosition.x, this.portalPosition.y).setDepth(this.portalPosition.y);
+      const portalLabel = this.levelPortal.getData("label") as Phaser.GameObjects.Text;
+      portalLabel
+        .setText(this.portalActive ? "PORTAL · ONLINE" : "PORTAL · OFFLINE")
+        .setColor(this.portalActive ? "#8dffe0" : "#9bacc4");
+      const portalZone = this.levelPortal.getData("zone") as Phaser.GameObjects.Zone;
+      if (this.portalActive) portalZone.setInteractive({ useHandCursor: true });
+      else portalZone.disableInteractive();
+      const art = this.levelPortal.list[0] as Phaser.GameObjects.Graphics;
+      art.clear();
+      art.fillStyle(this.portalActive ? 0x102a38 : 0x101d35, 0.94).fillRoundedRect(-34, -72, 68, 78, 28);
+      art.lineStyle(6, this.portalActive ? 0x39e6ca : 0x637187, 0.95).strokeRoundedRect(-34, -72, 68, 78, 28);
+      art.fillStyle(this.portalActive ? 0x1a6471 : 0x283b55, 0.9).fillRoundedRect(-23, -61, 46, 55, 23);
+      art.lineStyle(2, this.portalActive ? 0x94fff0 : 0x7489a5, 0.8).strokeRoundedRect(-23, -61, 46, 55, 23);
+      if (this.portalActive) art.lineStyle(3, 0x70ffe2, 0.72).strokeEllipse(0, -34, 38, 57);
+    }
     this.hubSignals.sync(state);
     this.hero.setVisible(Boolean(state));
     this.shadow.setVisible(Boolean(state));
@@ -490,7 +550,13 @@ export class BootScene extends Phaser.Scene {
     return canStandAt({ x, y }, { bounds: districtLayout(this.area?.id).bounds, solids: this.worldSolids() });
   }
   private worldSolids(): Solid[] {
-    return [...this.world.solids, ...this.solids, ...this.droneQuest.solids, ...this.communityBeacon.solids];
+    return [
+      ...this.world.solids,
+      ...this.solids,
+      ...this.droneQuest.solids,
+      ...this.communityBeacon.solids,
+      { id: "level-portal", x: this.portalPosition.x - 25, y: this.portalPosition.y - 14, width: 50, height: 20 },
+    ];
   }
   private distance(marker: Position): number {
     return Math.hypot(marker.x - this.position.x, marker.y - this.position.y);
@@ -528,6 +594,7 @@ export class BootScene extends Phaser.Scene {
       beacon = this.communityBeacon.position;
     if (courier) points.push({ ...courier, id: "courier", prompt: "Talk to Kai about the delivery" });
     if (beacon) points.push({ ...beacon, id: "discovery-beacon", prompt: "Read the community beacon" });
+    if (this.portalActive) points.push({ ...this.portalPosition, id: "level-portal", prompt: "Choose a destination" });
     return (
       points.filter((point) => this.distance(point) <= 68).sort((a, b) => this.distance(a) - this.distance(b))[0] ??
       null

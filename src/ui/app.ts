@@ -684,16 +684,6 @@ export class GameApp {
     stats.append(hearts, gems, el("span", "task-count", `${progress.solved.length}/8 tasks`));
     const actions = el("nav", "hud-actions");
     actions.append(button("Tablet", () => this.tablet()));
-    const nextArea = village.worldAreas[this.area.order];
-    if (progress.bossDefeated && nextArea && isAreaAvailable(nextArea.id as GameState["currentArea"])) {
-      const portal = button(
-        `🚪 Teleport · ${nextArea.name}`,
-        () => this.teleportTo(nextArea.id as GameState["currentArea"]),
-        "button portal-button",
-      );
-      portal.dataset.testid = "next-level-portal";
-      actions.append(portal);
-    }
     if (this.area.id === "variables") actions.append(button("Mission", () => this.mission()));
     actions.append(
       button("Lesson", () => this.lesson()),
@@ -795,6 +785,7 @@ export class GameApp {
     if (!this.state) return;
     gameAudio.play("open");
     if (id === "courier") this.mission();
+    else if (id === "level-portal") this.worldMap();
     else if (id === "discovery-beacon") this.communityBeacon();
     else if (id === "lesson") this.lesson();
     else if (id === "arcade") this.packetDash();
@@ -988,6 +979,7 @@ export class GameApp {
       adventureId: this.state.adventureId,
       initialStudyTopicId: studyTopicId,
       studyLevelOffset,
+      studyPrerequisiteComplete: this.state.areas.abstraction.bossDefeated,
       discovery:
         this.area.id === "variables"
           ? {
@@ -1192,7 +1184,7 @@ export class GameApp {
     for (const [index, topic] of STUDY_CURRICULUM.entries()) {
       const taskProgress = readStudyTaskProgress(adventureKey, topic.id),
         isComplete = completedTopics.includes(topic.id),
-        unlocked = isStudyLevelUnlocked(adventureKey, topic.id),
+        unlocked = isStudyLevelUnlocked(adventureKey, topic.id, this.state.areas.abstraction.bossDefeated),
         levelNumber = village.worldAreas.length + index + 1,
         track = el(
           "article",
@@ -1223,7 +1215,9 @@ export class GameApp {
               ? "8/8 tasks · category boss ready."
               : unlocked
                 ? `Unlocked · ${STUDY_TASKS_PER_TOPIC - taskProgress} tasks and the boss remain.`
-                : "Locked · defeat the previous category boss.",
+                : index === 0
+                  ? "Locked · defeat the Abstraction Cloud boss to unlock level 8."
+                  : "Locked · defeat the previous category boss.",
         ),
       );
       studyTracks.append(track);
@@ -1387,7 +1381,7 @@ export class GameApp {
     if (!this.state) return;
     const panel = this.panel(
         "Your journey",
-        `Variables & Data Types is open from the start. Defeat each category boss to unlock the next level. Every category has eight tasks plus its boss.`,
+        `Defeat Abstraction Cloud to unlock level 8. Then defeat each category boss to open the next category; every category has eight tasks plus its boss.`,
         true,
       ),
       adventureKey = this.state.adventureId ?? `guest-${this.state.lang}`,
@@ -1395,7 +1389,7 @@ export class GameApp {
     const completedSkillTasks = readCompletedStudyTasks(adventureKey);
     const completedSkillLevels = new Set(readStudyProgress(adventureKey));
     panel.append(
-      el("span", "eyebrow", `LEVEL MAP · 7 CITY LEVELS + ${STUDY_CURRICULUM.length} JAVA CATEGORIES`),
+      el("span", "eyebrow", `LEVEL MAP · 7 CITY LEVELS + ${STUDY_CURRICULUM.length} STUDY CATEGORIES`),
       el(
         "h3",
         "world-map-section-title",
@@ -1404,7 +1398,7 @@ export class GameApp {
       el(
         "p",
         "world-map-hint",
-        "Variables & Data Types is open from the start. Then defeat each category boss to unlock the next level; every category has eight tasks plus its boss.",
+        "Defeat Abstraction Cloud to unlock level 8. Each category has eight tasks and a boss; beating a category boss unlocks the next.",
       ),
     );
     for (const [index, area] of village.worldAreas.entries()) {
@@ -1436,7 +1430,7 @@ export class GameApp {
     for (const [index, topic] of STUDY_CURRICULUM.entries()) {
       const taskProgress = readStudyTaskProgress(adventureKey, topic.id),
         isComplete = completedSkillLevels.has(topic.id),
-        unlocked = isStudyLevelUnlocked(adventureKey, topic.id),
+        unlocked = isStudyLevelUnlocked(adventureKey, topic.id, this.state.areas.abstraction.bossDefeated),
         skill = button(
           "",
           () => this.tablet(false, topic.id, village.worldAreas.length),
@@ -1467,11 +1461,6 @@ export class GameApp {
       nodes.append(skill);
     }
     panel.append(nodes);
-  }
-  private teleportTo(areaId: GameState["currentArea"]): void {
-    if (!this.state || !isAreaUnlocked(this.state, areaId)) return;
-    this.commit(enterArea(this.state, areaId, now()));
-    this.close();
   }
   private draft(task: Pick<Task, "id">, code: string): void {
     if (!this.state) return;
@@ -1719,14 +1708,6 @@ export class GameApp {
       button("Continue journey", () => this.worldMap(), "button primary"),
       button("Explore the district", () => this.close()),
     );
-    if (next)
-      panel.append(
-        button(
-          `🚪 Teleport to ${next.name}`,
-          () => this.teleportTo(next.id as GameState["currentArea"]),
-          "button primary portal-button",
-        ),
-      );
     if (this.area.id === "variables")
       panel.append(button("Watch the hub boot", () => this.hubFinale(), "button mission-link"));
   }

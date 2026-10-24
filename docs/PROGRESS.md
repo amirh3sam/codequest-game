@@ -21,6 +21,14 @@
 - **Blockers:** clarification needed before changing map content.
 # Progress log (newest on top)
 
+## 2026-10-23 (remove duplicate category and add boss-side graphical portals)
+- Removed the Study Path's duplicate Variables & Data Types category. The 16 remaining categories are levels 8–23 (128 tasks and 16 bosses), with level 8 locked until Abstraction Cloud is defeated.
+- Added a physical, illustrated portal beside each story district boss. It stays offline and noninteractive until that boss is defeated; an open portal takes the player to the world map to choose an unlocked destination. Removed direct HUD and victory teleport shortcuts.
+- Fixed vertical mouse-click movement by snapping near-vertical click targets to the player's horizontal axis, so up/down movement selects the proper single-character sprite frames.
+- **Checks:** 251 unit tests passed; lint, typecheck, production build and diff checks passed. Eight focused Chromium checks passed for portal lock/unlock and destination selection, vertical mouse-click sprites, category gates and 8-task boss progression.
+- **Release:** pending public commit and production deployment.
+- **Blockers:** none.
+
 ## 2026-10-23 (all seven story districts and direct map access)
 - Made Loop Transit, Array Towers, Function Labs, Object Campus and Abstraction Cloud playable in Java, JavaScript, TypeScript and Python. Every district has eight missions and its own boss. Its tasks use the matching language-specific Study Path examples; its Phaser scene has its own themed route, collision layout and landmarks.
 - The world map category cards now use the same card class and layout as story levels 1–7 while preserving category lock and progress states. Completing the seven district bosses makes level 8 available, and category bosses continue unlocking the level portals in order.

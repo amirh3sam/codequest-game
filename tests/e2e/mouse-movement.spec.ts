@@ -7,6 +7,17 @@ type GameWindow = Window & {
       scene: {
         getScene(key: string): {
           getPosition(): Position;
+          cameras: {
+            main: {
+              x: number;
+              y: number;
+              scrollX: number;
+              scrollY: number;
+              zoom: number;
+              centerOn(x: number, y: number): void;
+            };
+          };
+          scale: { width: number; height: number };
           children: { list: { texture?: { key: string }; frame?: { name: string | number } }[] };
         };
       };
@@ -21,6 +32,12 @@ async function characterPosition(page: Page): Promise<Position> {
 test("mouse drags steer the developer cleanly in all four directions", async ({ page }, testInfo) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
+  await page.evaluate(() => {
+    const scene = (window as unknown as GameWindow).__codequest.game.scene.getScene("boot");
+    (scene as unknown as { position: Position }).position = { x: 154, y: 420 };
+    scene.cameras.main.centerOn(154, 420);
+  });
+  await page.waitForTimeout(100);
   const canvas = page.locator("#game canvas");
   const box = await canvas.boundingBox();
   if (!box) throw new Error("Game canvas is unavailable");
@@ -80,4 +97,66 @@ test("mouse drags steer the developer cleanly in all four directions", async ({ 
   });
   expect(facingRows).toMatchObject({ count: 1, row: 3 });
   await page.mouse.up();
+});
+
+test("plain mouse clicks above and below the character use the correct single facing sprite", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Start adventure", exact: true }).click();
+  await page.evaluate(() => {
+    const scene = (window as unknown as GameWindow).__codequest.game.scene.getScene("boot");
+    (scene as unknown as { position: Position }).position = { x: 154, y: 420 };
+    scene.cameras.main.centerOn(154, 420);
+  });
+  await page.waitForTimeout(100);
+  const canvas = page.locator("#game canvas");
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error("Game canvas is unavailable");
+  const characterScreenPosition = async () => {
+    const point = await page.evaluate(() => {
+      const scene = (window as unknown as GameWindow).__codequest.game.scene.getScene("boot");
+      const position = scene.getPosition();
+      const camera = scene.cameras.main;
+      return {
+        x: camera.x + (position.x - camera.scrollX) * camera.zoom,
+        y: camera.y + (position.y - camera.scrollY) * camera.zoom,
+        width: scene.scale.width,
+        height: scene.scale.height,
+      };
+    });
+    return {
+      x: box.x + (point.x * box.width) / point.width,
+      y: box.y + (point.y * box.height) / point.height,
+    };
+  };
+  const inspect = () =>
+    page.evaluate(() => {
+      const scene = (window as unknown as GameWindow).__codequest.game.scene.getScene("boot");
+      const hero = scene.children.list.find((node) => (node as { name?: string }).name === "player-hero");
+      return {
+        count: scene.children.list.filter((node) => (node as { name?: string }).name === "player-hero").length,
+        frame: Number(hero?.frame?.name),
+        texture: hero?.texture?.key,
+        position: scene.getPosition(),
+      };
+    });
+
+  const beforeUp = await characterPosition(page);
+  const upPoint = await characterScreenPosition();
+  await page.mouse.click(upPoint.x, upPoint.y - 130);
+  await expect.poll(async () => (await characterPosition(page)).y, { timeout: 5000 }).toBeLessThan(beforeUp.y - 20);
+  await page.waitForTimeout(100);
+  const up = await inspect();
+  expect(up.count).toBe(1);
+  expect(Math.floor(up.frame / (up.texture?.includes("walk") ? 6 : 4))).toBe(3);
+
+  const beforeDown = await characterPosition(page);
+  const downPoint = await characterScreenPosition();
+  await page.mouse.click(downPoint.x, downPoint.y + 130);
+  await expect
+    .poll(async () => (await characterPosition(page)).y, { timeout: 5000 })
+    .toBeGreaterThan(beforeDown.y + 20);
+  await page.waitForTimeout(100);
+  const down = await inspect();
+  expect(down.count).toBe(1);
+  expect(Math.floor(down.frame / (down.texture?.includes("walk") ? 6 : 4))).toBe(0);
 });

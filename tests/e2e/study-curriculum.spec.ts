@@ -92,8 +92,8 @@ test("a Study Path level requires and saves all eight task predictions", async (
   await expect(page.locator(".study-overview")).toContainText(`8 / ${STUDY_TOTAL_TASKS} category tasks complete`);
   await expect(page.locator(".study-topic-button").nth(1)).toBeEnabled();
   await expect(page.locator(".study-portal-door")).toHaveCount(2);
-  await page.getByRole("button", { name: /Teleport · 09 · Operators/ }).click();
-  await expect(page.locator(".study-topic-detail .eyebrow").filter({ hasText: "LEVEL 09 / 24" })).toBeVisible();
+  await page.getByRole("button", { name: /Teleport · 09 · Decision Statements/ }).click();
+  await expect(page.locator(".study-topic-detail .eyebrow").filter({ hasText: "LEVEL 09 / 23" })).toBeVisible();
 });
 
 test("every Java category boss can be solved and saved after its eight tasks", async ({ page }) => {
@@ -134,15 +134,16 @@ test("every Java category boss can be solved and saved after its eight tasks", a
       await expect(page.locator(".study-topic-detail h4")).toHaveText(next.title);
     }
   }
-  await expect(page.locator(".study-overview")).toContainText("17 / 17 bosses defeated");
+  await expect(page.locator(".study-overview")).toContainText("16 / 16 bosses defeated");
 });
 
 test("Study Path provides the language-appropriate course and saves independent progress", async ({ page }) => {
   const lang: Lang = "java";
   await startAfterAbstractionCloud(page, lang);
+  await startAfterAbstractionCloud(page, lang);
   await page.keyboard.press("t");
   await page.getByRole("tab", { name: "Study Path", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Study Path", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: /Variables & Data Types/ }).click();
-  await expect(page.getByLabel("Variables & Data Types java task 1 code")).toHaveValue(/public class Main/);
+  await page.getByRole("button", { name: /Operators/ }).click();
+  await expect(page.getByLabel("Operators java task 1 code")).toHaveValue(/public class Main/);
 });

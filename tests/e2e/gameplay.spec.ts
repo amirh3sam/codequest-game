@@ -79,8 +79,28 @@ test("completes all eight tasks, buys a hint and defeats the boss", async ({ pag
   await page.getByLabel("Your code").fill(variables.boss.solution);
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Variable District is online!" })).toBeVisible();
-  await expect(page.getByTestId("next-level-portal")).toContainText("Logic Junction");
-  await page.getByRole("button", { name: /Teleport to Logic Junction/ }).click();
+  await expect(page.locator(".location-name")).toHaveText("Variable District");
+  await page.evaluate(() => {
+    const scene = (
+      window as unknown as {
+        __codequest: {
+          game: {
+            scene: {
+              getScene(key: string): {
+                portalPosition: { x: number; y: number };
+                position: { x: number; y: number };
+                interactTouch(): void;
+              };
+            };
+          };
+        };
+      }
+    ).__codequest.game.scene.getScene("boot");
+    scene.position = { x: scene.portalPosition.x + 50, y: scene.portalPosition.y };
+    scene.interactTouch();
+  });
+  await expect(page.getByRole("heading", { name: "Your journey" })).toBeVisible();
+  await page.getByRole("button", { name: /Logic Junction.*Explore district/ }).click();
   await expect(page.locator(".location-name")).toHaveText("Logic Junction");
   await page.getByRole("button", { name: "World map", exact: true }).click();
   await expect(page.locator(".world-node").filter({ hasText: "Logic Junction" })).toBeEnabled();

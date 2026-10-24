@@ -137,3 +137,10 @@ export function districtLayout(area: AreaId = "variables"): DistrictLayout {
     label: { x: 768, y: 382 },
   };
 }
+
+/** A clear landing spot beside each district boss, away from the map edge. */
+export function portalPosition(area: AreaId): Position {
+  const layout = districtLayout(area);
+  const x = layout.boss.x + 86 <= layout.bounds.right - 45 ? layout.boss.x + 86 : layout.boss.x - 86;
+  return { x, y: layout.boss.y + 43 };
+}

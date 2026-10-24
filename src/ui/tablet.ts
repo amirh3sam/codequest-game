@@ -53,6 +53,7 @@ type TabletHost = {
   adventureId?: string;
   initialStudyTopicId?: string;
   studyLevelOffset?: number;
+  studyPrerequisiteComplete?: boolean;
   animate: boolean;
   focusCamera(): () => void;
   panel(title: string, subtitle: string, wide: boolean): HTMLElement;
@@ -1195,7 +1196,7 @@ export function openTablet(host: TabletHost): () => void {
     for (const [index, item] of STUDY_CURRICULUM.entries()) {
       const isComplete = completedTopics.includes(item.id);
       const topicProgress = readStudyTaskProgress(studyAdventureKey, item.id);
-      const isUnlocked = isStudyLevelUnlocked(studyAdventureKey, item.id);
+      const isUnlocked = isStudyLevelUnlocked(studyAdventureKey, item.id, Boolean(host.studyPrerequisiteComplete));
       const progressLabel = isComplete ? "✓" : topicProgress >= STUDY_TASKS_PER_TOPIC ? "BOSS" : `${topicProgress}/8`;
       const topicButton = button(
         `${progressLabel}  ${String((host.studyLevelOffset ?? 0) + index + 1).padStart(2, "0")}. ${item.title}`,
@@ -1216,7 +1217,7 @@ export function openTablet(host: TabletHost): () => void {
       const taskProgress = readStudyTaskProgress(studyAdventureKey, topic.id);
       const isComplete = completedTopics.includes(topic.id);
       const topicIndex = STUDY_CURRICULUM.indexOf(topic);
-      const isUnlocked = isStudyLevelUnlocked(studyAdventureKey, topic.id);
+      const isUnlocked = isStudyLevelUnlocked(studyAdventureKey, topic.id, Boolean(host.studyPrerequisiteComplete));
       const levelNumber = (host.studyLevelOffset ?? 0) + topicIndex + 1;
       const topicNumber = String(levelNumber).padStart(2, "0");
       detail.append(
@@ -1247,7 +1248,8 @@ export function openTablet(host: TabletHost): () => void {
         );
         const portalDoors = el("div", "study-portal-doors");
         for (const [portalIndex, portalTopic] of STUDY_CURRICULUM.entries()) {
-          if (!isStudyLevelUnlocked(studyAdventureKey, portalTopic.id)) continue;
+          if (!isStudyLevelUnlocked(studyAdventureKey, portalTopic.id, Boolean(host.studyPrerequisiteComplete)))
+            continue;
           const portalLevel = String((host.studyLevelOffset ?? 0) + portalIndex + 1).padStart(2, "0");
           portalDoors.append(
             button(

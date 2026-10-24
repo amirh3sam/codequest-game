@@ -23,9 +23,10 @@ describe("full study path curriculum", () => {
     });
   });
 
-  it("includes 17 Java categories with eight tasks and runnable examples for every language", () => {
-    expect(STUDY_CURRICULUM).toHaveLength(17);
-    expect(new Set(STUDY_CURRICULUM.map(({ id }) => id)).size).toBe(17);
+  it("includes 16 Java categories with eight tasks and runnable examples for every language", () => {
+    expect(STUDY_CURRICULUM).toHaveLength(16);
+    expect(new Set(STUDY_CURRICULUM.map(({ id }) => id)).size).toBe(16);
+    expect(STUDY_CURRICULUM.map(({ id }) => id)).not.toContain("variables-types");
     expect(STUDY_CURRICULUM.map(({ id }) => id)).not.toContain("language-tools");
     for (const topic of STUDY_CURRICULUM) {
       expect(topic.title).toBeTruthy();
@@ -74,17 +75,18 @@ describe("full study path curriculum", () => {
     expect(readStudyTaskProgress("legacy", topic.id)).toBe(2);
   });
 
-  it("opens Variables at the start, then unlocks one category after each previous boss", () => {
+  it("unlocks Operators after Abstraction Cloud, then one category after each previous boss", () => {
     const first = STUDY_CURRICULUM[0];
     const second = STUDY_CURRICULUM[1];
     const third = STUDY_CURRICULUM[2];
     if (!first || !second || !third) throw new Error("Missing Java category levels");
-    expect(isStudyLevelUnlocked("nova", first.id)).toBe(true);
-    expect(isStudyLevelUnlocked("nova", second.id)).toBe(false);
+    expect(isStudyLevelUnlocked("nova", first.id, false)).toBe(false);
+    expect(isStudyLevelUnlocked("nova", first.id, true)).toBe(true);
+    expect(isStudyLevelUnlocked("nova", second.id, true)).toBe(false);
     for (let count = 1; count <= STUDY_TASKS_PER_TOPIC; count++)
       expect(saveStudyTaskProgress("nova", first.id, count)).toBe(true);
     expect(saveStudyBossProgress("nova", first.id)).toBe(true);
-    expect(isStudyLevelUnlocked("nova", second.id)).toBe(true);
-    expect(isStudyLevelUnlocked("nova", third.id)).toBe(false);
+    expect(isStudyLevelUnlocked("nova", second.id, true)).toBe(true);
+    expect(isStudyLevelUnlocked("nova", third.id, true)).toBe(false);
   });
 });

@@ -22,23 +22,6 @@ const example = (code: string, output: string): StudyExample => ({ code, output 
 /** The complete topic list adapted from the player's study-plan screenshot. */
 const TOPICS: Omit<StudyTopic, "practice">[] = [
   {
-    id: "variables-types",
-    title: "Variables & Data Types",
-    lesson:
-      "A variable gives a value a name. Common types include text, whole numbers, decimals, and true/false values. TypeScript and Java declare types explicitly; JavaScript and Python can infer or determine types as values are used.",
-    idea: "Store a value once, then use it by name.",
-    tryIt: "Change one number and predict the total.",
-    examples: {
-      javascript: example("const battery = 4;\nconst cells = battery + 3;\nconsole.log(cells);", "7"),
-      typescript: example("const battery: number = 4;\nconst cells: number = battery + 3;\nconsole.log(cells);", "7"),
-      python: example("battery: int = 4\ncells = battery + 3\nprint(cells)", "7"),
-      java: example(
-        "public class Main {\n    public static void main(String[] args) {\n        int battery = 4;\n        int cells = battery + 3;\n        System.out.println(cells);\n    }\n}",
-        "7",
-      ),
-    },
-  },
-  {
     id: "operators",
     title: "Operators",
     lesson:
@@ -415,16 +398,6 @@ const practice = (token: string, action: string, pairs: [string, string][]): Pra
   variations: pairs.map(([value, output]) => ({ value, output })),
 });
 const PRACTICE: Record<string, PracticeConfig> = {
-  "variables-types": practice("4", "starting battery value", [
-    ["4", "7"],
-    ["1", "4"],
-    ["2", "5"],
-    ["3", "6"],
-    ["5", "8"],
-    ["6", "9"],
-    ["7", "10"],
-    ["8", "11"],
-  ]),
   operators: practice("10", "number before the remainder operator", [
     ["10", "1"],
     ["4", "1"],
@@ -588,7 +561,6 @@ const PRACTICE: Record<string, PracticeConfig> = {
 };
 
 const BOSSES: Record<string, StudyTaskVariation> = {
-  "variables-types": { value: "10", output: "13" },
   operators: { value: "20", output: "2" },
   "decision-statements": { value: "0", output: "Locked" },
   loops: { value: "8", output: "36" },
@@ -704,12 +676,15 @@ export function readStudyProgress(adventureId: string): string[] {
   );
 }
 
-export function isStudyLevelUnlocked(adventureId: string, topicId: string): boolean {
+export function isStudyLevelUnlocked(
+  adventureId: string,
+  topicId: string,
+  abstractionCloudBossDefeated: boolean,
+): boolean {
   const index = STUDY_CURRICULUM.findIndex(({ id }) => id === topicId);
   if (index < 0) return false;
   if (readStudyProgress(adventureId).includes(topicId)) return true;
-  // The Study Path starts with the same Variables topic as the playable opening district.
-  if (index === 0) return true;
+  if (index === 0) return abstractionCloudBossDefeated;
   const previousTopic = STUDY_CURRICULUM[index - 1];
   return previousTopic ? readStudyProgress(adventureId).includes(previousTopic.id) : false;
 }

@@ -5,7 +5,7 @@ _Last updated: 2026-10-23 · Status: all seven playable city districts plus gate
 Current direction: the public release includes all seven story districts in
 Java, JavaScript, TypeScript and Python. Districts 3–7 now have eight playable
 coding missions, a boss, their own themed route and save-safe sequential unlocks.
-The Variables & Data Types Study Path category (level 8) is open from the start, matching playable Variable Village. Completing each category boss unlocks the next category through level 24. The user's latest priority is deeper education and enjoyable
+The duplicate Variables & Data Types Study Path category has been removed because Variable Village already teaches that topic. The 16 remaining categories occupy levels 8–23 and level 8 unlocks after the Abstraction Cloud boss. Each category boss unlocks the next level. The user's latest priority is deeper education and enjoyable
 gameplay, with code visibly repairing the city. The stranded-drone
 pilot in [GAME-DESIGN.md](GAME-DESIGN.md) now connects guided practice to a world
 repair. The developer tablet now opens through a short illustrated 2D animation:
@@ -40,12 +40,12 @@ player exports a backup; this does not add accounts, cloud saves or multiplayer.
 Packet Dash adds a repeatable data-bit combo: every third pickup awards bonus
 points and recharges an arcade shield, with its meter visible during the run.
 
-The tablet's Study Path covers the 17 Java programming categories from the
+The tablet's Study Path covers 16 Java programming categories from the
 supplied study list, adapted for JavaScript, TypeScript, Python and Java. The
 first five entries (review, general computer/programming introduction, tool
 setup and Hello World) are introductory material rather than Java categories,
 so they are not levels. Each category has eight free coding tasks and one boss
-challenge: 136 tasks and 17 bosses per language. Progress and code
+challenge: 128 tasks and 16 bosses per language. Progress and code
 drafts save per adventure; existing one-task topic completions carry forward
 as task one. The world map shows the seven city districts first, followed by
 the 17 category levels directly after Abstraction Cloud in the same continuous

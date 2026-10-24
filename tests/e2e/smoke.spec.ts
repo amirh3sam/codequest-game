@@ -69,11 +69,11 @@ test("language colors are distinct and the first-run guide follows play", async 
   await expect(page.locator(".field-guide")).toHaveCount(0);
   await page.getByRole("button", { name: "Progress", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Your coding progress" })).toBeVisible();
-  await expect(page.locator(".study-skill-track")).toHaveCount(17);
-  await expect(page.locator(".study-skill-track").first()).toContainText("Variables & Data Types");
+  await expect(page.locator(".study-skill-track")).toHaveCount(16);
+  await expect(page.locator(".study-skill-track").first()).toContainText("Operators");
   await expect(page.locator(".study-skill-track").first()).toContainText("0 / 8 tasks");
   await expect(page.locator(".study-skill-track").nth(1)).toContainText("Locked · defeat the previous category boss.");
-  await expect(page.locator(".skill-progress-summary")).toContainText("0 / 136 Study Path tasks");
+  await expect(page.locator(".skill-progress-summary")).toContainText("0 / 128 Study Path tasks");
   await expect(page.getByText("The city's network has gone dark.")).toBeVisible();
   await expect(page.locator(".skill-progress-summary")).toContainText(`0 / ${8 * village.worldAreas.length} missions`);
   await expect(page.getByRole("progressbar", { name: "Variable District missions completed" })).toHaveAttribute(
