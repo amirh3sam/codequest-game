@@ -976,7 +976,7 @@ small {
 }
 .skill-progress-summary {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin: 4px 0 16px;
 }
@@ -3074,6 +3074,9 @@ small {
 }
 
 @media (max-width: 620px) {
+  .skill-progress-summary {
+    grid-template-columns: 1fr;
+  }
   .arcade-game-grid {
     grid-template-columns: 1fr;
   }

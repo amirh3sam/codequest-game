@@ -1,3 +1,11 @@
+## 2026-10-23 (complete coding progress, beacon status, and district portals)
+- Coding Progress now lists all seven city districts and all 17 Study Path categories. Every category shows its 0–8 task meter, locked/available state and boss result; the summary counts all 136 category tasks and 17 bosses. The Community Helper badge now names the selected event and shows ON AIR when lit, including after reload.
+- Clearing a district boss exposes a direct Teleport button to the next unlocked district in both the victory panel and persistent HUD. The level-one portal goes directly to Logic Junction without opening the map or menu.
+- Added player sprite identity and mouse movement checks for all four directions. Vertical drags move the same single player sprite and select the north/south frames; the other character on level one is the intended opposite-gender courier.
+- **Checks:** 251 unit tests passed; lint, typecheck, and `git diff --check` passed. All 16 focused Chromium tests passed, covering category progress, beacon persistence, first-level portal travel, and mouse movement.
+- **Release:** pending production build and publication.
+- **Next:** continue the game improvement roadmap.
+- **Blockers:** none.
 ## 2026-10-23 (Study Path Variables unlock consistency)
 - Made the first Study Path topic, Variables & Data Types, available from the start, matching the already-playable Variable Village. The world map and tablet use the same unlock rule; every later category still unlocks after the previous category boss.
 - **Checks:** all 251 unit tests passed; lint and typecheck passed. Chromium verified the first topic opens from a fresh game, subsequent categories remain locked, and category progress remains sequential after story completion.

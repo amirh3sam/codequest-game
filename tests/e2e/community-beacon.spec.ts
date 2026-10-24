@@ -32,8 +32,9 @@ async function choiceInWorld(page: Page) {
   );
 }
 async function openFromTasks(page: Page) {
-  await page.getByRole("button", { name: "Tasks", exact: true }).click();
-  await page.getByRole("button", { name: "Optional discovery · Community beacon", exact: true }).click();
+  await page.getByRole("button", { name: "Tablet", exact: true }).click();
+  await page.getByRole("tab", { name: "Missions", exact: true }).click();
+  await page.getByRole("button", { name: "Visit community beacon", exact: true }).click();
 }
 for (const lang of ["javascript", "typescript", "python", "java"] as const) {
   test(`${lang}: preview, choice and world restoration persist without changing rewards`, async ({ page }) => {
@@ -63,6 +64,11 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await page.reload();
     await page.locator(".title-adventure-row").first().click();
     expect(await choiceInWorld(page)).toBe(choice);
+    await page.getByRole("button", { name: "Progress", exact: true }).click();
+    const communityBadge = page.locator(".adventure-badge").filter({ hasText: "Community Helper" });
+    await expect(communityBadge).toContainText(`${BEACON_EVENTS[choice].title} is on air`);
+    await expect(communityBadge).toContainText("ON AIR");
+    await page.getByRole("button", { name: "Close panel", exact: true }).click();
     await page.keyboard.press("t");
     await page.getByRole("tab", { name: "Missions", exact: true }).click();
     await expect(page.locator(".beacon-log")).toContainText(`Signal Maker · ${BEACON_EVENTS[choice].title}`);

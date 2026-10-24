@@ -101,6 +101,7 @@ export class BootScene extends Phaser.Scene {
     this.shadow = this.add.ellipse(96, 415, 28, 10, 0x1c3b2d, 0.3).setDepth(3);
     this.hero = this.add
       .image(96, 400, SPRITES.heroBoy.texture, SPRITES.heroBoy.frame)
+      .setName("player-hero")
       .setScale(0.68)
       .setOrigin(0.5, 1)
       .setDepth(420)

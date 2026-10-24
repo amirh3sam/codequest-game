@@ -684,6 +684,16 @@ export class GameApp {
     stats.append(hearts, gems, el("span", "task-count", `${progress.solved.length}/8 tasks`));
     const actions = el("nav", "hud-actions");
     actions.append(button("Tablet", () => this.tablet()));
+    const nextArea = village.worldAreas[this.area.order];
+    if (progress.bossDefeated && nextArea && isAreaAvailable(nextArea.id as GameState["currentArea"])) {
+      const portal = button(
+        `🚪 Teleport · ${nextArea.name}`,
+        () => this.teleportTo(nextArea.id as GameState["currentArea"]),
+        "button portal-button",
+      );
+      portal.dataset.testid = "next-level-portal";
+      actions.append(portal);
+    }
     if (this.area.id === "variables") actions.append(button("Mission", () => this.mission()));
     actions.append(
       button("Lesson", () => this.lesson()),
@@ -1077,19 +1087,32 @@ export class GameApp {
     );
     panel.append(story);
     const summary = el("div", "skill-progress-summary");
+    const adventureKey = state.adventureId ?? `guest-${state.lang}`;
     const missionSummary = el("div"),
-      districtSummary = el("div");
+      districtSummary = el("div"),
+      studySummary = el("div"),
+      completedTopics = readStudyProgress(adventureKey),
+      completedStudyTasks = readCompletedStudyTasks(adventureKey);
     missionSummary.append(el("strong", "", `${solvedMissions} / ${totalMissions} missions`));
     missionSummary.append(el("span", "", "across playable districts"));
     districtSummary.append(el("strong", "", `${restoredDistricts} / ${availableAreas.length} districts restored`));
     districtSummary.append(el("span", "", "district bosses defeated"));
-    summary.append(missionSummary, districtSummary);
+    studySummary.append(el("strong", "", `${completedStudyTasks} / ${STUDY_TOTAL_TASKS} Study Path tasks`));
+    studySummary.append(
+      el("span", "", `${completedTopics.length} / ${STUDY_CURRICULUM.length} category bosses defeated`),
+    );
+    summary.append(missionSummary, districtSummary, studySummary);
     panel.append(summary);
-    const adventureKey = state.adventureId ?? `guest-${state.lang}`;
     const badges = [
       { title: "First Repair", detail: "Complete your first coding mission", earned: solvedMissions > 0 },
       { title: "District Restorer", detail: "Defeat a district boss", earned: restoredDistricts > 0 },
-      { title: "Community Helper", detail: "Light the community beacon", earned: Boolean(state.discoveries?.beacon) },
+      {
+        title: "Community Helper",
+        detail: state.discoveries?.beacon
+          ? `${BEACON_EVENTS[state.discoveries.beacon].title} is on air`
+          : "Light the community beacon",
+        earned: Boolean(state.discoveries?.beacon),
+      },
       {
         title: "Badge Builder",
         detail: "Finish the multi-file project quest",
@@ -1119,13 +1142,14 @@ export class GameApp {
           el("span", "adventure-badge-mark", earned ? "✦" : "◇"),
           el("strong", "", title),
           el("p", "", detail),
-          el("small", "", earned ? "UNLOCKED" : "NOT YET"),
+          el("small", "", earned ? (title === "Community Helper" ? "ON AIR" : "UNLOCKED") : "NOT YET"),
         );
         return badge;
       }),
     );
     panel.append(el("h3", "badge-heading", "Adventure badges"), badgeGrid);
     const tracks = el("div", "skill-tracks");
+    panel.append(el("h3", "badge-heading", "City districts"));
     for (const [index, district] of village.worldAreas.entries()) {
       const id = district.id as GameState["currentArea"],
         active = isAreaAvailable(id),
@@ -1163,6 +1187,48 @@ export class GameApp {
       tracks.append(track);
     }
     panel.append(tracks);
+    panel.append(el("h3", "badge-heading", "Study Path categories"));
+    const studyTracks = el("div", "skill-tracks");
+    for (const [index, topic] of STUDY_CURRICULUM.entries()) {
+      const taskProgress = readStudyTaskProgress(adventureKey, topic.id),
+        isComplete = completedTopics.includes(topic.id),
+        unlocked = isStudyLevelUnlocked(adventureKey, topic.id),
+        levelNumber = village.worldAreas.length + index + 1,
+        track = el(
+          "article",
+          `skill-track study-skill-track${unlocked ? " playable" : " upcoming"}${isComplete ? " mastered" : ""}`,
+        );
+      track.append(
+        el("span", "eyebrow", `LEVEL ${String(levelNumber).padStart(2, "0")} · STUDY PATH`),
+        el("strong", "skill-track-name", topic.title),
+      );
+      const label = el("span", "skill-track-count", `${taskProgress} / ${STUDY_TASKS_PER_TOPIC} tasks`),
+        meter = el("div", "skill-track-meter");
+      meter.setAttribute("role", "progressbar");
+      meter.setAttribute("aria-label", `${topic.title} Study Path tasks`);
+      meter.setAttribute("aria-valuemin", "0");
+      meter.setAttribute("aria-valuemax", String(STUDY_TASKS_PER_TOPIC));
+      meter.setAttribute("aria-valuenow", String(taskProgress));
+      for (let step = 0; step < STUDY_TASKS_PER_TOPIC; step++)
+        meter.append(el("span", step < taskProgress ? "complete" : ""));
+      track.append(
+        label,
+        meter,
+        el(
+          "p",
+          "",
+          isComplete
+            ? "Category mastered · boss defeated."
+            : taskProgress >= STUDY_TASKS_PER_TOPIC
+              ? "8/8 tasks · category boss ready."
+              : unlocked
+                ? `Unlocked · ${STUDY_TASKS_PER_TOPIC - taskProgress} tasks and the boss remain.`
+                : "Locked · defeat the previous category boss.",
+        ),
+      );
+      studyTracks.append(track);
+    }
+    panel.append(studyTracks);
     if (this.area.id === "variables")
       panel.append(
         button(
@@ -1401,6 +1467,11 @@ export class GameApp {
       nodes.append(skill);
     }
     panel.append(nodes);
+  }
+  private teleportTo(areaId: GameState["currentArea"]): void {
+    if (!this.state || !isAreaUnlocked(this.state, areaId)) return;
+    this.commit(enterArea(this.state, areaId, now()));
+    this.close();
   }
   private draft(task: Pick<Task, "id">, code: string): void {
     if (!this.state) return;
@@ -1648,6 +1719,14 @@ export class GameApp {
       button("Continue journey", () => this.worldMap(), "button primary"),
       button("Explore the district", () => this.close()),
     );
+    if (next)
+      panel.append(
+        button(
+          `🚪 Teleport to ${next.name}`,
+          () => this.teleportTo(next.id as GameState["currentArea"]),
+          "button primary portal-button",
+        ),
+      );
     if (this.area.id === "variables")
       panel.append(button("Watch the hub boot", () => this.hubFinale(), "button mission-link"));
   }

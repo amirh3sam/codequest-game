@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import village from "../../src/content/village.json" with { type: "json" };
 import { SPRITES, TILESETS } from "../../src/game/assets";
 
 test("game boots and shows the canvas", async ({ page }, testInfo) => {
@@ -68,8 +69,13 @@ test("language colors are distinct and the first-run guide follows play", async 
   await expect(page.locator(".field-guide")).toHaveCount(0);
   await page.getByRole("button", { name: "Progress", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Your coding progress" })).toBeVisible();
+  await expect(page.locator(".study-skill-track")).toHaveCount(17);
+  await expect(page.locator(".study-skill-track").first()).toContainText("Variables & Data Types");
+  await expect(page.locator(".study-skill-track").first()).toContainText("0 / 8 tasks");
+  await expect(page.locator(".study-skill-track").nth(1)).toContainText("Locked · defeat the previous category boss.");
+  await expect(page.locator(".skill-progress-summary")).toContainText("0 / 136 Study Path tasks");
   await expect(page.getByText("The city's network has gone dark.")).toBeVisible();
-  await expect(page.getByText("0 / 16 missions")).toBeVisible();
+  await expect(page.locator(".skill-progress-summary")).toContainText(`0 / ${8 * village.worldAreas.length} missions`);
   await expect(page.getByRole("progressbar", { name: "Variable District missions completed" })).toHaveAttribute(
     "aria-valuenow",
     "0",
@@ -93,7 +99,7 @@ test("accessibility settings remap movement and persist on this device", async (
     ).__codequest.game.scene.getScene("boot") as { getPosition(): { x: number; y: number } };
     return scene.getPosition();
   });
-  await page.keyboard.down("i");
+  await page.keyboard.down("k");
   await page.waitForTimeout(300);
   await page.keyboard.up("i");
   await expect
@@ -105,7 +111,7 @@ test("accessibility settings remap movement and persist on this device", async (
         return scene.getPosition().y;
       }),
     )
-    .toBeLessThan(before.y - 15);
+    .toBeGreaterThan(before.y + 15);
   await page.reload();
   await expect(page.locator("#ui")).toHaveAttribute("data-large-text", "true");
   await expect(page.locator("#ui")).toHaveAttribute("data-high-contrast", "true");

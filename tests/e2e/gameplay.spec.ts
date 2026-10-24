@@ -11,8 +11,9 @@ async function start(page: Page): Promise<void> {
   await expect(page.getByTestId("hearts")).toHaveText("♥♥♥");
 }
 async function firstTask(page: Page): Promise<void> {
-  await page.getByRole("button", { name: "Tasks", exact: true }).click();
-  await page.getByRole("button", { name: /1\. Set your display name/ }).click();
+  await page.getByRole("button", { name: "Tablet", exact: true }).click();
+  await page.getByRole("tab", { name: "Missions", exact: true }).click();
+  await page.getByRole("button", { name: "Work on Set your display name", exact: true }).click();
 }
 
 test("moves, runs real code, earns gems and continues a saved adventure", async ({ page }, testInfo) => {
@@ -78,7 +79,10 @@ test("completes all eight tasks, buys a hint and defeats the boss", async ({ pag
   await page.getByLabel("Your code").fill(variables.boss.solution);
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Variable District is online!" })).toBeVisible();
-  await page.getByRole("button", { name: "Continue journey", exact: true }).click();
+  await expect(page.getByTestId("next-level-portal")).toContainText("Logic Junction");
+  await page.getByRole("button", { name: /Teleport to Logic Junction/ }).click();
+  await expect(page.locator(".location-name")).toHaveText("Logic Junction");
+  await page.getByRole("button", { name: "World map", exact: true }).click();
   await expect(page.locator(".world-node").filter({ hasText: "Logic Junction" })).toBeEnabled();
   await expect(page.locator(".world-node").filter({ hasText: "Logic Junction" })).toContainText("Explore district");
 });
