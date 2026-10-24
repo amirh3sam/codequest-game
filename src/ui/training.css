@@ -43,7 +43,7 @@
 .training-contents summary {
   padding: 12px 6px;
   color: #9cdae5;
-  cursor: pointer;
+  cursor: var(--cursor-action);
   font-weight: 700;
 }
 .training-chapters {
@@ -60,7 +60,7 @@
   border-radius: 9px;
   font: inherit;
   font-size: 13px;
-  cursor: pointer;
+  cursor: var(--cursor-action);
 }
 .training-chapter:hover,
 .training-chapter[aria-current] {
@@ -220,7 +220,7 @@
   display: flex;
   gap: 8px;
   align-items: center;
-  cursor: pointer;
+  cursor: var(--cursor-action);
 }
 .training-preferences input {
   accent-color: #75d8bd;

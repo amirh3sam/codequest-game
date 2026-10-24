@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type Phaser from "phaser";
 import { loadVariables } from "../../src/content/loader";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 test("two players opening the same link retain separate characters, missions and tablet drafts", async ({
   browser,
@@ -23,7 +24,7 @@ test("two players opening the same link retain separate characters, missions and
         (window as unknown as { __codequest: { game: Phaser.Game } }).__codequest.game.loop.sleep(),
       );
     }
-    await first.getByRole("button", { name: "Progress", exact: true }).click();
+    await openAdventureTool(first, "Progress");
     await first.getByRole("button", { name: /1\. Set your display name/ }).click();
     await first.getByLabel("Your code", { exact: true }).fill(loadVariables("javascript").tasks[0]?.solution ?? "");
     await first.getByRole("button", { name: "Submit answer", exact: true }).click();

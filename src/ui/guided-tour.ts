@@ -153,8 +153,8 @@ export function openGuidedTour(host: GuideHost): () => void {
     let focus: GuideRect | undefined;
     if (target) {
       const r = target.getBoundingClientRect(),
-        left = Math.max(8, r.left - 6),
         top = Math.max(8, r.top - 6);
+      let left = Math.max(8, r.left - 6);
       const right = Math.min(innerWidth - 8, r.right + 6),
         bottom = Math.min(
           innerHeight - 8,
@@ -162,7 +162,12 @@ export function openGuidedTour(host: GuideHost): () => void {
           top + Math.min(innerWidth < 700 ? 140 : 200, innerHeight * 0.3),
         );
       if (right > left && bottom > top) {
-        const beside = innerWidth - left - card.getBoundingClientRect().width - 50 - 12;
+        const cardWidth = card.getBoundingClientRect().width;
+        const beside = innerWidth - left - cardWidth - 50 - 12;
+        // Wide menu buttons can leave a few pixels too little room on either side.
+        // Highlight the visible part beside the bubble, including right-column controls.
+        if (innerHeight < 500 && innerWidth >= 700 && beside < 100 && right - cardWidth - 50 - 12 >= 100)
+          left = Math.max(left, cardWidth + 50 + 12);
         const width =
           innerHeight < 500 && innerWidth >= 700 && beside >= 100 ? Math.min(right - left, beside) : right - left;
         focus = { left, top, width, height: bottom - top };

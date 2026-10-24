@@ -42,7 +42,7 @@ export class TransitPortal {
     this.zone = scene.add.zone(0, -42, 124, 151).setName("level-portal-zone");
     this.zone
       .setInteractive({
-        useHandCursor: true,
+        cursor: "var(--cursor-action)",
         hitArea: TRANSIT_CLICK_SHAPE,
         hitAreaCallback: (_area: unknown, x: number, y: number) =>
           containsClickShape(

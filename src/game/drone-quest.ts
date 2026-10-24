@@ -31,7 +31,7 @@ export class DroneQuest {
       .image(0, 4, SPRITES.heroGirl.texture, SPRITES.heroGirl.frame)
       .setOrigin(0.5, 1)
       .setScale(0.6)
-      .setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 40 })
+      .setInteractive({ cursor: "var(--cursor-action)", pixelPerfect: true, alphaTolerance: 40 })
       .on("pointerdown", () => interact(courier));
     kai.add(this.courierAvatar);
     const parcel = scene.add.graphics().fillStyle(0xffbd6a).fillRoundedRect(12, -27, 15, 18, 3);
@@ -109,7 +109,7 @@ export class DroneQuest {
     );
     receiver
       .setSize(48, 48)
-      .setInteractive({ useHandCursor: true })
+      .setInteractive({ cursor: "var(--cursor-action)" })
       .on("pointerdown", () => interact(dock));
     this.objects.push(receiver);
 

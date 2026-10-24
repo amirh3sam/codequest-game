@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <title>CodeQuest circuit pointer</title>
+  <path d="M4 3v23l6-6 5 9 5-3-5-9h9z" fill="#081425" stroke="#05101c" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M4 3v23l6-6 5 9 5-3-5-9h9z" fill="#122c46" stroke="#8aeaff" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="m7 9 10 7h-5l4 9" fill="none" stroke="#cfb4ff" stroke-width="1.5"/>
+  <path d="M24 3v4m-2-2h4" stroke="#84e6ff" stroke-width="1.5"/>
+</svg>

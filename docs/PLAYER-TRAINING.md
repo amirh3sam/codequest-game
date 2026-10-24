@@ -42,7 +42,7 @@ selected-language example, first task and boss. The first arrival opens it once;
 Finish/Skip remembers that district in the adventure, including downloaded backup
 files. Returning players with older saves can opt in without an unsolicited tour.
 
-Use **Training** in the HUD/mobile menu, **Training handbook** in Menu, or
+Use **Menu → Training**, **Training** in the phone hamburger menu, or
 **How to play** on the title screen to replay. **Tablet help** opens the tablet
 chapter and returns to the same tab on Finish/Skip, Escape or ×, preserving files
 and drafts. The handbook can turn automatic district introductions on/off.

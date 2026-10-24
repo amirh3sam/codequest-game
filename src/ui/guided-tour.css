@@ -102,7 +102,7 @@
   background: transparent;
   color: #b2cbd9;
   font-size: 24px;
-  cursor: pointer;
+  cursor: var(--cursor-action);
   align-self: start;
   padding: 0;
 }
@@ -160,7 +160,7 @@
   padding: 6px 0;
   text-decoration: underline;
   text-underline-offset: 3px;
-  cursor: pointer;
+  cursor: var(--cursor-action);
 }
 .guide-text-toggle:disabled {
   color: #8099af;
@@ -209,6 +209,14 @@
 }
 .guide-tour-open #ui .toast {
   display: none;
+}
+@media (max-width: 699px) {
+  .guide-tour-open .panel:has(.menu-actions)::after {
+    content: "";
+    display: block;
+    height: min(55dvh, 440px);
+    pointer-events: none;
+  }
 }
 @keyframes guide-float {
   0%,

@@ -8,6 +8,7 @@ import { createGame, type Position } from "../../src/core/state";
 import type { canStandAt, moveWithCollisions, Solid } from "../../src/game/collision";
 import { districtLayout } from "../../src/game/district-layout";
 import type { findWalkingRoute } from "../../src/game/navigation";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 type Scene = Phaser.Scene & {
   position: Position;
@@ -119,7 +120,7 @@ test("a blocked click chooses a reachable place and keyboard input immediately r
     )
     .toBeNull();
   await page.keyboard.up("w");
-  await page.getByRole("button", { name: "Progress", exact: true }).click();
+  await openAdventureTool(page, "Progress");
   expect(
     await page.evaluate(
       () => ((window as unknown as Harness).__codequest.game.scene.getScene("boot") as Scene).tapTarget,

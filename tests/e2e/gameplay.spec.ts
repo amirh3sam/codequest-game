@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 import variables from "../../src/content/data/javascript/01-variables.json" with { type: "json" };
 import village from "../../src/content/village.json" with { type: "json" };
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 test.use({ reducedMotion: "reduce" });
 
@@ -110,7 +111,7 @@ test("completes all eight tasks, buys a hint and defeats the boss", async ({ pag
 
 test("losing the last heart resets the area and keeps the lesson found", async ({ page }) => {
   await start(page);
-  await page.getByRole("button", { name: "Lesson", exact: true }).click();
+  await openAdventureTool(page, "Lesson");
   await page.getByRole("button", { name: "Close panel" }).click();
   await firstTask(page);
   await page.getByLabel("Your code").fill('console.log("incorrect");');

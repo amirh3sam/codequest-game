@@ -49,7 +49,7 @@ Coding tasks use a separate mission-console boot animation: the city node and ta
 
 [Watch the actual tablet opening](docs/screenshots/tablet-opening.webm).
 
-The full-screen tablet holds Editor, Examples, Console, Missions and Guide tabs. The editor, Run button and output stay together on one page, with results below your code. Each adventure has its own practice draft, and its missions open inside the device. Free practice never spends hearts or awards gems; mission submissions keep their normal grading rules. Press **Esc** to return to the city.
+The full-screen tablet has seven tabs: Code, Examples, Missions, Guide, Daily Quest, Study Path and Projects. Explorer and file tabs show colored file-format icons. The editor, Run button and output stay together; drag the handle above Output to resize it, or focus the handle and use arrows/Home/End. Your panel height is remembered. Open local folder, Export project and Import project manage the coding files and their separate backups. Each adventure keeps its own practice work; free practice never spends hearts or awards gems. Press **Esc** to return to the city. The top bar keeps Tablet, World map and Menu handy; Menu holds the other tools, adventure backups, sound and settings.
 
 ![The in-game tablet showing practice code and its real output together](docs/screenshots/developer-tablet.png)
 

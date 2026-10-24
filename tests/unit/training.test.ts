@@ -77,7 +77,6 @@ it("covers every handbook chapter, tablet tab and all 23 districts in every lang
   expect(TABLET_TRAINING.map(([name]) => name)).toEqual([
     "Code",
     "Examples",
-    "Console",
     "Missions",
     "Guide",
     "Daily Quest",

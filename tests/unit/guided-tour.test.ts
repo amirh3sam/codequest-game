@@ -23,11 +23,11 @@ describe("guided tour", () => {
       }).status,
     ).toBe("new");
   });
-  it("covers all eight real tablet tabs and the required game controls with stable step IDs", () => {
+  it("covers all seven real tablet tabs and the required game controls with stable step IDs", () => {
     const steps = cityGuide("Ava");
     expect(new Set(steps.map((step) => step.id)).size).toBe(steps.length);
     expect([...new Set(steps.filter((step) => step.view === "tablet").map((step) => step.tab))].sort()).toEqual([
-      0, 1, 2, 3, 4, 5, 6, 7,
+      0, 1, 2, 3, 4, 5, 6,
     ]);
     expect(steps.find((step) => step.id === "welcome")?.title).toContain("Ava");
     expect(steps.find((step) => step.id === "save")?.text).toContain("hard drive");

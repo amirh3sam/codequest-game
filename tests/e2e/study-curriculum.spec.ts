@@ -7,6 +7,7 @@ import {
   studyBossFor,
   studyTaskFor,
 } from "../../src/content/study-curriculum";
+import { openAdventureTool } from "./helpers/adventure-tools";
 import { startAfterAbstractionCloud } from "./helpers/study-levels";
 import { openRunner } from "./runner-helpers";
 
@@ -69,7 +70,7 @@ test("solving a map terminal updates the same checkpoint in the tablet", async (
   await startAfterAbstractionCloud(page, "javascript");
   await page.getByRole("button", { name: "World map", exact: true }).click();
   await page.locator('.world-node[data-level-id="study-operators"]').click();
-  await page.getByRole("button", { name: "Progress", exact: true }).click();
+  await openAdventureTool(page, "Progress");
   await page.locator(".task-row").first().click();
   await page
     .getByLabel("Your code", { exact: true })

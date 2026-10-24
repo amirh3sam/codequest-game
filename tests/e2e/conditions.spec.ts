@@ -2,6 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 import type Phaser from "phaser";
 import { loadArea } from "../../src/content/loader";
 import { createGame, defeatBoss, solveTask } from "../../src/core/state";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 async function enterLogic(page: Page): Promise<void> {
   const variables = loadArea("javascript", "variables");
@@ -84,7 +85,7 @@ test("travels to Logic Junction, uses its terminal, reloads and clears the Route
 
 test("losing hearts in Logic Junction preserves the completed first district", async ({ page }) => {
   await enterLogic(page);
-  await page.getByRole("button", { name: "Lesson", exact: true }).click();
+  await openAdventureTool(page, "Lesson");
   await page.getByRole("button", { name: "Close panel", exact: true }).click();
   await page.getByRole("button", { name: "Tasks", exact: true }).click();
   await page.getByRole("button", { name: /1\. Check a laptop battery/ }).click();

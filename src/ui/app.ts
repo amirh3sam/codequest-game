@@ -1006,10 +1006,17 @@ export class GameApp {
     this.hud.replaceChildren(identity, stats, actions, mobileMenu, objective, location, footer);
     if (onboarding) this.hud.append(onboarding);
   }
-  private navigationActions(): HTMLElement {
+  private navigationActions(allTools = false): HTMLElement {
     const actions = el("nav", "hud-actions");
     actions.setAttribute("aria-label", "Adventure tools");
     actions.append(button("Tablet", () => this.tablet()));
+    if (!allTools) {
+      actions.append(
+        button("World map", () => this.worldMap()),
+        button("Menu", () => this.pause()),
+      );
+      return actions;
+    }
     if (this.area.id === "variables") actions.append(button("Mission", () => this.mission()));
     actions.append(
       button("Lighting", () => this.communityBeacon()),
@@ -1036,7 +1043,7 @@ export class GameApp {
     if (objective) panel.append(objective);
     const guide = this.onboardingCard();
     if (guide) panel.append(guide);
-    const actions = this.navigationActions();
+    const actions = this.navigationActions(true);
     actions.className = "mobile-menu-actions";
     panel.append(
       button("Resume adventure", () => this.close(), "button primary"),
@@ -1589,15 +1596,19 @@ export class GameApp {
     const actions = el("div", "menu-actions");
     actions.append(
       button("Resume adventure", () => this.close(), "button primary"),
+      button("Tablet", () => this.tablet()),
+      ...(this.area.id === "variables" ? [button("Mission", () => this.mission())] : []),
+      button("Lighting", () => this.communityBeacon()),
+      button("Lesson", () => this.lesson()),
+      button("Progress", () => this.journal()),
       button("Switch adventure", () => this.adventureLibrary()),
       button("Manage character", () => this.state?.adventureId && this.characterSettings(this.state.adventureId)),
       button("Save backup file", () => this.exportAdventure()),
       button("Load backup file", () => this.importAdventure()),
       button("World map", () => this.worldMap()),
       button("Accessibility & controls", () => this.accessibility()),
-      button("Training handbook", () => this.training()),
+      button("Training", () => this.training()),
       button("Guide tour", () => this.guidedTour()),
-      button("Read the lesson", () => this.lesson()),
       button("Title screen", () => this.intro()),
     );
     panel.append(actions);
@@ -1794,6 +1805,7 @@ export class GameApp {
           if (step.view === "world") this.close();
           else if (step.view === "tools") {
             if (matchMedia("(pointer: coarse)").matches || innerWidth < 800) this.mobileMenu();
+            else if (step.id === "tools") this.pause();
             else this.close();
           } else if (step.view === "tablet") this.tablet(false, undefined, STORY_AREA_IDS.length, step.tab ?? 0);
           else if (step.view === "map") this.worldMap();

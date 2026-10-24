@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { WORLD_LEVELS } from "../../src/content/world-levels";
 import { SPRITES, TILESETS } from "../../src/game/assets";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 test("game boots and shows the canvas", async ({ page }, testInfo) => {
   const errors: string[] = [];
@@ -63,13 +64,13 @@ test("language colors are distinct and the first-run guide follows play", async 
   } finally {
     await page.keyboard.up("d");
   }
-  await page.getByRole("button", { name: "Mission", exact: true }).click();
+  await openAdventureTool(page, "Mission");
   await expect(page.locator(".field-guide-title")).toHaveText("3 / 3 · TRY A MISSION");
   await expect(page.locator(".courier-intro")).toContainText("Kai");
   await page.getByRole("button", { name: "Look around the city" }).click();
   await page.getByRole("button", { name: "Skip guide" }).click();
   await expect(page.locator(".field-guide")).toHaveCount(0);
-  await page.getByRole("button", { name: "Progress", exact: true }).click();
+  await openAdventureTool(page, "Progress");
   await expect(page.getByRole("heading", { name: "Your coding progress" })).toBeVisible();
   await expect(page.locator(".study-skill-track")).toHaveCount(16);
   await expect(page.locator(".study-skill-track").first()).toContainText("Operators");

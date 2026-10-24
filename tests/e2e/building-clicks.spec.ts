@@ -71,12 +71,12 @@ test("only the lighting console body opens it; the area below remains ordinary g
     { x: 20, y: -16 },
   ]) {
     await pointer(page, { x: point.x + offset.x, y: point.y + offset.y });
-    await expect(page.locator("#game canvas")).not.toHaveCSS("cursor", "pointer");
+    await expect(page.locator("#game canvas")).not.toHaveCSS("cursor", /tech-link\.svg/);
   }
   await pointer(page, { x: point.x, y: point.y + 40 }, true);
   await expect(page.locator(".overlay")).toBeHidden();
   await pointer(page, { x: point.x, y: point.y - 45 });
-  await expect(page.locator("#game canvas")).toHaveCSS("cursor", "pointer");
+  await expect(page.locator("#game canvas")).toHaveCSS("cursor", /tech-link\.svg/);
   await page.screenshot({ path: info.outputPath("lighting-console-cursor.png") });
   await pointer(page, { x: point.x, y: point.y - 45 }, true);
   await expect(page.getByRole("heading", { name: "Community beacon · City lights", exact: true })).toBeVisible();
@@ -96,9 +96,9 @@ test("visible task, lesson, boss, arcade and courier artwork uses the pointer, w
   for (const marker of markers) {
     await frame(page, marker);
     await pointer(page, { x: marker.x, y: marker.y + 18 });
-    await expect(page.locator("#game canvas")).not.toHaveCSS("cursor", "pointer");
+    await expect(page.locator("#game canvas")).not.toHaveCSS("cursor", /tech-link\.svg/);
     await pointer(page, { x: marker.x, y: marker.y - 25 });
-    await expect(page.locator("#game canvas")).toHaveCSS("cursor", "pointer");
+    await expect(page.locator("#game canvas")).toHaveCSS("cursor", /tech-link\.svg/);
   }
   const first = markers.find((marker) => marker.id === "variables-1");
   if (!first) throw new Error("Task 1 unavailable");
@@ -109,9 +109,9 @@ test("visible task, lesson, boss, arcade and courier artwork uses the pointer, w
   const courier = dronePilot.world.courier;
   await frame(page, courier, { x: courier.x - 35, y: courier.y + 25 });
   await pointer(page, { x: courier.x, y: courier.y + 25 });
-  await expect(page.locator("#game canvas")).not.toHaveCSS("cursor", "pointer");
+  await expect(page.locator("#game canvas")).not.toHaveCSS("cursor", /tech-link\.svg/);
   await pointer(page, { x: courier.x, y: courier.y - 30 });
-  await expect(page.locator("#game canvas")).toHaveCSS("cursor", "pointer");
+  await expect(page.locator("#game canvas")).toHaveCSS("cursor", /tech-link\.svg/);
 });
 
 test("all 23 district consoles reject below-building coordinates and scaled transit ignores empty corners", async ({
@@ -143,13 +143,13 @@ test("all 23 district consoles reject below-building coordinates and scaled tran
   });
   await frame(page, position);
   await pointer(page, { x: position.x + 60 * 0.65, y: position.y - 110 * 0.65 });
-  await expect(page.locator("#game canvas")).not.toHaveCSS("cursor", "pointer");
+  await expect(page.locator("#game canvas")).not.toHaveCSS("cursor", /tech-link\.svg/);
   await pointer(page, { x: position.x, y: position.y - 42 * 0.65 });
-  await expect(page.locator("#game canvas")).toHaveCSS("cursor", "pointer");
+  await expect(page.locator("#game canvas")).toHaveCSS("cursor", /tech-link\.svg/);
   await page.evaluate(() => {
     const scene = (window as unknown as Harness).__codequest.game.scene.getScene("boot") as Scene;
     scene.levelPortal.sync(scene.portalPosition, false, 1, true);
   });
   await pointer(page, { x: position.x, y: position.y - 50 * 0.65 });
-  await expect(page.locator("#game canvas")).not.toHaveCSS("cursor", "pointer");
+  await expect(page.locator("#game canvas")).not.toHaveCSS("cursor", /tech-link\.svg/);
 });

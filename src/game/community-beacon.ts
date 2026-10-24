@@ -30,7 +30,7 @@ export class CommunityBeacon {
     this.group
       .setSize(58, 136)
       .setInteractive({
-        useHandCursor: true,
+        cursor: "var(--cursor-action)",
         hitArea: LIGHTING_CLICK_SHAPE,
         hitAreaCallback: (_area: unknown, x: number, y: number) =>
           containsClickShape(LIGHTING_CLICK_SHAPE, x - this.group.displayOriginX, y - this.group.displayOriginY),

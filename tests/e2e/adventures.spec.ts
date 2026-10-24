@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 import { loadVariables } from "../../src/content/loader";
 import { createGame } from "../../src/core/state";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 test.use({ reducedMotion: "reduce" });
 async function library(page: Page) {
@@ -28,7 +29,7 @@ test("switches between Java and two JavaScript adventures with independent progr
   await library(page);
   await page.getByRole("button", { name: "Start another adventure", exact: true }).click();
   await start(page, "javascript", "Ada");
-  await page.getByRole("button", { name: "Progress", exact: true }).click();
+  await openAdventureTool(page, "Progress");
   await page.getByRole("button", { name: /1\. Set your display name/ }).click();
   await page.getByLabel("Your code", { exact: true }).fill(loadVariables("javascript").tasks[0]?.solution ?? "");
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();

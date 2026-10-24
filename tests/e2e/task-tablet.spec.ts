@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 test.use({ reducedMotion: "no-preference" });
 
@@ -7,7 +8,7 @@ test("coding tasks use a task-specific console boot animation and animate output
   await page.locator('[data-language="javascript"]').click();
   await page.getByLabel("Developer name").fill("Nova");
   await page.getByRole("button", { name: "Start adventure" }).click();
-  await page.getByRole("button", { name: "Progress", exact: true }).click();
+  await openAdventureTool(page, "Progress");
   await page.getByRole("button", { name: /1\. Set your display name/ }).click();
 
   const opening = page.getByRole("dialog", { name: "Connecting to Set your display name" });
@@ -34,7 +35,7 @@ test("monitor boot can be cancelled and Enter opens its workspace without a stal
   await page.goto("/");
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
   const mission = async () => {
-    await page.getByRole("button", { name: "Progress", exact: true }).click();
+    await openAdventureTool(page, "Progress");
     await page.locator(".task-row").first().click();
     await expect(page.locator(".task-console-opening")).toBeVisible();
   };

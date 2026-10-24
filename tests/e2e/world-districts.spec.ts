@@ -6,6 +6,7 @@ import { ADVENTURES_KEY } from "../../src/core/adventures";
 import { AREA_IDS } from "../../src/core/rules";
 import { createGame, type Position } from "../../src/core/state";
 import { portalArrivalPosition } from "../../src/game/district-layout";
+import { openAdventureTool } from "./helpers/adventure-tools";
 import { mapLayoutConflicts } from "./helpers/map-clearance";
 
 type WorldScene = Phaser.Scene & {
@@ -94,7 +95,7 @@ test("all 23 world cards enter playable maps and arrive safely beside active tra
   }
   expect(new Set(colors).size).toBe(16);
   expect(layoutConflicts, "All 23 maps: object, label and arrival clearance").toEqual({});
-  await page.getByRole("button", { name: "Progress", exact: true }).click();
+  await openAdventureTool(page, "Progress");
   await expect(page.locator(".skill-track")).toHaveCount(23);
   await expect(page.locator(".skill-progress-summary")).toContainText("176 / 184 missions");
 });

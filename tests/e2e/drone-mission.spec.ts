@@ -4,6 +4,7 @@ import { loadVariables } from "../../src/content/loader";
 import { createGame, type GameState, solveTask } from "../../src/core/state";
 import type { BootScene } from "../../src/game/scenes/BootScene";
 import type { Lang } from "../../src/runners/types";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 type Harness = { __codequest: { game: Phaser.Game } };
 test.use({ reducedMotion: "reduce" });
@@ -51,7 +52,7 @@ test("the battery courier and introduction use the opposite hero", async ({ page
     { player: "girl", guide: "Kai", texture: "hero-boy" },
   ] as const) {
     await seed(page, "javascript", false, choice.player, true);
-    await page.getByRole("button", { name: "Mission", exact: true }).click();
+    await openAdventureTool(page, "Mission");
     await expect(page.getByRole("heading", { name: `${choice.guide} - A delivery worth debugging` })).toBeVisible();
     await expect(page.locator(".courier-intro")).toContainText(`I'm ${choice.guide}`);
     const courier = await page.evaluate(() => {
@@ -76,7 +77,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     if (lang === "javascript") await page.emulateMedia({ reducedMotion: "no-preference" });
     await seed(page, lang);
     expect(await routeOpen(page)).toBe(false);
-    await page.getByRole("button", { name: "Mission", exact: true }).click();
+    await openAdventureTool(page, "Mission");
     // Worker exercises need no canvas frames; leave CPU available for the Java compiler.
     await page.evaluate(() => (window as unknown as Harness).__codequest.game.loop.sleep());
     await expect(page.getByRole("heading", { name: "Predict before you run" })).toBeVisible();
@@ -111,7 +112,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
       gems: 2,
       hearts: 3,
     });
-    await page.getByRole("button", { name: "Mission", exact: true }).click();
+    await openAdventureTool(page, "Mission");
     await page.getByRole("button", { name: "Try a different battery", exact: true }).click();
     await page.evaluate(() => (window as unknown as Harness).__codequest.game.loop.sleep());
     await page.getByRole("button", { name: "7 cells", exact: true }).click();
@@ -127,7 +128,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
 test("Kai gives a purpose to the first badge and leads into the lesson", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
-  await page.getByRole("button", { name: "Mission", exact: true }).click();
+  await openAdventureTool(page, "Mission");
   await expect(page.getByRole("heading", { name: "Kai · A delivery worth debugging" })).toBeVisible();
   await page.getByRole("button", { name: "Create the training badge", exact: true }).click();
   await page.getByLabel("Your code", { exact: true }).fill(loadVariables("javascript").tasks[0]?.solution ?? "");
@@ -143,7 +144,7 @@ test("a closed gate stops walking; an existing completion restores a walkable la
   await page.waitForTimeout(700);
   await page.keyboard.up("w");
   expect((await position(page)).y).toBeGreaterThanOrEqual(354);
-  await page.getByRole("button", { name: "Mission", exact: true }).click();
+  await openAdventureTool(page, "Mission");
   await page.getByRole("button", { name: "Close panel", exact: true }).click();
   expect((await saved(page, "javascript")).areas.variables.gems).toBe(1);
   // Load a version-1 save with the same task IDs used before the drone existed.

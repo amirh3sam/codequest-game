@@ -215,7 +215,7 @@ export class BootScene extends Phaser.Scene {
       .image(0, 4, sprite.texture, sprite.frame)
       .setOrigin(0.5, 1)
       .setScale(id === "arcade" ? 1 : id === "boss" ? 0.86 : id === "lesson" ? 0.52 : 0.58)
-      .setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 40 });
+      .setInteractive({ cursor: "var(--cursor-action)", pixelPerfect: true, alphaTolerance: 40 });
     group.add(icon);
     const plate = chest ? this.add.graphics() : null;
     if (plate) {

@@ -5,6 +5,7 @@ import { ADVENTURES_KEY } from "../../src/core/adventures";
 import { createGame } from "../../src/core/state";
 import { TRAINING_KEY } from "../../src/core/training";
 import type { Lang } from "../../src/runners/types";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 test.use({ storageState: { cookies: [], origins: [] }, reducedMotion: "reduce" });
 
@@ -72,7 +73,7 @@ test("first visit has interactive chapters, resumes after refresh and can be ski
   await page.reload();
   await page.locator(".title-adventure-row").first().click();
   await expect(page.locator(".overlay")).toBeHidden();
-  await page.getByRole("button", { name: "Training", exact: true }).click();
+  await openAdventureTool(page, "Training");
   await expect(page.getByRole("heading", { name: "Build with files and classes", exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -231,6 +232,6 @@ test("existing saves remain playable without an unsolicited tour", async ({ page
   await page.reload();
   await page.locator(".title-adventure-row").first().click();
   await expect(page.locator(".overlay")).toBeHidden();
-  await page.getByRole("button", { name: "Training", exact: true }).click();
+  await openAdventureTool(page, "Training");
   await expect(page.locator(".training-shell")).toBeVisible();
 });

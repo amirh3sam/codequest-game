@@ -25,10 +25,6 @@ export const TABLET_TRAINING = [
     "Load a starter, try a debugging challenge or predict an answer before running it. Inserting an example replaces the active practice draft.",
   ],
   [
-    "Console",
-    "Review the output from your latest practice run. It shows the same result as the output area below Code.",
-  ],
-  [
     "Missions",
     "See all eight tasks in this district, which are complete and which are available. Open the next task, the courier story, lighting or the first hub repairs here.",
   ],
@@ -132,7 +128,7 @@ export function welcomeTraining(courier: string): (TrainingChapter & { id: Train
         "Your wrist tablet is a place to experiment, review lessons and follow missions. Open it with T or Tablet; close it with Escape or ×.",
         "Tap each preview tab below to learn what it does. Tablet help returns you to the tab you were using.",
       ],
-      tip: "Code and its output share one workspace. On short phone screens, scroll inside it to reach Run and output.",
+      tip: "Code and its output share one workspace. Drag the handle above Output to resize it, or focus it and use arrow keys. The height is remembered. On short phone screens, scroll inside the workspace to reach every control.",
     },
     {
       id: "files",

@@ -35,8 +35,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await expect(page.getByRole("tab", { name: "Code", exact: true })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByLabel("Practice code", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Practice output", { exact: true })).toBeVisible();
-    await page.getByRole("tab", { name: "Console", exact: true }).click();
-    await expect(page.getByLabel("Console output", { exact: true })).toHaveText("7\n");
+    await expect(page.getByRole("tab", { name: "Console", exact: true })).toHaveCount(0);
     expect(await progress(page, lang)).toEqual(before);
     await page.getByRole("tab", { name: "Examples", exact: true }).click();
     await page.getByRole("button", { name: "Insert say hello example", exact: true }).click();

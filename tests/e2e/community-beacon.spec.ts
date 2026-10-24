@@ -5,6 +5,7 @@ import { loadArea } from "../../src/content/loader";
 import { ADVENTURES_KEY } from "../../src/core/adventures";
 import { createGame } from "../../src/core/state";
 import type { Lang } from "../../src/runners/types";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 type Circuit = { target: string; power: string; color: string };
 type Harness = { __codequest: { game: Phaser.Game } };
@@ -52,7 +53,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
   }) => {
     test.setTimeout(150_000);
     await seed(page, lang);
-    await page.getByRole("button", { name: "Lighting", exact: true }).click();
+    await openAdventureTool(page, "Lighting");
     await apply(page, lightingCode(lang, { power: "offline", color: "yellow" }));
     await expect(page.locator(".lighting-console .feedback")).toContainText(/offline.*yellow/, { timeout: 45_000 });
     expect((await circuits(page)).every((light) => light.power === "offline" && light.color === "yellow")).toBe(true);
@@ -85,14 +86,14 @@ test("each city map saves independent rail colors and whole-map commands clear i
   page,
 }) => {
   await seed(page, "javascript", true);
-  await page.getByRole("button", { name: "Lighting", exact: true }).click();
+  await openAdventureTool(page, "Lighting");
   await apply(page, lightingCode("javascript", { power: "online", color: "red" }));
   await expect(page.locator(".lighting-console .feedback")).toContainText(/online.*red/);
   await page.getByRole("button", { name: "See the lights in the city", exact: true }).click();
   await page.getByRole("button", { name: "World map", exact: true }).click();
   await page.locator('.world-node[data-level-id="conditions"]').click();
   expect((await circuits(page)).every((light) => light.color === "blue")).toBe(true);
-  await page.getByRole("button", { name: "Lighting", exact: true }).click();
+  await openAdventureTool(page, "Lighting");
   await apply(page, lightingCode("javascript", { power: "online", color: "white" }));
   await expect(page.locator(".lighting-console .feedback")).toContainText(/online.*white/);
   await page.getByLabel("Choose part of this map", { exact: true }).selectOption("terminal-1");

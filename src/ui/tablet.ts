@@ -43,6 +43,8 @@ import {
   writeWorkspace,
 } from "./local-workspace";
 import type { ProjectEditor } from "./monaco-studio";
+import { attachOutputResizer } from "./output-resizer";
+import { fileIcon, toolIcon } from "./studio-icons";
 import { presentTabletOpening } from "./tablet-opening";
 
 type TabletHost = {
@@ -112,13 +114,12 @@ export function openTablet(host: TabletHost): () => void {
   const body = el("div", "studio-body");
   const editorPane = el("div", "studio-editor-pane"),
     examplesPane = el("div", "studio-examples"),
-    consolePane = el("div", "studio-console"),
     missionsPane = el("div", "studio-missions"),
     guidePane = el("div", "studio-guide"),
     dailyPane = el("div", "studio-daily"),
     projectsPane = el("div", "studio-projects"),
     studyPane = el("div", "studio-study");
-  const panes = [editorPane, examplesPane, consolePane, missionsPane, guidePane, dailyPane, studyPane, projectsPane],
+  const panes = [editorPane, examplesPane, missionsPane, guidePane, dailyPane, studyPane, projectsPane],
     tabButtons: HTMLButtonElement[] = [];
   let selectedTab = 0;
   if (host.help) panel.querySelector(".panel-heading")?.append(button("Tablet help", () => host.help?.(selectedTab)));
@@ -135,7 +136,6 @@ export function openTablet(host: TabletHost): () => void {
   for (const [i, label] of [
     "Code",
     "Examples",
-    "Console",
     "Missions",
     "Guide",
     "Daily Quest",
@@ -440,6 +440,7 @@ export function openTablet(host: TabletHost): () => void {
           `studio-open-file-tab${activePath === path ? " active" : ""}`,
         );
         tab.title = path;
+        tab.prepend(fileIcon(path));
         const close = button("×", () => closeFileTab(path), "studio-close-file-tab");
         close.setAttribute("aria-label", `Close ${path}`);
         close.title = `Close ${path}`;
@@ -478,7 +479,7 @@ export function openTablet(host: TabletHost): () => void {
           const expanded = expandedFolders.has(path);
           const folder = el("div", `studio-tree-folder${selectedFolder === path ? " selected" : ""}`);
           const summary = button(
-            `📁  ${path.split("/").at(-1)}`,
+            "",
             () => {
               selectedFolder = path;
               renderTree();
@@ -486,6 +487,7 @@ export function openTablet(host: TabletHost): () => void {
             "studio-folder",
           );
           summary.style.setProperty("--tree-depth", String(depth));
+          summary.append(toolIcon("folder", expanded), el("span", "studio-entry-name", path.split("/").at(-1)));
           summary.title = `Select ${path} as the new item location`;
           summary.setAttribute("aria-label", `Select ${path} as the new item location`);
           const row = el("div", "studio-entry-row");
@@ -511,14 +513,10 @@ export function openTablet(host: TabletHost): () => void {
           return folder;
         }),
         ...files.map((path) => {
-          const icon = path.endsWith(".java") ? "J" : path.endsWith(".py") ? "Py" : path.endsWith(".ts") ? "TS" : "JS";
-          const item = button(
-            `${icon}  ${path.split("/").at(-1)}`,
-            () => openFile(path),
-            `studio-file${activePath === path ? " active" : ""}`,
-          );
+          const item = button("", () => openFile(path), `studio-file${activePath === path ? " active" : ""}`);
           item.style.setProperty("--tree-depth", String(depth));
           item.title = path;
+          item.append(fileIcon(path), el("span", "studio-entry-name", path.split("/").at(-1)));
           const row = el("div", "studio-entry-row");
           row.append(item, entryActions(path, "file"));
           return row;
@@ -601,8 +599,6 @@ export function openTablet(host: TabletHost): () => void {
   });
   const output = el("pre", "studio-output", "Run a program to see its output here.");
   output.setAttribute("aria-label", "Practice output");
-  const consoleOutput = el("pre", "studio-output", output.textContent ?? "");
-  consoleOutput.setAttribute("aria-label", "Console output");
   const feedback = el("p", "studio-feedback");
   const debugHelp = el("div", "debug-guidance");
   feedback.setAttribute("role", "status");
@@ -646,7 +642,6 @@ export function openTablet(host: TabletHost): () => void {
             )
           : error?.message;
       output.textContent = [result.stdout || "(No output)", result.stderr, errorMessage].filter(Boolean).join("\n");
-      consoleOutput.textContent = output.textContent;
       debugHelp.replaceChildren();
       if (error) {
         const line = sourceLine;
@@ -795,7 +790,19 @@ export function openTablet(host: TabletHost): () => void {
         importInput.value = "";
       });
   });
-  toolbar.append(run, el("span", "", "Ctrl / ⌘ + Enter to run"), connect, share, importProject, importInput);
+  const projectActions = el("div", "studio-project-actions");
+  projectActions.setAttribute("role", "group");
+  projectActions.setAttribute("aria-label", "Project files and backups");
+  for (const [action, icon] of [
+    [connect, "folder"],
+    [share, "export"],
+    [importProject, "import"],
+  ] as const) {
+    action.classList.add("studio-project-action");
+    action.prepend(toolIcon(icon));
+    projectActions.append(action);
+  }
+  toolbar.append(run, el("span", "studio-run-hint", "Ctrl / ⌘ + Enter"), projectActions, importInput);
   const javaShortcutHint =
     host.lang === "java"
       ? el("p", "studio-java-shortcuts", `Java snippets: ${JAVA_SHORTCUTS} · Press Ctrl+Space for suggestions`)
@@ -871,7 +878,7 @@ export function openTablet(host: TabletHost): () => void {
     renderTree();
     changed();
     renderProjectQuest();
-    select(7);
+    select(6);
   };
   const leaveProjectQuest = () => {
     if (!activeProjectQuest) return;
@@ -969,6 +976,7 @@ export function openTablet(host: TabletHost): () => void {
   workspace.append(editorHeader, codeGrid, toolbar);
   if (javaShortcutHint) workspace.append(javaShortcutHint);
   workspace.append(inlineConsole, feedback, debugHelp);
+  const disposeOutputResizer = attachOutputResizer(workspace, inlineConsole);
   editorPane.append(fileTree, explorerDivider, workspace);
   examplesPane.append(
     el("h3", "", "Start with something small"),
@@ -1037,14 +1045,6 @@ export function openTablet(host: TabletHost): () => void {
     }),
   );
   examplesPane.append(prediction);
-  consolePane.append(
-    el("span", "eyebrow", "BROWSER CONSOLE"),
-    consoleOutput,
-    button("Back to editor", () => {
-      select(0);
-      focusCode();
-    }),
-  );
   missionsPane.append(
     el("span", "eyebrow", host.district.toUpperCase()),
     el("h3", "", `${host.name}'s mission log`),
@@ -1464,10 +1464,11 @@ export function openTablet(host: TabletHost): () => void {
   bottom.append(status, el("span", "", "FREE PRACTICE · AUTO SAVE"));
   studio.append(title, tabs, body, bottom);
   panel.append(studio);
-  select(host.initialStudyTopicId ? 6 : (host.initialTab ?? 0));
+  select(host.initialStudyTopicId ? 5 : (host.initialTab ?? 0));
   const close = presentTabletOpening(panel, host.kind, host.name, host.focusCamera, host.animate);
   return () => {
     window.clearTimeout(saveTimer);
+    disposeOutputResizer();
     window.removeEventListener("resize", mobileExplorer);
     if (connectedFolder) void writeLocalFile(connectedFolder, activePath, code.value);
     const closingEditor = monacoEditor;
