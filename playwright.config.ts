@@ -41,6 +41,7 @@ export default defineConfig({
         "**/training-mobile.spec.ts",
         "**/character-management-mobile.spec.ts",
         "**/guided-tour-mobile.spec.ts",
+        "**/beginner-mobile.spec.ts",
       ],
       use: { ...devices["iPhone 13"], browserName: "webkit" },
     },

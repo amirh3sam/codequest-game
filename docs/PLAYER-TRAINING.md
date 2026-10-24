@@ -1,6 +1,31 @@
 # Player training
 
-New developers enter a 24-step character-led **Guide tour** after choosing a
+**Start from zero · New to coding** on the title screen creates a separate
+adventure and starts the beginner robot rescue. Existing players can open it
+through **Menu → Start from zero**, the phone hamburger, or **Tablet → Guide**.
+Its seven discoveries introduce ordered instructions, a string variable, numeric
+prediction, a three-line value replay, changing a charge, an independent rescue
+and a follow-up with different numbers. All four selected language runtimes run
+real code. The Java class/main method and print line are supplied, with the exact
+full program available to expand. Three clue levels help without replacing drafts.
+
+The rescue tests the same charging instruction from both 3 and 4 cells, requiring
+10 and 11 respectively. Simply setting battery to 10 cannot pass both checks.
+Animations/meters follow the actual results; the instruction-card puzzle and
+guided replay are explicitly teaching activities. There is no countdown or heart
+cost. Completing the chapter earns Rescue Coder separately from city tasks.
+Players can meet their courier, tour the game controls or explore afterward.
+
+Robot name, cards, ordered completion, current lesson and editable drafts are
+saved per adventure under its optional version-1 `beginner` field and travel in
+**Save backup file / Load backup file**. Refresh resumes an active lesson; leaving
+pauses it for reopening from Menu. Existing saves work without the new field.
+Restart resets this chapter too; rename preserves it and deletion removes it with
+the adventure. Storage failures are reported in the chapter banner. Phone scenes
+remain visible beside/above practice and adapt after rotation; Reduce Motion
+removes movement transitions.
+
+New developers choosing **Start adventure** enter a 24-step character-led **Guide tour** after choosing a
 language, character and name. Ava or Kai appears beside a speech bubble with
 animated captions, glowing spotlights and arrows pointing at the real controls.
 The tour opens the actual tablet tabs, world map, lighting console, arcade lobby,
@@ -19,7 +44,7 @@ players can opt in, and prior handbook sessions continue where they stopped.
 
 The title screen also has a seven-step Guide tour covering languages, avatar/name
 selection, saved adventures and backups. Replaying it does not create a character.
-In the city, **Guide tour** is in the HUD, mobile menu and pause menu.
+In the city, **Guide tour** is in Menu and the phone hamburger.
 
 **Training** opens the separate 13-chapter interactive handbook. Its 2D scenes use
 the game's developer sprites, city artwork and illustrated wrist tablet. Players
@@ -27,7 +52,7 @@ control the pace with Back/Next, a chapter index, pause/replay animation control
 and Skip training. The guide's **Open detailed handbook** provides direct access.
 
 The chapters cover the city's goal; keyboard/mouse/touch movement; the courier;
-real Run versus graded Submit, hearts and rewards; every HUD/mobile menu; all eight
+real Run versus graded Submit, hearts and rewards; every HUD/mobile menu; all seven
 tablet tabs; files/classes/imports/snippets and local folders; tasks/bosses/transit;
 programmable district lights; both arcade games; multiple adventures and backups;
 and accessibility, audio and the first real mission.

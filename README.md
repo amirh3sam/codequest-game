@@ -2,9 +2,11 @@
 
 **[Play CodeQuest](https://codequest-game-inky.vercel.app/)** · [Public source](https://github.com/amirh3sam/codequest-game)
 
-A 2D adventure game that teaches programming in a modern tech city. Pick **Java, JavaScript, TypeScript or Python**, choose a hoodie developer, and help Kai repair a delivery drone. Predict a battery value, experiment with real code, then submit a repair to open a city lane. Explore two districts, solve coding terminals and challenge the Firewall and Router. Your code runs in the browser, with no account.
+A 2D adventure game that teaches programming in a modern tech city. Pick **Java, JavaScript, TypeScript or Python**, choose a hoodie developer, and help your courier repair the city. Explore 23 districts, each with eight coding tasks and a boss. Your code runs in the browser, with no account.
 
-> Status: **Two distinct districts are playable in all four languages.** Walk with WASD/arrows or the mobile touch controls and press E to interact. Complete eight missions, restore the hub's power and operator signals, then solve the Firewall to unlock Logic Junction's elevated skyrail plaza. Areas 3–7 are coming next. See [docs/ROADMAP.md](docs/ROADMAP.md).
+**Never programmed before? Choose “Start from zero · New to coding.”** Its untimed robot rescue starts with instruction cards, then teaches a name variable, battery predictions, a guided value replay and small real-code changes. Solve an independent rescue using the same instruction with two starting batteries, then try a fresh prediction. Three levels of clues and unlimited retries help you practise. All four languages work, including Java with its surrounding class/main method supplied. Your robot name, drafts and seven discoveries stay with the adventure and its downloaded backup. Existing players can enter through **Menu → Start from zero** or **Tablet → Guide**.
+
+> Status: **23 playable districts in all four languages, plus the beginner chapter.** Move with WASD/arrows, click a destination, or use mobile touch controls. Press E to interact. Eight tasks unlock each boss; defeating it unlocks the next district. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 Keep **multiple saved adventures**, including several in the same language. The title screen lists every save under its language; use **Menu → Switch adventure** to manage them. Progress, event choices, hub repairs and tablet drafts stay separate. Existing language saves appear automatically.
 
@@ -18,7 +20,7 @@ Progress saves in this browser profile and survives refreshes. Use **Menu → Sa
 
 Choose from color-coded JavaScript, Python, TypeScript or Java, then start a personal adventure. A step-by-step field guide explains keyboard or mobile movement, meeting your courier and opening your first coding task; you can skip it at any time. Open **Progress** to see mission counts, the next skill and the story chapter. **Accessibility & controls** offers larger text, high contrast and remappable movement keys. The guided drone lesson lets you predict, run, investigate and change a battery value before writing your own repair. Practice previews are free; accepted repairs earn progress and change the city.
 
-After repairing the drone, find the **community beacon** beside the courier lane, or open **Tasks → Optional discovery**. Help Mina choose **Garden night** or **Arcade night**, use a text variable to announce it, then light the courtyard in your event's colors. Free previews keep your hearts and gems safe. The saved choice earns the **Signal Maker** badge in your tablet mission log; you can change the event later.
+Use the **Lighting console** or **Menu → Lighting** to program the city's route lights. Choose the whole map or one task's circuit, then print online/offline and a color. Your real program changes the visible lights; each map/adventure remembers its own settings. Lighting practice never spends hearts or gems.
 
 The **City Arcade** now offers Packet Dash, a 2D runner where you jump signal glitches and collect data bits, and Signal Stack, a timing game where you build a tower of relays. Both are optional, cost no coding hearts or gems, and save separate personal bests with each adventure. Touchscreens have dedicated game controls.
 

@@ -1,4 +1,5 @@
 import type { Lang } from "../runners/types";
+import { isBeginnerProgress } from "./beginner";
 import { isBeaconChoice } from "./discoveries";
 import { isDistrictLights } from "./map-lighting";
 import {
@@ -147,6 +148,8 @@ export function isGameState(value: unknown): value is GameState {
 
   if (Object.hasOwn(value, "adventureId") && !isAdventureId(value.adventureId)) return false;
   if (Object.hasOwn(value, "training") && value.training !== undefined && !isDistrictTraining(value.training))
+    return false;
+  if (Object.hasOwn(value, "beginner") && value.beginner !== undefined && !isBeginnerProgress(value.beginner))
     return false;
   const areas = value.areas;
   if (Object.keys(areas).length !== AREA_IDS.length || !AREA_IDS.every((id) => isAreaState(areas[id]))) return false;

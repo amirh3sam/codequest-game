@@ -11,6 +11,16 @@ Use this session to learn whether CodeQuest makes first steps in programming cle
 
 ## Give the player these goals
 
+Start with **Start from zero · New to coding**. Observe the instruction-card
+puzzle, naming a robot with real code, prediction, the value replay, a guided
+charge and the independent rescue. Ask what the second starting-battery check
+means. Let the player choose clues naturally; do not explain the answer first.
+Record where they first need help and whether they can explain a variable and
+`+=` afterward. The chapter's "about 10 minutes" is a design estimate; record
+actual times rather than treating the estimate as a test result. Check refresh
+resume and downloaded-backup restoration while a draft is unfinished. Then use
+the city goals below if time allows. No human sessions have been recorded yet.
+
 1. Start an adventure and explain what each saved row on the title screen represents.
 2. Find the first mission, predict the drone battery result, run the code, and repair the drone.
 3. Use the tablet to find a lesson or mission, run a short example, and return to the city.

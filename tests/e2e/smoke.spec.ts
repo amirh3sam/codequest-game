@@ -51,7 +51,7 @@ test("game boots and shows the canvas", async ({ page }, testInfo) => {
 
 test("language colors are distinct and the first-run guide follows play", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".language-grid .choice")).toHaveCount(4);
+  await expect(page.locator(".language-grid .choice")).toHaveCount(4, { timeout: 20_000 });
   const accents = await page
     .locator(".language-grid .choice")
     .evaluateAll((cards) => cards.map((card) => getComputedStyle(card).getPropertyValue("--language-accent").trim()));

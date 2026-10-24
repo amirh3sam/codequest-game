@@ -117,6 +117,7 @@ type Save = {
   currentArea: string; position?: { x: number; y: number };
   discoveries?: { beacon?: "garden" | "arcade" };
   games?: { packetDashBest: number; signalStackBest?: number }; // optional per-adventure arcade records
+  beginner?: BeginnerProgress; // optional ordered, validated Start from zero chapter and drafts
   areas: Record<string, {
     solved: string[]; lessonsFound: boolean; gems: number; hearts: number;
     hintsBought: number; bossDefeated: boolean; finaleStage?: 0 | 1 | 2;
@@ -126,6 +127,16 @@ type Save = {
 };
 ```
 Gems are stored per area: an area reset removes only that area's gems, and gems can only be spent on that area's boss.
+
+`src/core/beginner.ts` defines the optional beginner chapter: seven ordered
+completion IDs, current lesson, in-progress/paused/complete status, a bounded
+robot name, three bounded code drafts and up to three instruction cards. The
+validator accepts only a completed prefix and a reachable current lesson.
+Chapter completion never calls city task/boss reducers. Save/import validation
+checks this field; older saves omit it, backups include it, rename preserves it,
+and restarting the adventure creates a state without it. The UI runs the same
+real language workers as the tablet, showing the exact surrounding program;
+rescue verification reruns the submitted instruction with two starting values.
 
 The primary library is `codequest:adventures:v1`, containing `{version: 1,
 adventures: GameState[]}` with unique validated adventure IDs. `loadAdventures`

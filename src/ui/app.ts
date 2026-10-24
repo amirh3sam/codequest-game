@@ -19,6 +19,7 @@ import {
 } from "../core/adventure-management";
 import { ADVENTURES_KEY, loadAdventures, saveAdventure } from "../core/adventures";
 import { makeAdventureBackup, parseAdventureBackup } from "../core/backup";
+import { type BeginnerProgress, createBeginnerProgress } from "../core/beginner";
 import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone-mission";
 import { hubStage, restoreHubSubsystem } from "../core/finale";
 import { readGuideProgress, saveGuideProgress } from "../core/guided-tour";
@@ -58,6 +59,7 @@ import { openArcade } from "./arcade";
 import { beginnerHint, diagnosticLine, focusEditorLine } from "./debug-guidance";
 import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
+import { openFirstProgram } from "./first-program";
 import { openGuidedTour } from "./guided-tour";
 import { openHubFinale } from "./hub-finale";
 import { openLightingConsole } from "./lighting-console";
@@ -358,6 +360,10 @@ export class GameApp {
             el("strong", "", `${state.hero.name}'s ${language.name} adventure`),
             el("span", "", `${state.areas[state.currentArea].solved.length}/8 tasks`),
           );
+          if (state.beginner)
+            row.append(
+              el("small", "zero-adventure-note", `Robot rescue · ${state.beginner.completed.length}/7 discoveries`),
+            );
           if (state.adventureId === archived?.adventureId) row.classList.add("selected-adventure");
           group.append(row);
         }
@@ -416,10 +422,14 @@ export class GameApp {
       "button primary start-button",
     );
     start.type = "submit";
+    const startZero = button("Start from zero · New to coding", () => {}, "button beginner-start");
+    startZero.type = "submit";
+    startZero.disabled = !isValidHeroName(input.value);
     start.disabled = !isValidHeroName(input.value);
     input.addEventListener("input", () => {
       this.heroName = input.value;
       start.disabled = !isValidHeroName(input.value);
+      startZero.disabled = start.disabled;
     });
     const field = el("div", "name-field");
     field.append(
@@ -430,13 +440,14 @@ export class GameApp {
           this.heroName = village.heroNames[Math.floor(Math.random() * village.heroNames.length)] ?? "Ada";
           input.value = this.heroName;
           start.disabled = false;
+          startZero.disabled = false;
         },
         "dice-button",
       ),
     );
     field.lastElementChild?.setAttribute("aria-label", "Random hero name");
     naming.append(label, field, el("small", "", "1–16 letters, numbers or spaces"));
-    form.append(heroes, naming, start);
+    form.append(heroes, naming, start, startZero);
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       if (!isValidHeroName(this.heroName)) return;
@@ -448,6 +459,7 @@ export class GameApp {
           training: { districts: [] },
         },
         true,
+        event.submitter === startZero,
       );
     });
     panel.append(
@@ -459,7 +471,7 @@ export class GameApp {
       this.soundToggle(),
     );
   }
-  private begin(state: GameState, firstRun = false): void {
+  private begin(state: GameState, firstRun = false, startZero = false): void {
     // Existing adventurers can opt in from Training without an unsolicited tour.
     const existing = !firstRun && state.training === undefined;
     if (existing) state = markDistrictTrained(state);
@@ -503,6 +515,10 @@ export class GameApp {
     );
     const training = readTrainingSettings();
     const guide = readGuideProgress();
+    if (startZero || state.beginner?.status === "in-progress") {
+      this.beginnerChapter();
+      return;
+    }
     if (!existing && training.welcome === "new" && guide.status === "new") this.guidedTour();
     else if (!existing && training.welcome !== "in-progress" && guide.status === "in-progress")
       this.guidedTour(guide.index);
@@ -577,8 +593,8 @@ export class GameApp {
     this.renderHud();
     if (completed) this.toast("First mission complete! Review all eight steps in Progress or your tablet.");
   }
-  private persist(): void {
-    if (!this.state) return;
+  private persist(): boolean {
+    if (!this.state) return false;
     const result = this.savingAllowed ? saveAdventure(this.state) : { status: "storage-error" };
     // Maintain the old language slot as a compatibility snapshot; the library owns all adventures.
     if (result.status === "saved") {
@@ -587,6 +603,7 @@ export class GameApp {
     }
     this.saved.textContent =
       result.status === "saved" ? "✓ Saved on this device" : "Saving unavailable · progress stays in this session";
+    return result.status === "saved";
   }
   private commit(state: GameState): void {
     this.state = state;
@@ -1024,6 +1041,7 @@ export class GameApp {
       button("Progress", () => this.journal()),
       button("World map", () => this.worldMap()),
       button("Training", () => this.training()),
+      button("Start from zero", () => this.beginnerChapter()),
       button("Guide tour", () => this.guidedTour()),
       button("Menu", () => this.pause()),
       this.soundToggle(),
@@ -1322,6 +1340,7 @@ export class GameApp {
       animate,
       initialTab,
       help: (tab) => this.training("tablet", false, tab),
+      beginner: () => this.beginnerChapter(),
       focusCamera: () => this.scene.focusTablet(),
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
       run: (code, files, entryPath) => this.practice(code, files, entryPath),
@@ -1471,6 +1490,11 @@ export class GameApp {
     summary.append(missionSummary, districtSummary, studySummary);
     panel.append(summary);
     const badges = [
+      {
+        title: "Rescue Coder",
+        detail: "Complete the Start from zero robot rescue chapter",
+        earned: state.beginner?.status === "complete",
+      },
       { title: "First Repair", detail: "Complete your first coding mission", earned: solvedMissions > 0 },
       { title: "District Restorer", detail: "Defeat a district boss", earned: restoredDistricts > 0 },
       {
@@ -1608,6 +1632,7 @@ export class GameApp {
       button("World map", () => this.worldMap()),
       button("Accessibility & controls", () => this.accessibility()),
       button("Training", () => this.training()),
+      button("Start from zero", () => this.beginnerChapter()),
       button("Guide tour", () => this.guidedTour()),
       button("Title screen", () => this.intro()),
     );
@@ -1850,6 +1875,72 @@ export class GameApp {
       download: () => this.exportAdventure(),
     });
     this.guideCleanup = cleanup;
+  }
+  private beginnerChapter(): void {
+    if (!this.state) return;
+    this.guideCleanup?.();
+    this.guideCleanup = null;
+    this.tabletNavigation = false;
+    this.capturePosition();
+    const adventureId = this.state.adventureId;
+    const save = (progress: BeginnerProgress) => {
+      if (!this.state || this.state.adventureId !== adventureId) return false;
+      this.state = { ...this.state, beginner: progress, updatedAt: now() };
+      return this.persist();
+    };
+    const previous = this.state.beginner ?? createBeginnerProgress();
+    const progress: BeginnerProgress = {
+      ...previous,
+      status: previous.status === "complete" ? "complete" : "in-progress",
+    };
+    save(progress);
+    const leave = () => {
+      this.trainingDismiss = null;
+      if (this.state && this.state.adventureId === adventureId && this.state.beginner?.status === "in-progress")
+        save({ ...this.state.beginner, status: "paused" });
+      this.close();
+      void this.viewport.requestLandscape();
+    };
+    const image = (key: string) => this.scene.textures.get(key).getSourceImage() as CanvasImageSource;
+    const cleanup = openFirstProgram({
+      lang: this.lang,
+      courier: this.courierName(),
+      artwork: {
+        hero: image(`hero-walk-${this.state.hero.kind}`),
+        courier: image(`hero-walk-${this.state.hero.kind === "boy" ? "girl" : "boy"}`),
+        city: image("adventure-world"),
+      },
+      progress,
+      panel: () =>
+        this.panel(
+          "Start from zero",
+          "Your first robot rescue · About 10 minutes, at your own pace · Unlimited retries",
+          true,
+        ),
+      save,
+      run: (code) => this.practice(code),
+      cancelRun: () => {
+        if (this.busy) {
+          this.runToken++;
+          this.runner?.kill();
+          this.busy = false;
+        }
+      },
+      leave,
+      mission: () => {
+        leave();
+        this.mission();
+      },
+      tour: () => {
+        leave();
+        this.guidedTour();
+      },
+    });
+    this.trainingDismiss = leave;
+    this.tabletCleanup = () => {
+      this.trainingDismiss = null;
+      cleanup();
+    };
   }
   private training(chapter?: string, district = false, returnTab?: number): void {
     this.tabletNavigation = false;

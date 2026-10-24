@@ -56,6 +56,7 @@ type TabletHost = {
   initialStudyTopicId?: string;
   initialTab?: number;
   help?(tab: number): void;
+  beginner?(): void;
   studyLevelOffset?: number;
   studyPrerequisiteComplete?: boolean;
   studyWorld?: {
@@ -1090,6 +1091,7 @@ export function openTablet(host: TabletHost): () => void {
     missionsPane.append(card);
   }
   guidePane.append(
+    ...(host.beginner ? [button("Start from zero", host.beginner, "button primary")] : []),
     el("span", "eyebrow", `${host.district.toUpperCase()} / GUIDE`),
     el("h3", "", "Understand the idea, then try it"),
   );

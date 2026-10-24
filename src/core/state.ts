@@ -1,4 +1,5 @@
 import type { Lang } from "../runners/types";
+import type { BeginnerProgress } from "./beginner";
 import type { Discoveries } from "./discoveries";
 import type { DistrictLights } from "./map-lighting";
 import {
@@ -42,6 +43,7 @@ export type GameState = Readonly<{
   discoveries?: Discoveries;
   games?: GameExtras;
   training?: DistrictTraining;
+  beginner?: BeginnerProgress;
   areas: Readonly<Record<AreaId, AreaState>>;
   updatedAt: string;
 }>;

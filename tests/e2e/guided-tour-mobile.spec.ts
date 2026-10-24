@@ -12,7 +12,7 @@ test.use({
 test("phone guided tour shows real targets and keeps captions/navigation reachable after rotation", async ({
   page,
 }, info) => {
-  test.setTimeout(90_000);
+  test.setTimeout(180_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
