@@ -1,3 +1,9 @@
+## 2026-10-24 (clear Firewall status indicator placement)
+- Moved the POWER, SIGNAL and CORE indicators together into a clear row below the Firewall, away from the transit building and the nearby tree canopy. Kept their wires connected to the hub and increased label readability.
+- **Checks:** lint, typecheck, production build and diff checks passed. The production build was opened in Chromium, travel to the Firewall was checked without browser errors, and the screenshot confirmed that all three labels are visible below the portal and tree.
+- **Release:** pending public commit and production deployment.
+- **Blockers:** none.
+
 ## 2026-10-24 (smaller transit buildings)
 - Reduced transit buildings to 65% of their previous width and height across all 23 maps. Their click areas scale with the artwork, and collision footprints use the same scale.
 - **Checks:** lint, typecheck, production build and diff checks passed. Chromium confirmed physical portal clicks, return travel and safe portal arrivals in all 23 maps; the smaller artwork was visually reviewed.
