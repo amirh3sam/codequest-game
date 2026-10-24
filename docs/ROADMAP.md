@@ -4,6 +4,10 @@ Each task fits in one session. Tags point to PRD requirements.
 
 ## City maps and programmable lighting (2026-10-24)
 
+- [x] Replace trailing boss wires with attached status panels throughout the city.
+- [x] Move mobile quests, guide and tools into a hamburger menu; reserve portrait for menus and landscape for city exploration.
+- [x] Animate short touch steps with correct facing, cancel held controls cleanly and preserve reduced-motion behavior.
+- [x] Prevent accidental Packet Dash restarts, count active seconds and preserve rounds across pauses and backgrounding.
 - [x] Audit all 23 rendered maps for unintended object, label and arrival overlaps; add a browser clearance check for future layout changes.
 - [x] Turn every world-map card into one of 23 playable city districts, each with eight tasks and a separate boss.
 - [x] Share task and boss progress between city maps, the tablet and the 23-district progress page; migrate released saves.

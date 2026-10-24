@@ -426,6 +426,7 @@ export class BootScene extends Phaser.Scene {
     return { ...this.position };
   }
   setTouchAxis(x: -1 | 0 | 1, y: -1 | 0 | 1): void {
+    if (this.blocked) return;
     this.touchAxis = { x, y };
     if (x || y) this.tapTarget = null;
   }
@@ -437,19 +438,13 @@ export class BootScene extends Phaser.Scene {
     this.tapTarget = null;
     if (this.blocked || !this.state || !this.area) return;
     const length = Math.hypot(x, y) || 1;
-    const before = this.position;
-    this.position = moveWithCollisions(before, (x * 36) / length, (y * 36) / length, {
+    this.tapTarget = moveWithCollisions(this.position, (x * 36) / length, (y * 36) / length, {
       bounds: districtLayout(this.area.id).bounds,
       solids: this.worldSolids(),
     });
     this.facing = x ? (x < 0 ? "west" : "east") : y < 0 ? "north" : "south";
-    this.walked = 0;
-    if (Math.hypot(this.position.x - before.x, this.position.y - before.y) > 0.01) {
-      this.dirtyPosition = true;
-      gameAudio.play("step");
-    }
-    this.hero.setPosition(this.position.x, this.position.y + 4).setDepth(this.position.y);
-    this.shadow.setPosition(this.position.x, this.position.y - 1);
+    const sprite = this.state.hero.kind === "girl" ? SPRITES.heroGirl : SPRITES.heroBoy;
+    this.hero.setTexture(sprite.texture, heroFrame(this.facing));
   }
   focusTablet(): () => void {
     const camera = this.cameras.main,

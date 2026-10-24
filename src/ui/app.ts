@@ -43,6 +43,7 @@ import { batteryCard, openDroneLesson } from "./drone-lesson";
 import { openHubFinale } from "./hub-finale";
 import { openLightingConsole } from "./lighting-console";
 import { mobileControls } from "./mobile-controls";
+import { mobileViewport } from "./mobile-viewport";
 import { openTablet } from "./tablet";
 import { presentTaskConsoleOpening } from "./task-console-opening";
 
@@ -83,6 +84,7 @@ export class GameApp {
   private controlScheme: ControlScheme = "wasd";
   private largeText = false;
   private highContrast = false;
+  private viewport: ReturnType<typeof mobileViewport>;
   private callbacks: VillageCallbacks = {
     interact: (id) => this.interact(id),
     position: (position) => this.storePosition(position),
@@ -92,6 +94,14 @@ export class GameApp {
     gameAudio.init();
     this.root = root;
     this.scene = scene;
+    this.viewport = mobileViewport({
+      menu: () => this.mobileMenu(),
+      pause: (paused) => {
+        this.mobile.dispatchEvent(new Event("releasecontrols"));
+        if (paused) this.scene.scene.pause();
+        else this.scene.scene.resume();
+      },
+    });
     const preferences = this.readAccessibilitySettings();
     this.controlScheme = preferences.controlScheme;
     this.largeText = preferences.largeText;
@@ -101,7 +111,7 @@ export class GameApp {
     this.notice.setAttribute("role", "status");
     this.notice.setAttribute("aria-live", "polite");
     this.mobile.hidden = true;
-    root.replaceChildren(this.hud, this.overlay, this.notice, this.mobile);
+    root.replaceChildren(this.hud, this.overlay, this.notice, this.mobile, this.viewport.element);
     window.addEventListener("keydown", (event) => {
       if (
         event.code === "KeyT" &&
@@ -195,6 +205,7 @@ export class GameApp {
     this.overlay.classList.remove("title-overlay", "tablet-overlay");
     this.overlay.hidden = false;
     this.hud.classList.add("hud-overlay-open");
+    this.syncMobileViewport();
     const panel = el("section", `panel${wide ? " panel-wide" : ""}`);
     panel.setAttribute("role", "dialog");
     panel.setAttribute("aria-modal", "true");
@@ -423,6 +434,7 @@ export class GameApp {
     this.commit(state);
     this.onboardingOrigin = this.onboardingStage === 0 ? this.scene.getPosition() : null;
     this.close();
+    void this.viewport.requestLandscape();
     const runner = this.runner,
       adventureId = state.adventureId;
     runner.warmup().catch(() => {
@@ -498,7 +510,7 @@ export class GameApp {
     this.onboardingOrigin = null;
     this.saveOnboarding(this.onboardingStage);
     this.renderHud();
-    if (completed) this.toast("First mission complete! You can see all eight steps in Tasks.");
+    if (completed) this.toast("First mission complete! Review all eight steps in Progress or your tablet.");
   }
   private persist(): void {
     if (!this.state) return;
@@ -679,17 +691,10 @@ export class GameApp {
     const gems = el("span", "gems", `◆ ${progress.gems}`);
     gems.dataset.testid = "gems";
     stats.append(hearts, gems, el("span", "task-count", `${progress.solved.length}/8 tasks`));
-    const actions = el("nav", "hud-actions");
-    actions.append(button("Tablet", () => this.tablet()));
-    if (this.area.id === "variables") actions.append(button("Mission", () => this.mission()));
-    actions.append(
-      button("Lighting", () => this.communityBeacon()),
-      button("Lesson", () => this.lesson()),
-      button("Progress", () => this.journal()),
-      button("World map", () => this.worldMap()),
-      button("Menu", () => this.pause()),
-      this.soundToggle(),
-    );
+    const actions = this.navigationActions();
+    const mobileMenu = button("☰", () => this.mobileMenu(), "button mobile-menu-toggle");
+    mobileMenu.setAttribute("aria-label", "Open game menu");
+    mobileMenu.setAttribute("aria-haspopup", "dialog");
     const objective = el("div", "objective");
     objective.append(
       el("span", "eyebrow", "✦  YOUR NEXT QUEST"),
@@ -729,8 +734,50 @@ export class GameApp {
       this.saved,
     );
     const onboarding = this.onboardingCard();
-    this.hud.replaceChildren(identity, stats, actions, objective, location, footer);
+    this.hud.replaceChildren(identity, stats, actions, mobileMenu, objective, location, footer);
     if (onboarding) this.hud.append(onboarding);
+  }
+  private navigationActions(): HTMLElement {
+    const actions = el("nav", "hud-actions");
+    actions.setAttribute("aria-label", "Adventure tools");
+    actions.append(button("Tablet", () => this.tablet()));
+    if (this.area.id === "variables") actions.append(button("Mission", () => this.mission()));
+    actions.append(
+      button("Lighting", () => this.communityBeacon()),
+      button("Lesson", () => this.lesson()),
+      button("Progress", () => this.journal()),
+      button("World map", () => this.worldMap()),
+      button("Menu", () => this.pause()),
+      this.soundToggle(),
+    );
+    return actions;
+  }
+  private mobileMenu(): void {
+    if (!this.state) return;
+    const progress = this.state.areas[this.area.id];
+    const panel = this.panel(
+      "Adventure menu",
+      `${this.area.name} · ${progress.solved.length}/8 tasks · ${this.state.hero.name}`,
+      true,
+    );
+    panel.classList.add("mobile-game-menu");
+    const objective = this.hud.querySelector(".objective")?.cloneNode(true);
+    if (objective) panel.append(objective);
+    const guide = this.onboardingCard();
+    if (guide) panel.append(guide);
+    const actions = this.navigationActions();
+    actions.className = "mobile-menu-actions";
+    panel.append(
+      button("Resume adventure", () => this.close(), "button primary"),
+      actions,
+    );
+  }
+  private syncMobileViewport(): void {
+    const worldOpen = Boolean(this.state && this.overlay.hidden);
+    this.root.dataset.worldOpen = String(worldOpen);
+    this.mobile.hidden = !worldOpen;
+    if (!worldOpen) this.mobile.dispatchEvent(new Event("releasecontrols"));
+    this.viewport.sync(Boolean(this.state), !this.overlay.hidden);
   }
   private onboardingCard(): HTMLElement | null {
     if (
@@ -758,7 +805,14 @@ export class GameApp {
     guide.append(
       el("p", "", this.onboardingStage === 0 ? `${controlHint(this.controlScheme)} · ${description}` : description),
     );
-    const skip = button("Skip guide", () => this.advanceOnboarding(3), "field-guide-skip");
+    const skip = button(
+      "Skip guide",
+      () => {
+        this.advanceOnboarding(3);
+        guide.remove();
+      },
+      "field-guide-skip",
+    );
     guide.append(skip);
     return guide;
   }
@@ -777,6 +831,7 @@ export class GameApp {
     this.overlay.replaceChildren();
     this.scene.previewDrone();
     this.scene.setBlocked(false);
+    this.syncMobileViewport();
     this.capturePosition();
   }
   private toast(text: string): void {

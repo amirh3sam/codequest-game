@@ -3,7 +3,7 @@ declare const Buffer: { from(input: string): Uint8Array };
 import { expect, test } from "@playwright/test";
 
 test.describe("mobile movement", () => {
-  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  test.use({ viewport: { width: 844, height: 390 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
   test("tap controls move the developer", async ({ page }) => {
     await page.goto("/");
     await page.locator('[data-language="javascript"]').click();

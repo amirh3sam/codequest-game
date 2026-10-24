@@ -43,7 +43,7 @@ export function openPacketDash(host: PacketDashHost): void {
   const intro = el(
     "p",
     "arcade-intro",
-    "Jump the signal glitches and collect data. Every third bit makes a combo for bonus points and a shield recharge. Your coding hearts and gems are never at risk.",
+    "Run for 60 seconds or until all three shields are used. Jump the glitches and collect data. Every third bit makes a combo for bonus points and a shield recharge. Your coding hearts and gems are never at risk.",
   );
   const scoreStrip = el("div", "arcade-score-strip");
   const scoreDisplay = el("strong", "arcade-score", "DISTANCE 0");
@@ -68,13 +68,18 @@ export function openPacketDash(host: PacketDashHost): void {
   const jump = button(
     "Jump",
     () => {
-      if (!playing) begin();
+      if (!playing && !finished && !paused) begin();
       else leap();
     },
     "button arcade-jump",
   );
   jump.setAttribute("aria-label", "Jump over the signal glitches");
-  controls.append(start, jump);
+  const pause = button("Pause run", () => {
+    if (paused) resume();
+    else pauseRun();
+  });
+  pause.disabled = true;
+  controls.append(start, jump, pause);
   const best = el("p", "arcade-best", `PERSONAL BEST · ${host.best}`);
   panel.append(intro, scoreStrip, canvas, feedback, controls, best, button("Arcade lobby", host.lobby));
 
@@ -82,6 +87,7 @@ export function openPacketDash(host: PacketDashHost): void {
   let lastFrame = 0;
   let playing = false;
   let finished = false;
+  let paused = false;
   let distance = 0;
   let collected = 0;
   let combo = 0;
@@ -107,9 +113,11 @@ export function openPacketDash(host: PacketDashHost): void {
     timeDisplay.textContent = `${Math.max(0, ROUND_SECONDS - Math.floor(elapsed))} SEC`;
   };
   const begin = () => {
-    if (!panel.isConnected) return;
+    if (!panel.isConnected || playing || paused) return;
     playing = true;
     finished = false;
+    paused = false;
+    lastFrame = 0;
     distance = 0;
     collected = 0;
     combo = 0;
@@ -125,7 +133,11 @@ export function openPacketDash(host: PacketDashHost): void {
     hazards = [];
     bits = [];
     feedback.textContent = "Run! Tap Jump or press Space / ↑ to leap. A missed landing only costs an arcade shield.";
-    start.textContent = "Restart run";
+    start.textContent = "Run in progress";
+    start.disabled = true;
+    jump.disabled = false;
+    pause.disabled = false;
+    pause.textContent = "Pause run";
     refreshReadout();
   };
   const leap = () => {
@@ -134,26 +146,49 @@ export function openPacketDash(host: PacketDashHost): void {
     feedback.textContent = "Nice jump! Keep moving and grab the data bits.";
   };
   const finish = () => {
+    if (!playing) return;
     playing = false;
     finished = true;
+    jump.disabled = true;
+    pause.disabled = true;
     const score = currentScore();
+    const outcome = shields <= 0 ? "All three shields used" : "60-second run complete";
     if (score > personalBest) {
       personalBest = score;
       host.record(score);
       best.textContent = `NEW PERSONAL BEST · ${score}`;
-      feedback.textContent = `Run over · ${score} points. New record saved with ${host.name}'s adventure!`;
+      feedback.textContent = `Run over · ${outcome} · ${score} points. New record saved with ${host.name}'s adventure!`;
     } else {
       best.textContent = `PERSONAL BEST · ${personalBest}`;
-      feedback.textContent = `Run over · ${score} points. Try another run to beat ${personalBest}.`;
+      feedback.textContent = `Run over · ${outcome} · ${score} points. Try another run to beat ${personalBest}.`;
     }
     start.textContent = "Run again";
+    start.disabled = false;
+  };
+  const pauseRun = () => {
+    if (!playing) return;
+    playing = false;
+    paused = true;
+    lastFrame = 0;
+    jump.disabled = true;
+    pause.textContent = "Resume run";
+    feedback.textContent = "Run paused. Resume to keep your time, distance, data and shields.";
+  };
+  const resume = () => {
+    if (!paused || document.hidden) return;
+    paused = false;
+    playing = true;
+    lastFrame = 0;
+    jump.disabled = false;
+    pause.textContent = "Pause run";
+    feedback.textContent = "Run resumed! Jump to keep the data moving.";
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (!panel.isConnected || event.repeat) return;
     if (event.code === "Space" || event.code === "ArrowUp") {
       event.preventDefault();
-      if (!playing) begin();
+      if (!playing && !finished && !paused) begin();
       else leap();
     }
   };
@@ -165,11 +200,7 @@ export function openPacketDash(host: PacketDashHost): void {
   };
   const onVisibility = () => {
     lastFrame = 0;
-    if (document.hidden) {
-      playing = false;
-      feedback.textContent = "Run paused while this tab is away. Start another run when you’re back.";
-      start.textContent = "Resume with a new run";
-    }
+    if (document.hidden) pauseRun();
   };
   document.addEventListener("visibilitychange", onVisibility);
 
@@ -261,7 +292,7 @@ export function openPacketDash(host: PacketDashHost): void {
     }
     ctx.fillStyle = "#a6eaff88";
     ctx.fillRect(playerX - 20, GROUND - 4, 74, 4);
-    if (!playing && !finished) {
+    if (!playing && !finished && !paused) {
       ctx.fillStyle = "#e6f5ff";
       ctx.textAlign = "center";
       ctx.font = "bold 22px system-ui";
@@ -277,10 +308,11 @@ export function openPacketDash(host: PacketDashHost): void {
       cleanup();
       return;
     }
-    const dt = lastFrame ? Math.min((time - lastFrame) / 1000, 0.05) : 0;
+    const seconds = lastFrame ? Math.max(0, (time - lastFrame) / 1000) : 0;
+    const dt = Math.min(seconds, 0.05);
     lastFrame = time;
     if (playing && !document.hidden) {
-      elapsed += dt;
+      elapsed = Math.min(ROUND_SECONDS, elapsed + seconds);
       invulnerable = Math.max(0, invulnerable - dt);
       const speed = 255 + Math.min(190, elapsed * 4.2);
       scroll += speed * dt;
@@ -323,6 +355,7 @@ export function openPacketDash(host: PacketDashHost): void {
         }
       }
       for (const bit of bits) {
+        if (!playing) break;
         bit.x -= speed * dt;
         const centerX = 148;
         if (!bit.taken && Math.abs(bit.x - centerX) < 30 && Math.abs(bit.y - (GROUND - jumpHeight - 30)) < 38) {

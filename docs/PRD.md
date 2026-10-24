@@ -27,6 +27,18 @@ execution and valid output; invalid commands keep the previous settings.
 Whole-district commands replace circuit overrides. Lighting is free and saves
 per map and per adventure, including reloads, travel, area resets and backups.
 
+Mobile exploration uses a compact status bar and a hamburger menu for quests,
+the field guide and every adventure tool. Portrait mode hides and pauses the
+city while keeping menus available; landscape restores the map and touch
+controls. Starting an adventure requests fullscreen landscape where supported,
+with a manual rotate prompt when the browser cannot lock orientation. Touch
+taps use the same directional walking frames and collisions as held movement.
+Every boss has a compact attached status panel, with no long trailing wires.
+
+Packet Dash runs for 60 active seconds or until its three shields are depleted.
+Jump cannot restart a finished round; replay requires Run again. Pause/resume
+and backgrounding preserve the round's timer, score, pickups and shields.
+
 The user's priority is deeper education and enjoyable gameplay, with code
 visibly changing the city. The stranded-drone
 pilot in [GAME-DESIGN.md](GAME-DESIGN.md) now connects guided practice to a world
