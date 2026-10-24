@@ -1,0 +1,287 @@
+.training-overlay {
+  padding: 22px;
+}
+.panel.training-shell {
+  display: flex;
+  flex-direction: column;
+  height: min(900px, calc(100dvh - 48px));
+  overflow: hidden;
+  width: min(1180px, 100%);
+  max-width: 1180px;
+  background: linear-gradient(135deg, #15283d, #0c192d 65%);
+  border: 1px solid #568098;
+}
+.training-shell .panel-heading {
+  border-bottom: 1px solid #42617a;
+  padding-bottom: 12px;
+  flex-shrink: 0;
+}
+.training-shell > .subtitle {
+  flex-shrink: 0;
+}
+.training-overlay:not([hidden]) ~ .toast {
+  display: none;
+}
+.training-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 24px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  padding-right: 6px;
+}
+.training-contents {
+  align-self: start;
+  position: sticky;
+  top: 0;
+  max-height: 100%;
+  overflow: auto;
+}
+.training-contents summary {
+  padding: 12px 6px;
+  color: #9cdae5;
+  cursor: pointer;
+  font-weight: 700;
+}
+.training-chapters {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.training-chapter {
+  text-align: left;
+  background: transparent;
+  color: #bfd2e2;
+  border: 1px solid transparent;
+  padding: 10px 12px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.training-chapter:hover,
+.training-chapter[aria-current] {
+  border-color: #4d99a8;
+  background: #22465a;
+  color: #d8fff2;
+}
+.training-main {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
+.training-playback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.training-playback .button {
+  padding: 6px 10px;
+  font-size: 11px;
+}
+.training-playback span {
+  color: #95b9ce;
+  font-size: 11px;
+}
+.training-progress {
+  color: #8ed7d8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+.training-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid #43758b;
+  background: #0d2139;
+}
+.training-canvas[tabindex="0"] {
+  cursor: crosshair;
+}
+.training-main > h3 {
+  font-size: clamp(21px, 3vw, 29px);
+  color: #eff8ff;
+  margin: 22px 0 12px;
+}
+.training-copy p {
+  color: #c0d4e3;
+  line-height: 1.65;
+  font-size: 14px;
+}
+.training-copy .training-tip {
+  border-left: 3px solid #76d9c1;
+  padding: 10px 14px;
+  background: #14333e;
+  color: #c0efdf;
+  border-radius: 0 8px 8px 0;
+}
+.training-try {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0;
+}
+.training-try .button,
+.training-preferences .button {
+  font-size: 12px;
+  padding: 10px 13px;
+}
+.training-choice-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+}
+.training-choice-list [aria-pressed="true"] {
+  border-color: #7ee2c5;
+  background: #244e55;
+  color: #c9ffdf;
+}
+.training-explanation,
+.training-editor-label {
+  width: 100%;
+  color: #c1d9e7;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.training-code {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 105px;
+  margin-top: 8px;
+  border-radius: 10px;
+  padding: 14px;
+  background: #071522;
+  border: 1px solid #4f7690;
+  color: #e0f1ff;
+  font:
+    13px / 1.6 Consolas,
+    monospace;
+  tab-size: 4;
+}
+.training-output {
+  width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 160px;
+  overflow: auto;
+  padding: 13px;
+  margin: 0 0 8px;
+  background: #071c25;
+  border: 1px solid #32645e;
+  border-radius: 9px;
+  color: #b9f4d8;
+  font-size: 13px;
+}
+.training-status {
+  padding: 10px 12px;
+  border: 1px solid #3d6075;
+  border-radius: 9px;
+  color: #a9d7e3;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.training-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-top: 1px solid #38546a;
+  padding-top: 16px;
+  margin-top: 16px;
+  flex-shrink: 0;
+}
+.training-footer .button {
+  padding: 10px 13px;
+  font-size: 13px;
+}
+.training-preferences {
+  border-top: 1px solid #38546a;
+  margin-top: 24px;
+  padding-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: space-between;
+  align-items: center;
+  color: #b4cddd;
+  font-size: 13px;
+}
+.training-preferences label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+}
+.training-preferences input {
+  accent-color: #75d8bd;
+  width: 18px;
+  height: 18px;
+}
+.training-large p {
+  font-size: 18px;
+}
+.training-shell select {
+  background: #173249;
+  color: #d9ecff;
+  border: 1px solid #6290a5;
+  border-radius: 9px;
+  padding: 10px;
+}
+@media (max-width: 899px) {
+  .training-overlay {
+    padding: 10px;
+  }
+  .training-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 8px;
+  }
+  .training-contents {
+    position: static;
+    max-height: 140px;
+    overflow: auto;
+  }
+  .training-chapters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .training-chapter {
+    font-size: 12px;
+    padding: 8px;
+  }
+  .panel.training-shell {
+    padding: 16px;
+    height: calc(100dvh - 24px);
+  }
+  .training-shell > .subtitle {
+    font-size: 12px;
+    margin: 8px 0;
+  }
+  .training-shell .panel-heading h2 {
+    font-size: 22px;
+  }
+  .training-copy p {
+    font-size: 13px;
+  }
+  .training-footer .button {
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .training-shell *,
+  .training-shell {
+    scroll-behavior: auto;
+    animation: none;
+    transition: none;
+  }
+}

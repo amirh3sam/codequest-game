@@ -13,6 +13,7 @@ import {
   type SubmissionFailure,
   TASKS_PER_AREA,
 } from "./rules";
+import type { DistrictTraining } from "./training";
 
 export type Hero = Readonly<{ kind: "boy" | "girl"; name: string }>;
 export type Position = Readonly<{ x: number; y: number }>;
@@ -40,6 +41,7 @@ export type GameState = Readonly<{
   position?: Position;
   discoveries?: Discoveries;
   games?: GameExtras;
+  training?: DistrictTraining;
   areas: Readonly<Record<AreaId, AreaState>>;
   updatedAt: string;
 }>;

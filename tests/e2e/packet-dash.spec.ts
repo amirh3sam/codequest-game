@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
+import type Phaser from "phaser";
 
-type Harness = { __codequest: { position(): { x: number; y: number } } };
+type Harness = { __codequest: { position(): { x: number; y: number }; game: Phaser.Game } };
 
 test.use({ reducedMotion: "reduce" });
 
@@ -14,14 +15,26 @@ test("finds the city arcade and plays a round of Packet Dash", async ({ page }, 
   const position = () => page.evaluate(() => (window as unknown as Harness).__codequest.position());
   await expect.poll(async () => (await position()).y).toBeGreaterThan(600);
 
-  // Walk the west path around the guide stand, staying within the real collision map.
-  await page.keyboard.down("w");
-  await expect.poll(async () => (await position()).y).toBeLessThan(400);
-  await page.keyboard.up("w");
-  await page.keyboard.down("d");
-  await expect.poll(async () => Math.hypot((await position()).x - 211, (await position()).y - 350)).toBeLessThan(68);
-  await page.keyboard.up("d");
-  await expect.poll(async () => Math.hypot((await position()).x - 211, (await position()).y - 350)).toBeLessThan(68);
+  // Use an exact real map click; polling a held key can overshoot the arcade's narrow interaction lane.
+  const canvas = await page.locator("#game canvas").boundingBox();
+  if (!canvas) throw new Error("Game canvas unavailable");
+  const point = await page.evaluate(() => {
+    const scene = (window as unknown as Harness).__codequest.game.scene.getScene("boot");
+    const camera = scene.cameras.main;
+    return {
+      x: (211 - camera.scrollX) * camera.zoom + camera.x,
+      y: (375 - camera.scrollY) * camera.zoom + camera.y,
+      width: scene.scale.width,
+      height: scene.scale.height,
+    };
+  });
+  await page.mouse.click(
+    canvas.x + (point.x / point.width) * canvas.width,
+    canvas.y + (point.y / point.height) * canvas.height,
+  );
+  await expect
+    .poll(async () => Math.hypot((await position()).x - 211, (await position()).y - 375), { timeout: 12_000 })
+    .toBeLessThan(6);
   await page.addStyleTag({ content: ".toast { display: none !important; }" });
   await page.screenshot({ path: testInfo.outputPath("codequest-arcade-map.png") });
   await page.keyboard.press("e");

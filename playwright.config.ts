@@ -6,12 +6,37 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
-  use: { baseURL: "http://localhost:4317", trace: "on-first-retry" },
+  use: {
+    baseURL: "http://localhost:4317",
+    trace: "on-first-retry",
+    // Existing journeys represent players who chose to skip the optional tour.
+    // training.spec.ts uses an empty browser to exercise first-visit behavior.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: "http://localhost:4317",
+          localStorage: [
+            {
+              name: "codequest:training:v1",
+              value: JSON.stringify({
+                version: 1,
+                welcome: "skipped",
+                chapter: "welcome",
+                completed: [],
+                autoDistricts: false,
+              }),
+            },
+          ],
+        },
+      ],
+    },
+  },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
     {
       name: "mobile-webkit",
-      testMatch: "**/mobile-runner.spec.ts",
+      testMatch: ["**/mobile-runner.spec.ts", "**/training-mobile.spec.ts"],
       use: { ...devices["iPhone 13"], browserName: "webkit" },
     },
   ],

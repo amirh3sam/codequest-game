@@ -52,6 +52,8 @@ type TabletHost = {
   courierName: string;
   adventureId?: string;
   initialStudyTopicId?: string;
+  initialTab?: number;
+  help?(tab: number): void;
   studyLevelOffset?: number;
   studyPrerequisiteComplete?: boolean;
   studyWorld?: {
@@ -118,7 +120,10 @@ export function openTablet(host: TabletHost): () => void {
     studyPane = el("div", "studio-study");
   const panes = [editorPane, examplesPane, consolePane, missionsPane, guidePane, dailyPane, studyPane, projectsPane],
     tabButtons: HTMLButtonElement[] = [];
+  let selectedTab = 0;
+  if (host.help) panel.querySelector(".panel-heading")?.append(button("Tablet help", () => host.help?.(selectedTab)));
   const select = (index: number, focus = false) => {
+    selectedTab = index;
     for (const [i, pane] of panes.entries()) {
       pane.hidden = i !== index;
       const tab = tabButtons[i];
@@ -1459,7 +1464,7 @@ export function openTablet(host: TabletHost): () => void {
   bottom.append(status, el("span", "", "FREE PRACTICE · AUTO SAVE"));
   studio.append(title, tabs, body, bottom);
   panel.append(studio);
-  select(host.initialStudyTopicId ? 6 : 0);
+  select(host.initialStudyTopicId ? 6 : (host.initialTab ?? 0));
   const close = presentTabletOpening(panel, host.kind, host.name, host.focusCamera, host.animate);
   return () => {
     window.clearTimeout(saveTimer);

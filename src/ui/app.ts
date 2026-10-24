@@ -5,6 +5,7 @@ import { isAreaAvailable, loadArea, loadVariables } from "../content/loader";
 import { PROJECT_QUESTS, readProjectQuestProgress } from "../content/project-quests";
 import type { AreaContent, Boss, Task } from "../content/schema";
 import { STUDY_CURRICULUM, STUDY_TOTAL_TASKS } from "../content/study-curriculum";
+import { districtTraining, welcomeTraining } from "../content/training";
 import village from "../content/village.json" with { type: "json" };
 import { studyAreaId, studyTopicForArea, WORLD_LEVELS } from "../content/world-levels";
 import { loadAdventures, saveAdventure } from "../core/adventures";
@@ -28,6 +29,13 @@ import {
   type Position,
   solveTask,
 } from "../core/state";
+import {
+  markDistrictTrained,
+  readTrainingSettings,
+  TRAINING_CHAPTERS,
+  type TrainingChapterId,
+  writeTrainingSettings,
+} from "../core/training";
 import { SPRITES } from "../game/assets";
 import { gameAudio } from "../game/audio";
 import { type ControlScheme, controlHint } from "../game/control-scheme";
@@ -46,6 +54,7 @@ import { mobileControls } from "./mobile-controls";
 import { mobileViewport } from "./mobile-viewport";
 import { openTablet } from "./tablet";
 import { presentTaskConsoleOpening } from "./task-console-opening";
+import { openTraining } from "./training";
 
 const now = () => new Date().toISOString();
 const LANGUAGES: { id: Lang; name: string; badge: string; description: string }[] = [
@@ -78,6 +87,7 @@ export class GameApp {
   private runToken = 0;
   private toastTimer = 0;
   private tabletCleanup: (() => void) | null = null;
+  private trainingDismiss: (() => void) | null = null;
   private tabletNavigation = false;
   private onboardingStage = 3;
   private onboardingOrigin: Position | null = null;
@@ -395,6 +405,7 @@ export class GameApp {
         {
           ...createGame(this.lang, { kind: this.heroKind, name: this.heroName.trim() }, now()),
           adventureId: crypto.randomUUID(),
+          training: { districts: [] },
         },
         true,
       );
@@ -403,10 +414,14 @@ export class GameApp {
       form,
       el("p", "intro-footer", "Start as many adventures as you like. Each keeps its own progress on this device."),
       this.backupControls(),
+      button("How to play · Interactive training", () => this.training()),
       this.soundToggle(),
     );
   }
   private begin(state: GameState, firstRun = false): void {
+    // Existing adventurers can opt in from Training without an unsolicited tour.
+    const existing = !firstRun && state.training === undefined;
+    if (existing) state = markDistrictTrained(state);
     if (!state.adventureId) state = { ...state, adventureId: `legacy-${state.lang}` };
     this.savingAllowed = loadAdventures().status === "loaded";
     if (!isAreaAvailable(state.currentArea)) state = enterArea(state, "variables", now());
@@ -434,7 +449,6 @@ export class GameApp {
     this.commit(state);
     this.onboardingOrigin = this.onboardingStage === 0 ? this.scene.getPosition() : null;
     this.close();
-    void this.viewport.requestLandscape();
     const runner = this.runner,
       adventureId = state.adventureId;
     runner.warmup().catch(() => {
@@ -446,6 +460,12 @@ export class GameApp {
         ? "Your first steps are ready in the field guide."
         : "Welcome back! Your adventure is ready.",
     );
+    const training = readTrainingSettings();
+    if (!existing && (training.welcome === "new" || training.welcome === "in-progress"))
+      this.training(training.chapter);
+    else if (training.autoDistricts && !state.training?.districts.includes(state.currentArea))
+      this.training(undefined, true);
+    else void this.viewport.requestLandscape();
   }
   private onboardingKey(state = this.state): string | null {
     return state?.adventureId ? `codequest:onboarding:v1:${state.adventureId}` : null;
@@ -747,6 +767,7 @@ export class GameApp {
       button("Lesson", () => this.lesson()),
       button("Progress", () => this.journal()),
       button("World map", () => this.worldMap()),
+      button("Training", () => this.training()),
       button("Menu", () => this.pause()),
       this.soundToggle(),
     );
@@ -817,6 +838,12 @@ export class GameApp {
     return guide;
   }
   private close(): void {
+    if (this.trainingDismiss) {
+      const dismiss = this.trainingDismiss;
+      this.trainingDismiss = null;
+      dismiss();
+      return;
+    }
     this.tabletNavigation = false;
     this.tabletCleanup?.();
     this.tabletCleanup = null;
@@ -1014,7 +1041,12 @@ export class GameApp {
       if (token === this.runToken) this.busy = false;
     }
   }
-  private tablet(animate = true, studyTopicId?: string, studyLevelOffset = STORY_AREA_IDS.length): void {
+  private tablet(
+    animate = true,
+    studyTopicId?: string,
+    studyLevelOffset = STORY_AREA_IDS.length,
+    initialTab = 0,
+  ): void {
     if (!this.state) return;
     gameAudio.play("open");
     this.tabletNavigation = false;
@@ -1026,6 +1058,8 @@ export class GameApp {
       kind: this.state.hero.kind,
       courierName: this.courierName(),
       animate,
+      initialTab,
+      help: (tab) => this.training("tablet", false, tab),
       focusCamera: () => this.scene.focusTablet(),
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
       run: (code, files, entryPath) => this.practice(code, files, entryPath),
@@ -1305,6 +1339,7 @@ export class GameApp {
       button("Load backup file", () => this.importAdventure()),
       button("World map", () => this.worldMap()),
       button("Accessibility & controls", () => this.accessibility()),
+      button("Training handbook", () => this.training()),
       button("Read the lesson", () => this.lesson()),
       button("Title screen", () => this.intro()),
     );
@@ -1477,6 +1512,104 @@ export class GameApp {
     this.commit(enterArea(this.state, id, now(), portalArrivalPosition(id)));
     this.close();
     this.toast(`Arrived at ${this.area.name} transit. Choose a terminal or open the world map to travel again.`);
+    if (readTrainingSettings().autoDistricts && !this.state?.training?.districts.includes(id))
+      this.training(undefined, true);
+  }
+  private training(chapter?: string, district = false, returnTab?: number): void {
+    this.tabletNavigation = false;
+    this.capturePosition();
+    const settings = readTrainingSettings();
+    const chapters = district
+      ? districtTraining(this.area)
+      : welcomeTraining(this.state ? this.courierName() : this.heroKind === "boy" ? "Ava" : "Kai");
+    const hero = this.state?.hero.kind ?? this.heroKind;
+    const image = (key: string) => this.scene.textures.get(key).getSourceImage() as CanvasImageSource;
+    const ownRunner = this.state ? null : new WorkerHost(this.lang);
+    const cancelRun = () => {
+      if (ownRunner) ownRunner.kill();
+      else if (this.busy) {
+        this.runToken++;
+        this.runner?.kill();
+        this.busy = false;
+      }
+    };
+    const leave = () => {
+      this.trainingDismiss = null;
+      if (returnTab !== undefined && this.state) this.tablet(false, undefined, STORY_AREA_IDS.length, returnTab);
+      else if (this.state) {
+        this.close();
+        void this.viewport.requestLandscape();
+      } else this.intro();
+    };
+    const cleanup = openTraining({
+      chapters,
+      initialChapter: chapter ?? (district ? undefined : settings.chapter),
+      completed: district ? [] : settings.completed,
+      lang: this.lang,
+      artwork: {
+        hero: image(`hero-walk-${hero}`),
+        courier: image(`hero-walk-${hero === "boy" ? "girl" : "boy"}`),
+        city: image("adventure-world"),
+      },
+      autoDistricts: settings.autoDistricts,
+      district,
+      sample: district ? this.area.lesson.pages.find((page) => page.code)?.code : undefined,
+      panel: () =>
+        this.panel(
+          district ? "District briefing" : "CodeQuest training",
+          "Animated, interactive lessons · Try safely · Skip or replay anytime",
+          true,
+        ),
+      run: (code) => (ownRunner ? ownRunner.run(code) : this.practice(code)),
+      cancelRun,
+      change: (id, completed) => {
+        if (district) return;
+        settings.chapter = id as TrainingChapterId;
+        settings.completed = completed.filter((value): value is TrainingChapterId =>
+          TRAINING_CHAPTERS.includes(value as TrainingChapterId),
+        );
+        if (settings.welcome === "new") settings.welcome = "in-progress";
+        writeTrainingSettings(settings);
+      },
+      automatic: (value) => {
+        settings.autoDistricts = value;
+        writeTrainingSettings(settings);
+      },
+      finish: (nextMission) => {
+        if (!district) {
+          settings.welcome = "complete";
+          writeTrainingSettings(settings);
+          this.advanceOnboarding(3);
+        }
+        if (this.state) this.commit(markDistrictTrained(this.state));
+        leave();
+        if (nextMission && this.state && returnTab === undefined) {
+          if (this.area.id === "variables" && !this.state.areas.variables.solved.length) this.mission();
+          else {
+            const task = this.area.tasks.find((task) => this.state && canSolveTask(this.state, this.area, task.id));
+            if (task) this.editor(task);
+            else this.journal();
+          }
+        }
+      },
+      skip: () => {
+        if (!district && settings.welcome !== "complete") {
+          settings.welcome = "skipped";
+          settings.autoDistricts = false;
+          writeTrainingSettings(settings);
+        }
+        if (this.state) this.commit(markDistrictTrained(this.state));
+        leave();
+      },
+      replay: () => this.training("welcome"),
+      briefing: this.state ? () => this.training(undefined, true) : undefined,
+    });
+    this.trainingDismiss = leave;
+    this.tabletCleanup = () => {
+      this.trainingDismiss = null;
+      cleanup();
+      ownRunner?.kill();
+    };
   }
   private draft(task: Pick<Task, "id">, code: string): void {
     if (!this.state) return;

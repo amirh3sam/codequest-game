@@ -4,6 +4,7 @@ Each task fits in one session. Tags point to PRD requirements.
 
 ## City maps and programmable lighting (2026-10-24)
 
+- [x] Add first-visit interactive 2D training, all-menu/tablet explanations, safe real-code exercises and per-district lesson briefings; remember progress and provide replay/skip controls on desktop and mobile.
 - [x] Add visible click destinations and collision-aware walking routes, precise diagonal arrival, blocked-destination fallback and manual-input cancellation; validate every task/boss approach across all 23 maps.
 - [x] Detail existing buildings with glass bays, mullions, doors, solar roofs, vents and rooftop gardens; add street materials and ambient transit beyond walkable routes.
 - [x] Replace the simple task splash with a physical monitor boot sequence, mission preview, language colors and a keyboard/stand; support skip, cancellation, reduced motion and mobile sizes.

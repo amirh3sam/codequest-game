@@ -11,5 +11,6 @@ test-results
 playwright-report
 coverage
 docs/reference
+screenshot.png
 public/assets/adventure
 public/assets/tiny-town/sample.png

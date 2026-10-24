@@ -8,7 +8,7 @@ async function library(page: Page) {
   await page.getByRole("button", { name: "Switch adventure", exact: true }).click();
 }
 async function start(page: Page, lang: string, name: string) {
-  await page.locator(`[data-language="${lang}"]`).click();
+  await page.locator(`.language-grid [data-language="${lang}"]`).click();
   await page.getByRole("textbox", { name: "Developer name", exact: true }).fill(name);
   await page.getByRole("button", { name: /^Start (a new )?adventure$/ }).click();
 }
@@ -28,7 +28,7 @@ test("switches between Java and two JavaScript adventures with independent progr
   await library(page);
   await page.getByRole("button", { name: "Start another adventure", exact: true }).click();
   await start(page, "javascript", "Ada");
-  await page.getByRole("button", { name: "Tasks", exact: true }).click();
+  await page.getByRole("button", { name: "Progress", exact: true }).click();
   await page.getByRole("button", { name: /1\. Set your display name/ }).click();
   await page.getByLabel("Your code", { exact: true }).fill(loadVariables("javascript").tasks[0]?.solution ?? "");
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();

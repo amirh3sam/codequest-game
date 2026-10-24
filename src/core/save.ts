@@ -12,6 +12,7 @@ import {
   TASKS_PER_AREA,
 } from "./rules";
 import { type AreaState, createAreaState, type GameState, isAreaUnlocked } from "./state";
+import { isDistrictTraining } from "./training";
 
 export const SAVE_VERSION = 1;
 
@@ -145,6 +146,8 @@ export function isGameState(value: unknown): value is GameState {
   }
 
   if (Object.hasOwn(value, "adventureId") && !isAdventureId(value.adventureId)) return false;
+  if (Object.hasOwn(value, "training") && value.training !== undefined && !isDistrictTraining(value.training))
+    return false;
   const areas = value.areas;
   if (Object.keys(areas).length !== AREA_IDS.length || !AREA_IDS.every((id) => isAreaState(areas[id]))) return false;
   // All fields have been narrowed above; now check invariants across the seven areas.
