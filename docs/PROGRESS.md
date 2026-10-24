@@ -3,7 +3,7 @@
 - Rebuilt task opening as a physical monitor with a graphite bezel, camera, ventilation, power LED, stand and keyboard. Its screen shows the actual mission/developer/district, a language-specific workspace preview and staged display/node/mission progress before opening the real editor after 2.8 seconds. Language accents match the rest of the game. Open task now/Enter skip, Escape cancellation and instant reduced-motion access all remain available. General map toasts no longer cover the device.
 - Added mobile monitor fit/cancellation checks and expanded representative map screenshots. Updated the terminal-collision check to approach around the current courier lane instead of walking through it.
 - **Checks:** 260 unit tests, lint, typecheck, production build and diff checks passed. All 23 maps passed clearance with the new skyline bounds included; course rooftops were raised to clear Guardian labels. The full eight-task/Firewall walking route, solid-object behavior, mobile movement, automatic/skip/cancel monitor flows, two phone sizes and all four languages in mobile Chromium/WebKit passed. Desktop/phone monitor and representative district screenshots were visually reviewed.
-- **Release:** validated; publishing to the public repository and existing CodeQuest Vercel project.
+- **Release:** source commit `333239e` is public on `main`. Deployment `dpl_bvbt3MYfvA8PLFWwSW9N8GvKzvuh` is READY at https://codequest-game-inky.vercel.app; an anonymous request confirmed bundle `index-BAZabVIS.js`. Production mobile WebKit verified the physical monitor, automatic entry into the task editor and a real code run producing `Graphics live`, with no browser errors.
 - **Blockers:** none.
 
 ## 2026-10-24 (mobile Run startup recovery and reachable tablet controls)
