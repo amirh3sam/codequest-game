@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import village from "../content/village.json" with { type: "json" };
 import type { AreaId, StoryAreaId, StudyAreaId } from "../core/rules";
+import { dressCampusFacades } from "./city-architecture";
 import type { Solid } from "./collision";
 import { createEnvironmentFrames, type EnvironmentKind, OBJECT_SIZE } from "./environment-objects";
 import { buildLogicWorld } from "./logic-world";
@@ -22,7 +23,7 @@ export function buildAdventureWorld(
       ? buildLogicWorld(scene, reducedMotion)
       : area === "variables"
         ? buildCampusWorld(scene, reducedMotion)
-        : buildStoryWorld(scene, area as Exclude<StoryAreaId, "variables" | "conditions">);
+        : buildStoryWorld(scene, area as Exclude<StoryAreaId, "variables" | "conditions">, reducedMotion);
   const objects = scene.children.list.filter((object) => !before.has(object));
   return {
     solids,
@@ -46,6 +47,7 @@ function buildCampusWorld(scene: Phaser.Scene, reducedMotion: boolean): Solid[] 
     .setName("district-ground")
     .setData("layout-obstacles", village.solidObjects);
   const solids: Solid[] = [...village.solidObjects, { id: "pond", points: village.pondShore }];
+  dressCampusFacades(scene, reducedMotion);
   const object = (spot: { x: number; y: number; kind: string }, index: number) => {
     const kind = spot.kind as EnvironmentKind,
       size = OBJECT_SIZE[kind];

@@ -27,6 +27,14 @@ export function buildLogicWorld(scene: Phaser.Scene, reducedMotion: boolean): So
   );
   const signal = scene.add.circle(42, -126, 2, 0xffc16f).setName("hub-signal");
   hub.add(signal);
+  const panels = scene.add.graphics();
+  panels.fillStyle(0x091526, 0.94).fillRoundedRect(-38, -65, 77, 25, 4);
+  panels.lineStyle(1, 0x759aca).strokeRoundedRect(-38, -65, 77, 25, 4);
+  for (let n = 0; n < 5; n++) {
+    panels.fillStyle(n % 2 ? 0xb597ee : 0x8fe9d7, 0.8).fillRect(-30 + n * 13, -59, 7, 5 + (n % 3) * 3);
+    panels.fillStyle(0xd7e2f0, 0.35).fillRect(-30 + n * 13, -44, 7, 1);
+  }
+  hub.addAt(panels, 2);
   if (!reducedMotion) scene.tweens.add({ targets: signal, alpha: 0.35, duration: 1200, yoyo: true, repeat: -1 });
 
   const props: { x: number; y: number; kind: EnvironmentKind }[] = [

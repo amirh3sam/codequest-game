@@ -75,7 +75,7 @@ test("all 23 world cards enter playable maps and arrive safely beside active tra
       if (result.color === undefined) throw new Error("Missing district ground color");
       colors.push(result.color);
     }
-    if (level.id === "variables" || level.id === "study-abstraction-polymorphism") {
+    if (["variables", "conditions", "arrays", "study-operators", "study-abstraction-polymorphism"].includes(level.id)) {
       await page.evaluate(() => {
         const scene = (window as unknown as Harness).__codequest.game.scene.getScene("boot");
         scene.cameras.main.stopFollow().setZoom(0.625).centerOn(768, 432);

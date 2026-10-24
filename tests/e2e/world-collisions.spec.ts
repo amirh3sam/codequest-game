@@ -43,8 +43,11 @@ test("coding terminals stop the developer, carry their number, and can be walked
   await start(page);
   const chest = village.tasks[0];
   if (!chest) throw new Error("Missing chest");
+  // Reach its south face around the current courier lane and terminal footprint.
+  await walk(page, "w", "y", chest.y - 40);
+  await walk(page, "d", "x", chest.x + 64);
   await walk(page, "s", "y", chest.y + 30);
-  await walk(page, "d", "x", chest.x);
+  await walk(page, "a", "x", chest.x);
   await page.keyboard.down("w");
   await page.waitForTimeout(900);
   await page.keyboard.up("w");

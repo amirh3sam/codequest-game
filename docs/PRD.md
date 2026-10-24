@@ -35,6 +35,17 @@ with a manual rotate prompt when the browser cannot lock orientation. Touch
 taps use the same directional walking frames and collisions as held movement.
 Every boss has a compact attached status panel, with no long trailing wires.
 
+Buildings use layered facades, occupied window bays, roof services, small gardens
+and inset doors. Street surface details and ambient transit add depth around the
+existing routes. Skyline buildings and the tram corridor sit outside walking
+bounds, and building detail stays inside existing obstacle footprints.
+
+Tasks open through a 2.8-second monitor startup: physical bezel, camera, vents,
+stand and keyboard surround the mission brief and language-specific workspace
+preview. Display, city-node and mission stages lead into the real editor. Enter
+or Open task now skips the sequence; Escape cancels it; reduced motion opens
+the editor immediately. The device frame also fits short landscape phones.
+
 On short landscape screens the tablet keeps Run and output inside a scrollable
 workspace, clear of its status bar. Mobile execution is checked with real touch
 input in Chromium and WebKit. Java can fall back to loading its compiler from

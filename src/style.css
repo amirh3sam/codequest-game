@@ -159,6 +159,7 @@ textarea:focus-visible {
   backdrop-filter: blur(5px);
 }
 .task-console-opening {
+  --monitor-accent: #f4cb55;
   position: absolute;
   z-index: 5;
   inset: 0;
@@ -168,24 +169,73 @@ textarea:focus-visible {
   padding: 24px;
   background:
     linear-gradient(#152b3830 1px, transparent 1px), linear-gradient(90deg, #152b3830 1px, transparent 1px),
-    radial-gradient(ellipse at 50% 45%, #0b394b99, #030a14f0 70%);
+    radial-gradient(ellipse at 50% 40%, #18435b88, #030a14f5 72%);
   background-size:
     34px 34px,
     34px 34px,
     auto;
   animation: task-console-backdrop 420ms ease-out both;
 }
+.task-console-opening[data-language="python"] {
+  --monitor-accent: #63d5b5;
+}
+.task-console-opening[data-language="typescript"] {
+  --monitor-accent: #a496ff;
+}
+.task-console-opening[data-language="java"] {
+  --monitor-accent: #ff956e;
+}
+.task-console-rig {
+  width: min(100%, 940px);
+  perspective: 1200px;
+}
 .task-console-frame {
-  width: min(100%, 760px);
+  position: relative;
+  width: 100%;
   overflow: hidden;
-  border: 1px solid #3dd7df99;
-  border-radius: 15px;
-  background: #071522;
+  border: 10px solid #203244;
+  outline: 1px solid #6c899d;
+  border-radius: 18px;
+  background: #080f19;
   box-shadow:
-    0 0 14px #36ddec4d,
-    0 28px 90px #000a,
-    inset 0 0 0 5px #0b2130;
+    0 0 0 3px #080f19,
+    0 35px 90px #000b,
+    0 0 90px #4ca8be15,
+    inset 0 0 0 2px #050c15;
   animation: task-console-open 700ms cubic-bezier(0.16, 0.84, 0.27, 1) both;
+}
+.task-console-frame::before {
+  position: absolute;
+  z-index: 2;
+  inset: -7px;
+  border: 1px solid #9cb5c12b;
+  border-radius: 11px;
+  content: "";
+  pointer-events: none;
+}
+.task-monitor-hardware {
+  position: relative;
+  height: 15px;
+  background: linear-gradient(#223345, #142130);
+}
+.task-monitor-camera {
+  position: absolute;
+  top: 3px;
+  left: calc(50% - 3px);
+  width: 6px;
+  height: 6px;
+  border: 1px solid #4f6577;
+  border-radius: 50%;
+  background: #080e19;
+  box-shadow: inset 1px 1px #88b0d56b;
+}
+.task-monitor-vents {
+  position: absolute;
+  top: 4px;
+  right: 24px;
+  width: 62px;
+  height: 4px;
+  background: repeating-linear-gradient(90deg, #050d18 0 2px, transparent 2px 5px);
 }
 .task-console-topbar,
 .task-console-controls {
@@ -193,7 +243,7 @@ textarea:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 13px 18px;
+  padding: 11px 18px;
   color: #86aabd;
   font:
     10px Consolas,
@@ -202,18 +252,34 @@ textarea:focus-visible {
   background: #102432;
 }
 .task-console-lights {
-  color: #51d6c0;
+  color: var(--monitor-accent);
   letter-spacing: 0.16em;
 }
+.task-monitor-node {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.task-console-controls {
+  padding: 12px 0 0;
+  background: transparent;
+  font-size: 9px;
+}
 .task-console-live {
-  color: #72edc2;
+  color: var(--monitor-accent);
 }
 .task-console-screen {
   position: relative;
-  min-height: 245px;
-  padding: clamp(25px, 6vw, 54px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: 32px;
+  min-height: 260px;
+  padding: 28px 36px;
   overflow: hidden;
-  background: radial-gradient(ellipse at 20% 0%, #16445488, transparent 66%), #081722;
+  background: radial-gradient(ellipse at 10% 15%, #1d425b77, transparent 66%), #081420;
+  box-shadow: inset 0 0 65px #0006;
+  animation: task-monitor-power-on 650ms ease-out both;
 }
 .task-console-screen::after {
   position: absolute;
@@ -232,17 +298,107 @@ textarea:focus-visible {
 .task-console-screen :where(h2) {
   margin: 13px 0;
   color: #e5faff;
+  font-size: clamp(19px, 2.4vw, 29px);
+  line-height: 1.15;
 }
 .task-console-prompt {
   max-width: 590px;
   color: #b0c8d4;
-  line-height: 1.65;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  line-height: 1.6;
+  font-size: 12px;
+}
+.task-monitor-district {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 5px 8px;
+  border: 1px solid #5cb9ce33;
+  border-radius: 4px;
+  color: #78a6bd;
+  font: 9px monospace;
+  letter-spacing: 0.08em;
+}
+.task-monitor-preview {
+  overflow: hidden;
+  border: 1px solid #54758e55;
+  border-radius: 8px;
+  background: #08111dc9;
+  box-shadow: 0 8px 28px #0003;
+}
+.task-monitor-file {
+  padding: 10px 13px;
+  border-bottom: 1px solid #3f60764d;
+  background: #172d40;
+  color: #90bed5;
+  font: 10px monospace;
+}
+.task-monitor-code {
+  padding: 15px 12px;
+}
+.task-monitor-code-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 21px;
+  color: #486275;
+  font: 9px monospace;
+}
+.task-monitor-code-line i,
+.task-monitor-code-line b {
+  height: 4px;
+  width: 28%;
+  border-radius: 3px;
+  background: #6bc1ce88;
+  animation: task-monitor-code-in 600ms ease-out both;
+  animation-delay: 650ms;
+}
+.task-monitor-code-line b {
+  width: 42%;
+  background: #d0b17d77;
+}
+.task-monitor-code-line:nth-child(even) i {
+  width: 15%;
+  margin-left: 12px;
+  background: #b0a1ed77;
+  animation-delay: 850ms;
+}
+.task-monitor-code-line:nth-child(3) b {
+  width: 20%;
+}
+.task-monitor-code-line:last-child i {
+  width: 12%;
+  animation-delay: 1100ms;
+}
+.task-monitor-code-line:last-child b {
+  display: none;
+}
+.task-monitor-output {
+  padding: 10px 13px;
+  border-top: 1px solid #3e5e7455;
+  color: #6a9b9f;
+  font: 9px monospace;
+}
+.task-monitor-output > span {
+  color: #83dcc0;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+}
+.task-monitor-output p {
+  margin: 8px 0 0;
+}
+.task-monitor-boot {
+  padding: 12px 22px 14px;
+  border-top: 1px solid #34577066;
+  background: #0a1b29;
 }
 .task-console-command {
-  margin: 22px 0 10px;
+  margin: 0 0 10px;
   color: #83e8b7;
   font:
-    12px Consolas,
+    10px Consolas,
     monospace;
 }
 .task-console-command::after {
@@ -250,19 +406,200 @@ textarea:focus-visible {
   animation: task-console-cursor 720ms steps(2, end) infinite;
 }
 .task-console-progress {
-  height: 3px;
+  height: 4px;
   overflow: hidden;
   background: #163344;
 }
 .task-console-progress::after {
   display: block;
-  width: 100%;
+  width: var(--boot-progress, 10%);
   height: 100%;
   content: "";
-  background: linear-gradient(90deg, #39d7cb, #a5f5bf);
-  transform: scaleX(0);
-  transform-origin: left;
-  animation: task-console-load 1250ms ease-out both;
+  background: linear-gradient(90deg, var(--monitor-accent), color-mix(in srgb, var(--monitor-accent) 45%, #e0fff6));
+  box-shadow: 0 0 10px #79e5c4;
+  transition: width 450ms ease-out;
+}
+.task-monitor-stages {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 9px;
+  color: #486578;
+  font: 8px monospace;
+  letter-spacing: 0.08em;
+}
+.task-monitor-stages [data-active="true"] {
+  color: var(--monitor-accent);
+}
+.task-monitor-chin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 25px;
+  padding: 0 16px;
+  background: linear-gradient(#1c2c3c, #14202d);
+  color: #8192a1;
+  font: 8px monospace;
+  letter-spacing: 0.2em;
+}
+.task-monitor-power {
+  color: var(--monitor-accent);
+  text-shadow: 0 0 9px var(--monitor-accent);
+}
+.task-monitor-stand {
+  position: relative;
+  width: 190px;
+  height: 36px;
+  margin: 0 auto;
+  border-bottom: 7px solid #344c61;
+  border-radius: 0 0 40% 40%;
+  filter: drop-shadow(0 9px 8px #0008);
+}
+.task-monitor-stand::before {
+  display: block;
+  width: 66px;
+  height: 29px;
+  margin: 0 auto;
+  content: "";
+  background: linear-gradient(90deg, #152637, #526a7e 45%, #263c50);
+  clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+}
+.task-monitor-keyboard {
+  display: grid;
+  grid-template-columns: repeat(19, 1fr);
+  gap: 3px;
+  width: 340px;
+  height: 34px;
+  margin: 8px auto 0;
+  padding: 6px 8px;
+  border: 1px solid #69819855;
+  border-radius: 5px;
+  background: linear-gradient(#203447, #132131);
+  transform: rotateX(45deg);
+}
+.task-monitor-key {
+  border: 1px solid #699bb344;
+  border-bottom-color: #06101d;
+  border-radius: 1px;
+  background: #314c60;
+}
+.task-console-opening[data-phase="ready"] .task-console-frame {
+  animation: task-monitor-handoff 550ms ease-in both;
+}
+@keyframes task-monitor-power-on {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.015);
+  }
+  45% {
+    opacity: 0.65;
+    transform: scaleY(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+@keyframes task-monitor-code-in {
+  from {
+    opacity: 0;
+    transform: scaleX(0.1);
+    transform-origin: left;
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+@keyframes task-monitor-handoff {
+  to {
+    transform: translateZ(60px) scale(1.04);
+    filter: brightness(1.15);
+  }
+}
+@media (max-height: 600px) {
+  .task-console-opening {
+    padding: 14px 22px;
+  }
+  .task-console-rig {
+    width: min(100%, 800px);
+  }
+  .task-console-frame {
+    border-width: 7px;
+    border-radius: 12px;
+  }
+  .task-monitor-hardware {
+    height: 11px;
+  }
+  .task-console-topbar {
+    padding: 7px 12px;
+    font-size: 8px;
+  }
+  .task-console-screen {
+    min-height: 140px;
+    padding: 16px 22px;
+    gap: 20px;
+  }
+  .task-console-screen :where(h2) {
+    margin: 8px 0;
+    font-size: 20px;
+  }
+  .task-console-prompt {
+    -webkit-line-clamp: 2;
+    margin: 8px 0;
+    font-size: 10px;
+  }
+  .task-monitor-file {
+    padding: 6px 10px;
+    font-size: 9px;
+  }
+  .task-monitor-code {
+    padding: 5px 10px;
+  }
+  .task-monitor-code-line {
+    height: 14px;
+  }
+  .task-monitor-output {
+    padding: 6px 10px;
+  }
+  .task-monitor-output p {
+    margin-top: 5px;
+  }
+  .task-monitor-boot {
+    padding: 8px 16px;
+  }
+  .task-console-command {
+    margin-bottom: 6px;
+    font-size: 9px;
+  }
+  .task-monitor-stages {
+    margin-top: 6px;
+    font-size: 7px;
+  }
+  .task-monitor-chin {
+    height: 18px;
+    font-size: 7px;
+  }
+  .task-monitor-stand {
+    height: 24px;
+    width: 150px;
+    border-bottom-width: 5px;
+  }
+  .task-monitor-stand::before {
+    height: 19px;
+    width: 54px;
+  }
+  .task-monitor-keyboard {
+    display: none;
+  }
+  .task-console-controls {
+    padding-top: 8px;
+  }
+  .task-console-controls :where(.button) {
+    min-height: 36px;
+    font-size: 11px;
+  }
 }
 .task-console-controls :where(.button) {
   min-height: 40px;
@@ -2633,7 +2970,8 @@ small {
   background: #060d1699;
   backdrop-filter: none;
 }
-.tablet-overlay:not([hidden]) ~ .toast {
+.tablet-overlay:not([hidden]) ~ .toast,
+.task-console-overlay:not([hidden]) ~ .toast {
   visibility: hidden;
 }
 .tablet-waiting {
@@ -3241,6 +3579,36 @@ small {
   }
   .studio-status {
     padding: 4px 10px;
+  }
+}
+@media (max-width: 540px) {
+  .task-console-opening {
+    padding: 18px;
+  }
+  .task-console-screen {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .task-monitor-preview {
+    display: none;
+  }
+  .task-monitor-keyboard {
+    width: 80%;
+  }
+}
+@media (max-width: 700px) and (max-height: 600px) {
+  .task-console-screen {
+    min-height: 140px;
+    padding: 12px 16px;
+  }
+  .task-console-controls {
+    flex-direction: row;
+    align-items: center;
+  }
+  .task-console-controls > span {
+    font-size: 8px;
+  }
+  .task-monitor-code-line:nth-last-child(-n + 2) {
+    display: none;
   }
 }
 .sound-settings {

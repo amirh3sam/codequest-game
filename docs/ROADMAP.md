@@ -4,6 +4,8 @@ Each task fits in one session. Tags point to PRD requirements.
 
 ## City maps and programmable lighting (2026-10-24)
 
+- [x] Detail existing buildings with glass bays, mullions, doors, solar roofs, vents and rooftop gardens; add street materials and ambient transit beyond walkable routes.
+- [x] Replace the simple task splash with a physical monitor boot sequence, mission preview, language colors and a keyboard/stand; support skip, cancellation, reduced motion and mobile sizes.
 - [x] Keep Run and output reachable on short mobile screens; cover actual tablet/task execution in mobile Chromium and WebKit, including streamed Java compiler failure recovery.
 - [x] Replace trailing boss wires with attached status panels throughout the city.
 - [x] Move mobile quests, guide and tools into a hamburger menu; reserve portrait for menus and landscape for city exploration.

@@ -1,6 +1,7 @@
 import type Phaser from "phaser";
 import { studyTopicForArea } from "../content/world-levels";
 import { STUDY_AREA_IDS, type StudyAreaId } from "../core/rules";
+import { detailFacade, dressDistrictEdges } from "./city-architecture";
 import type { Solid } from "./collision";
 import { districtLayout, portalPosition } from "./district-layout";
 
@@ -62,16 +63,21 @@ export function buildStudyWorld(scene: Phaser.Scene, area: StudyAreaId, reducedM
   for (let x = 80; x < 1480; x += 48) roads.lineBetween(x, 180, x, 700);
   for (let y = 180; y < 700; y += 48) roads.lineBetween(80, y, 1480, y);
   const skyline = scene.add.graphics().setDepth(-2).setName(`${area}-skyline`);
+  const skylineBase = 148;
+  const skylineBounds: { id: string; x: number; y: number; width: number; height: number }[] = [];
+  skyline.setData("layout-obstacles", skylineBounds);
   for (let block = 0; block < 11; block++) {
     const x = 105 + block * 124;
     const height = 75 + ((block * 31 + index * 23) % 70);
-    skyline.fillStyle(path, 0.9).fillRoundedRect(x, 190 - height, 92, height, 7);
-    skyline.lineStyle(2, accent, 0.35).strokeRoundedRect(x, 190 - height, 92, height, 7);
+    skylineBounds.push({ id: `course-skyline-${block}`, x, y: skylineBase - height, width: 92, height });
+    skyline.fillStyle(path, 0.9).fillRoundedRect(x, skylineBase - height, 92, height, 7);
+    skyline.lineStyle(2, accent, 0.35).strokeRoundedRect(x, skylineBase - height, 92, height, 7);
     for (let row = 0; row < Math.floor(height / 20) - 1; row++)
       for (let column = 0; column < 3; column++)
         skyline
           .fillStyle(accent, 0.25 + ((block + column + row) % 3) * 0.15)
-          .fillRect(x + 14 + column * 24, 205 - height + row * 20, 12, 7);
+          .fillRect(x + 14 + column * 24, skylineBase + 15 - height + row * 20, 12, 7);
+    detailFacade(skyline, { x, y: skylineBase - height, width: 92, height }, accent, block + index);
   }
   const monument = scene.add.container(770, 440).setDepth(440).setName(`${area}-landmark`);
   monument.setData("layout-obstacles", [
@@ -83,6 +89,9 @@ export function buildStudyWorld(scene: Phaser.Scene, area: StudyAreaId, reducedM
   art.fillStyle(path).fillRoundedRect(-130, -85, 260, 105, 20);
   art.lineStyle(3, accent, 0.85).strokeRoundedRect(-130, -85, 260, 105, 20);
   art.fillStyle(ground, 0.85).fillRoundedRect(-112, -69, 224, 58, 12);
+  // Front panels and roof services stay inside the existing landmark foundation.
+  detailFacade(art, { x: -121, y: -76, width: 242, height: 85 }, accent, index);
+  art.lineStyle(3, accent, 0.85);
   art.lineStyle(3, accent, 0.85);
   // Topic-specific architecture sits above the same safe central foundation.
   if (index === 0) {
@@ -156,6 +165,8 @@ export function buildStudyWorld(scene: Phaser.Scene, area: StudyAreaId, reducedM
       art.fillStyle(accent, 0.35 + n * 0.12).fillTriangle(x - 22, -64, x, -155 + (n % 2) * 32, x + 22, -64);
     }
   }
+  art.fillStyle(ground, 0.94).fillRoundedRect(-108, -16, 216, 23, 4);
+  art.lineStyle(1, accent, 0.35).strokeRoundedRect(-108, -16, 216, 23, 4);
   monument.addAt(art, 0);
   monument.add(
     scene.add
@@ -181,5 +192,6 @@ export function buildStudyWorld(scene: Phaser.Scene, area: StudyAreaId, reducedM
     if (!reducedMotion)
       scene.tweens.add({ targets: light, alpha: 0.18, duration: 1400 + n * 90, yoyo: true, repeat: -1 });
   }
+  dressDistrictEdges(scene, accent, index, reducedMotion);
   return [{ id: `${area}-foundation`, x: 640, y: 395, width: 260, height: 65 }];
 }

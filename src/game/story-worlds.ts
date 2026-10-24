@@ -1,6 +1,7 @@
 import type Phaser from "phaser";
 import village from "../content/village.json" with { type: "json" };
 import type { StoryAreaId as CityAreaId } from "../core/rules";
+import { detailFacade, dressDistrictEdges } from "./city-architecture";
 import type { Solid } from "./collision";
 
 type StoryAreaId = Exclude<CityAreaId, "variables" | "conditions">;
@@ -15,7 +16,7 @@ const THEMES: Readonly<Record<StoryAreaId, Theme>> = {
 };
 
 /** Distinct, collision-safe 2D backdrops for the newly playable story districts. */
-export function buildStoryWorld(scene: Phaser.Scene, area: StoryAreaId): Solid[] {
+export function buildStoryWorld(scene: Phaser.Scene, area: StoryAreaId, reducedMotion: boolean): Solid[] {
   const { width, height } = village.world;
   const theme = THEMES[area];
   scene.add
@@ -119,6 +120,15 @@ export function buildStoryWorld(scene: Phaser.Scene, area: StoryAreaId): Solid[]
     graphics.lineStyle(3, theme.accent, 0.88).strokeRoundedRect(650, 310, 236, 120, 58);
     solids.push({ id: "cloud-archive", x: 680, y: 350, width: 176, height: 60 });
   }
+
+  for (const [index, bounds] of visualObstacles.entries())
+    detailFacade(
+      graphics,
+      area === "abstraction" ? { x: 680, y: 330, width: 176, height: 85 } : bounds,
+      theme.accent,
+      index,
+    );
+  dressDistrictEdges(scene, theme.accent, Object.keys(THEMES).indexOf(area), reducedMotion, true);
 
   scene.add
     .text(width / 2, 205, theme.label, {

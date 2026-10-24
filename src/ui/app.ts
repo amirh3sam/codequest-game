@@ -1708,7 +1708,10 @@ export class GameApp {
     work.append(label, code, actions, el("span", "section-label", "OUTPUT"), output, feedback, debugHelp);
     columns.append(instructions, work);
     panel.append(columns);
-    this.tabletCleanup = presentTaskConsoleOpening(panel, task, this.state.hero.name);
+    this.tabletCleanup = presentTaskConsoleOpening(panel, task, this.state.hero.name, {
+      lang: this.lang,
+      district: this.area.name,
+    });
   }
   private victory(): void {
     const next = WORLD_LEVELS[this.area.order];
