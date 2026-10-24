@@ -6,6 +6,7 @@ import { ADVENTURES_KEY } from "../../src/core/adventures";
 import { AREA_IDS } from "../../src/core/rules";
 import { createGame, type Position } from "../../src/core/state";
 import { portalArrivalPosition } from "../../src/game/district-layout";
+import { mapLayoutConflicts } from "./helpers/map-clearance";
 
 type WorldScene = Phaser.Scene & {
   getPosition(): Position;
@@ -44,6 +45,7 @@ test("all 23 world cards enter playable maps and arrive safely beside active tra
   await page.reload();
   await page.locator(".title-adventure-row").filter({ hasText: "Nova" }).click();
   const colors: number[] = [];
+  const layoutConflicts: Record<string, string[]> = {};
   for (const level of WORLD_LEVELS) {
     await page.getByRole("button", { name: "World map", exact: true }).click();
     await expect(page.locator(".world-node")).toHaveCount(23);
@@ -67,13 +69,31 @@ test("all 23 world cards enter playable maps and arrive safely beside active tra
     expect(result.active).toBe(true);
     expect(result.safe).toBe(true);
     expect(result.distance).toBeLessThan(115);
+    const conflicts = await mapLayoutConflicts(page);
+    if (conflicts.length) layoutConflicts[level.id] = conflicts;
     if (level.id.startsWith("study-")) {
       if (result.color === undefined) throw new Error("Missing district ground color");
       colors.push(result.color);
     }
-    if (level.id === "study-operators") await page.screenshot({ path: testInfo.outputPath("operators-transit.png") });
+    if (level.id === "variables" || level.id === "study-abstraction-polymorphism") {
+      await page.evaluate(() => {
+        const scene = (window as unknown as Harness).__codequest.game.scene.getScene("boot");
+        scene.cameras.main.stopFollow().setZoom(0.625).centerOn(768, 432);
+      });
+      await page.locator("#ui").evaluate((node) => {
+        node.style.visibility = "hidden";
+      });
+      await page.screenshot({ path: testInfo.outputPath(`${level.id}-layout.png`) });
+      await page.locator("#ui").evaluate((node) => {
+        node.style.visibility = "";
+      });
+      await page.evaluate(() =>
+        (window as unknown as Harness).__codequest.game.scene.getScene("boot").cameras.main.setZoom(1),
+      );
+    }
   }
   expect(new Set(colors).size).toBe(16);
+  expect(layoutConflicts, "All 23 maps: object, label and arrival clearance").toEqual({});
   await page.getByRole("button", { name: "Progress", exact: true }).click();
   await expect(page.locator(".skill-track")).toHaveCount(23);
   await expect(page.locator(".skill-progress-summary")).toContainText("176 / 184 missions");

@@ -1,7 +1,15 @@
+## 2026-10-24 (object and label clearance across all 23 maps)
+- Audited rendered object, text and arrival bounds in every district. Repositioned crowded terminals and buildings in Array Towers, Loop Transit, Function Labs and Object Campus, plus rocks and trees obscuring the first district's stations and Firewall. Shifted the first district's terminal rows clear of planters.
+- Removed duplicate district headings, wrapped long category titles in a clear heading area, and moved the drone-pad label above the pad. Logic Junction's arcade and transit building now have their own clear spaces.
+- Teleport arrivals now land beside the building so the character does not cover its status label. Building drawings expose their visual bounds to the browser clearance check, which validates all 23 maps and captures representative layouts for review. Floor lighting now renders below buildings.
+- **Checks:** 257 unit tests, lint, typecheck, production build and diff checks passed. Chromium found no unintended object, label or arrival overlaps in all 23 maps. The walking check reached all eight first-level tasks and completed the Firewall; return transit passed. Representative full-map images were visually reviewed.
+- **Release:** pending public commit and production deployment.
+- **Blockers:** none.
+
 ## 2026-10-24 (clear Firewall status indicator placement)
 - Moved the POWER, SIGNAL and CORE indicators together into a clear row below the Firewall, away from the transit building and the nearby tree canopy. Kept their wires connected to the hub and increased label readability.
 - **Checks:** lint, typecheck, production build and diff checks passed. The production build was opened in Chromium, travel to the Firewall was checked without browser errors, and the screenshot confirmed that all three labels are visible below the portal and tree.
-- **Release:** pending public commit and production deployment.
+- **Release:** source commit `c7de51b` is public on `main`. Deployment `dpl_4kDpjzBu74gwDBspV8efaGJH2ZgC` is READY at https://codequest-game-inky.vercel.app.
 - **Blockers:** none.
 
 ## 2026-10-24 (smaller transit buildings)

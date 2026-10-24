@@ -27,7 +27,7 @@ export const LOGIC_LAYOUT: DistrictLayout = {
     { x: 800, y: 545 },
   ],
   boss: { x: 1320, y: 275 },
-  arcade: { x: 760, y: 300 },
+  arcade: { x: 760, y: 235 },
   label: { x: 768, y: 475 },
 };
 
@@ -43,8 +43,8 @@ const STORY_LAYOUTS: Readonly<Record<Exclude<StoryAreaId, "variables" | "conditi
       { x: 830, y: 535 },
       { x: 990, y: 625 },
       { x: 1140, y: 535 },
-      { x: 950, y: 390 },
-      { x: 650, y: 390 },
+      { x: 970, y: 390 },
+      { x: 570, y: 390 },
     ],
     boss: { x: 1320, y: 300 },
     arcade: { x: 235, y: 315 },
@@ -62,7 +62,7 @@ const STORY_LAYOUTS: Readonly<Record<Exclude<StoryAreaId, "variables" | "conditi
       { x: 1030, y: 615 },
       { x: 1190, y: 615 },
       { x: 1110, y: 420 },
-      { x: 720, y: 390 },
+      { x: 790, y: 555 },
     ],
     boss: { x: 1325, y: 300 },
     arcade: { x: 235, y: 310 },
@@ -92,13 +92,13 @@ const STORY_LAYOUTS: Readonly<Record<Exclude<StoryAreaId, "variables" | "conditi
     lesson: { x: 265, y: 430 },
     tasks: [
       { x: 375, y: 615 },
-      { x: 520, y: 520 },
+      { x: 570, y: 520 },
       { x: 670, y: 615 },
-      { x: 820, y: 520 },
+      { x: 820, y: 550 },
       { x: 970, y: 615 },
       { x: 1120, y: 520 },
-      { x: 960, y: 370 },
-      { x: 620, y: 365 },
+      { x: 985, y: 370 },
+      { x: 565, y: 365 },
     ],
     boss: { x: 1320, y: 285 },
     arcade: { x: 235, y: 300 },
@@ -164,11 +164,14 @@ export function districtLayout(area: AreaId = "variables"): DistrictLayout {
 /** A clear landing spot beside each district boss, away from the map edge. */
 export function portalPosition(area: AreaId): Position {
   const layout = districtLayout(area);
+  if (area === "variables") return { x: layout.boss.x - 118, y: layout.boss.y + 18 };
+  if (area === "conditions") return { x: layout.boss.x - 135, y: layout.boss.y - 15 };
   const x = layout.boss.x + 86 <= layout.bounds.right - 45 ? layout.boss.x + 86 : layout.boss.x - 86;
   return { x, y: layout.boss.y + 43 };
 }
 
 export function portalArrivalPosition(area: AreaId): Position {
   const point = portalPosition(area);
-  return { x: point.x, y: point.y + 66 };
+  const right = point.x + 82 <= districtLayout(area).bounds.right - 13;
+  return { x: point.x + (right && area !== "conditions" ? 82 : -82), y: point.y + 66 };
 }

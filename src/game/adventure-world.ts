@@ -43,7 +43,8 @@ function buildCampusWorld(scene: Phaser.Scene, reducedMotion: boolean): Solid[] 
   scene.add
     .image(width / 2, height / 2, "adventure-world")
     .setDisplaySize(width, height)
-    .setName("district-ground");
+    .setName("district-ground")
+    .setData("layout-obstacles", village.solidObjects);
   const solids: Solid[] = [...village.solidObjects, { id: "pond", points: village.pondShore }];
   const object = (spot: { x: number; y: number; kind: string }, index: number) => {
     const kind = spot.kind as EnvironmentKind,

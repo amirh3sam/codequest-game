@@ -4,6 +4,7 @@ Each task fits in one session. Tags point to PRD requirements.
 
 ## City maps and programmable lighting (2026-10-24)
 
+- [x] Audit all 23 rendered maps for unintended object, label and arrival overlaps; add a browser clearance check for future layout changes.
 - [x] Turn every world-map card into one of 23 playable city districts, each with eight tasks and a separate boss.
 - [x] Share task and boss progress between city maps, the tablet and the 23-district progress page; migrate released saves.
 - [x] Add a richer transit building to each map, keep it active in unlocked districts and land returning players beside the destination building.

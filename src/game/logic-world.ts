@@ -32,7 +32,7 @@ export function buildLogicWorld(scene: Phaser.Scene, reducedMotion: boolean): So
   const props: { x: number; y: number; kind: EnvironmentKind }[] = [
     { x: 410, y: 360, kind: "rock" },
     { x: 960, y: 500, kind: "rock" },
-    { x: 1175, y: 285, kind: "rock" },
+    { x: 1020, y: 315, kind: "rock" },
     { x: 615, y: 485, kind: "fence" },
     { x: 1030, y: 445, kind: "fence" },
     { x: 240, y: 245, kind: "fir" },
@@ -58,7 +58,7 @@ export function buildLogicWorld(scene: Phaser.Scene, reducedMotion: boolean): So
     });
   }
   for (const [label, x, y, tint] of [
-    ["TRUE / EAST", 1050, 330, 0xd6b16b],
+    ["TRUE / EAST", 1040, 385, 0xd6b16b],
     ["FALSE / WEST", 480, 330, 0xb497e9],
   ] as const) {
     scene.add

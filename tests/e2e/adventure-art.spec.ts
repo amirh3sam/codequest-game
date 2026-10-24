@@ -32,7 +32,7 @@ async function walk(page: Page, key: string, axis: "x" | "y", target: number, fa
 test("hoodie developer turns in four directions and reaches every coding terminal in the city", async ({
   page,
 }, testInfo) => {
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
@@ -45,8 +45,12 @@ test("hoodie developer turns in four directions and reaches every coding termina
   for (const [index, task] of content.tasks.entries()) {
     const spot = village.tasks[index];
     if (!spot) throw new Error("Missing chest location");
-    if (index === 0) await walk(page, "s", "y", spot.y + 30, 0);
-    if (index === 4) {
+    if (index === 0) {
+      await walk(page, "w", "y", spot.y - 40, 3);
+      await walk(page, "d", "x", spot.x + 64, 2);
+      await walk(page, "s", "y", spot.y + 30, 0);
+      await walk(page, "a", "x", spot.x, 1);
+    } else if (index === 4) {
       await walk(page, "d", "x", spot.x + 64, 2);
       await walk(page, "w", "y", spot.y + 30, 3);
       await walk(page, "a", "x", spot.x, 1);

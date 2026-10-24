@@ -42,7 +42,6 @@ export class BootScene extends Phaser.Scene {
   private prompt!: Phaser.GameObjects.Text;
   private keys: Record<string, Phaser.Input.Keyboard.Key> = {};
   private markers: Marker[] = [];
-  private districtLabel!: Phaser.GameObjects.Text;
   private droneQuest!: DroneQuest;
   private communityBeacon!: CommunityBeacon;
   private districtLighting!: DistrictLighting;
@@ -106,11 +105,6 @@ export class BootScene extends Phaser.Scene {
       this.marker(`variables-${index + 1}`, spot.x, spot.y, { texture: "tech-props", frame: 0 }, `${index + 1}`);
     this.marker("boss", village.boss.x, village.boss.y, SPRITES.boss, "Firewall");
     this.marker("arcade", village.arcade.x, village.arcade.y, { texture: "packet-arcade", frame: 0 }, "Arcade");
-    this.districtLabel = this.add
-      .text(768, 382, "VALUES / DATA HUB", { fontFamily: "Consolas", fontSize: "15px", color: "#9ae9ff" })
-      .setOrigin(0.5)
-      .setDepth(2)
-      .setAlpha(0.7);
     this.shadow = this.add.ellipse(96, 415, 28, 10, 0x1c3b2d, 0.3).setDepth(3);
     this.hero = this.add
       .image(96, 400, SPRITES.heroBoy.texture, SPRITES.heroBoy.frame)
@@ -337,16 +331,6 @@ export class BootScene extends Phaser.Scene {
         marker.id = task.id;
         marker.group.setName(task.id);
       }
-      const logic = area.id === "conditions";
-      const label = logic
-        ? "IF / ELSE / DECISION NETWORK"
-        : area.id === "variables"
-          ? "VALUES / DATA HUB"
-          : area.name.toUpperCase();
-      this.districtLabel
-        .setPosition(layout.label.x, layout.label.y)
-        .setText(label)
-        .setColor(logic ? "#dfbaff" : area.id === "variables" ? "#9ae9ff" : "#b9edff");
       this.facing = "south";
       this.walked = 0;
     }

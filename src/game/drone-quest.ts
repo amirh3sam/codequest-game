@@ -71,7 +71,7 @@ export class DroneQuest {
     yard.add(floor);
     yard.add(
       scene.add
-        .text(pad.x, pad.y + 42, "DRONE / 03", {
+        .text(pad.x, pad.y - 57, "DRONE / 03", {
           fontFamily: "Consolas",
           fontSize: "10px",
           color: "#b3edff",

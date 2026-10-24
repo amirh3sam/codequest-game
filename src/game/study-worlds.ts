@@ -74,6 +74,10 @@ export function buildStudyWorld(scene: Phaser.Scene, area: StudyAreaId, reducedM
           .fillRect(x + 14 + column * 24, 205 - height + row * 20, 12, 7);
   }
   const monument = scene.add.container(770, 440).setDepth(440).setName(`${area}-landmark`);
+  monument.setData("layout-obstacles", [
+    { id: `${area}-base`, x: 640, y: 355, width: 260, height: 105 },
+    { id: `${area}-architecture`, x: 660, y: 260, width: 220, height: 110 },
+  ]);
   const art = scene.add.graphics();
   art.fillStyle(0x040a15, 0.45).fillEllipse(0, 15, 280, 80);
   art.fillStyle(path).fillRoundedRect(-130, -85, 260, 105, 20);
@@ -163,9 +167,11 @@ export function buildStudyWorld(scene: Phaser.Scene, area: StudyAreaId, reducedM
       .setOrigin(0.5),
   );
   scene.add
-    .text(770, 205, `${String(index + 8).padStart(2, "0")} / ${studyTopicForArea(area)?.title.toUpperCase()}`, {
+    .text(770, 220, `${String(index + 8).padStart(2, "0")} / ${studyTopicForArea(area)?.title.toUpperCase()}`, {
       fontFamily: "Consolas",
-      fontSize: "16px",
+      fontSize: "14px",
+      align: "center",
+      wordWrap: { width: 210, useAdvancedWrap: true },
       color: "#e0f6ff",
     })
     .setOrigin(0.5)
