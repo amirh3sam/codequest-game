@@ -3,7 +3,7 @@
 - Removed duplicate district headings, wrapped long category titles in a clear heading area, and moved the drone-pad label above the pad. Logic Junction's arcade and transit building now have their own clear spaces.
 - Teleport arrivals now land beside the building so the character does not cover its status label. Building drawings expose their visual bounds to the browser clearance check, which validates all 23 maps and captures representative layouts for review. Floor lighting now renders below buildings.
 - **Checks:** 257 unit tests, lint, typecheck, production build and diff checks passed. Chromium found no unintended object, label or arrival overlaps in all 23 maps. The walking check reached all eight first-level tasks and completed the Firewall; return transit passed. Representative full-map images were visually reviewed.
-- **Release:** pending public commit and production deployment.
+- **Release:** source commit `9d4a357` is public on `main`. Deployment `dpl_3ADMwsmJLPKLz9CWELDNi1h87kgL` is READY at https://codequest-game-inky.vercel.app; an anonymous request confirmed bundle `index-DYd75QWt.js`.
 - **Blockers:** none.
 
 ## 2026-10-24 (clear Firewall status indicator placement)
