@@ -4,7 +4,7 @@
 - Reworked the Community Beacon as a lighting console for every district. Real code can print online/offline and a color, controlling the two route rails and terminal lights for the whole map or an individual task. Per-map settings survive travel, reload, resets and backups. Examples and a circuit preview explain the effect; invalid output cannot change the lights.
 - Corrected category terminal numbers and suppressed the opening courier guide in later districts.
 - **Checks:** 257 unit tests, typecheck, lint, production build and diff checks passed. All 19 focused Chromium scenarios passed, including all 23 map visits, safe transit arrivals, return travel before boss completion, shared map/tablet progress, all category reference and boss programs in four languages, and per-map lighting power/color persistence.
-- **Release:** pending final validation, public commit and production deployment.
+- **Release:** source commit `ea88671` is public on `main`. Deployment `dpl_94mq992BQ3H89RcLF3frRiZsZyqz` is READY at https://codequest-game-inky.vercel.app. The production alias serves `index-GyJMOysl.js`; an anonymous HTTP request returned 200 OK.
 - **Blockers:** none.
 
 ## 2026-10-23 (complete coding progress, beacon status, and district portals)
