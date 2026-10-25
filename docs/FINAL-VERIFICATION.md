@@ -10,7 +10,7 @@ Target: https://codequest-game-inky.vercel.app/
 | Complete browser suite | 232 distinct checks verified; all have passing results after fixes and targeted reruns |
 | Follow-up regressions | Final 13-check desktop/phone run passed, with no skips or automatic retries |
 | Production build | Passed; production entry `index-B4hC9JMH.js`, with development hooks absent |
-| Published-game desktop/phone checks | Pending after the browser run |
+| Published-game desktop/phone checks | All 5 passed: 3 Chromium and 2 iPhone WebKit |
 
 The complete Playwright run covers Chromium, Chromium touch scenarios and the
 iPhone WebKit project. It exercises the ordered newcomer adventure, real code
@@ -59,4 +59,17 @@ traces and screenshots from verification remain in ignored test output.
 The final regression run includes the complete unseeded eight-step newcomer
 adventure, legacy reloads in all four languages, district tasks and a boss,
 restored services, explicit tour resume, and Chromium/iPhone WebKit rotation.
-Production build and public release verification are recorded below when complete.
+Production build and public release verification are recorded below.
+
+The fixes are public in commit `f314d28`. Deployment
+`dpl_24bvLxaqRbV73shQg8AsQyZUMrJU` is READY at the game URL above. Anonymous
+requests return HTTP 200 and serve `index-B4hC9JMH.js`, matching the verified
+production build with development hooks absent. A transient deployment fetch
+failure succeeded on retry.
+
+On the actual public site, all three Chromium checks passed: the complete
+unseeded eight-step adventure, Java loop/list execution plus invalid-code
+diagnostics, and real title-tour highlights/handbook access. Both iPhone WebKit
+checks passed: newcomer start/resume/rotation and the full controls-tour targets
+across portrait and landscape. The final screenshots were reviewed. There are
+no unresolved test failures or release blockers.
