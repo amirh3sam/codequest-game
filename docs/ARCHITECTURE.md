@@ -1,6 +1,6 @@
 # CodeQuest — Architecture
 
-_Last updated: 2026-10-23 · Adventure library, distinct district layout and layered sound effects_
+_Last updated: 2026-10-25 · Learning adventures, programmable companions, arcade creation, restoration, reviews and earned rooms_
 
 ## 1. Stack
 | Area | Pick (version) | Why |
@@ -312,3 +312,12 @@ None needed for MVP. `.env.example` lists placeholders only (e.g. `VITE_JAVA_RUN
 - **Public:** https://codequest-game-inky.vercel.app/, a separate Vercel static Vite project. Source: https://github.com/amirh3sam/codequest-game. See `DEPLOYMENT.md` for the release workflow.
 - **Local:** `npm run dev` for development; `npm run build` then `npm run preview` for the production build. All code execution stays in browser workers.
 - **Monthly cost: $0.**
+## Learning-adventure persistence and world effects (2026-10-25)
+
+The optional `GameState.journey` field keeps the version-1 adventure format backward compatible. `core/journey.ts` validates independent gate progress, companion routes, up to eight arcade designs/records, three restored city services, bounded per-concept review records, equipped room choices and earned reward IDs. These fields use the existing per-adventure library, compatibility snapshot and portable JSON backup. Renaming preserves them; restart uses `createGame` and removes them; deletion uses existing ownership/tombstone cleanup. Editable project workspaces continue using the existing separate project export/import format.
+
+`ui/learning-lesson.ts` runs serial real-worker checks for the Smart Gate. `core/companion.ts` validates three distinct terminal outputs and accepts ordered physical checkpoints once. `game/robot-companion.ts` uses the player's collision/navigation helpers. `core/arcade-creation.ts` validates a data-only JSON design and generates connected grid levels; the two-file language projects export those rules through their actual runners. Custom game data never executes as DOM or host JavaScript.
+
+`game/restored-city.ts` attaches workshop/network effects to the existing campus facade and reuses existing tram tracks. It adds no walking solids. `BootScene.syncJourney` refreshes these effects and the robot without resetting the player's position. Review suggestions use the most recent unresolved recorded concept, exclude runtime/syntax failures and keep drafts separate from updated counters. Success advances one of three example variants once per open review.
+
+`core/developer-room.ts` permanently records newly earned rewards when an adventure is committed or journey progress changes. Removing a winning game does not revoke an earned shell. `game/hoodie-palette.ts` lazily caches clothing-only atlas variants for both idle and six-frame walking families; skin, hair, neutral laptop colors and legs retain their source pixels. Robot shell/antenna changes update its actual city art. All new illustrated UI uses code-native canvas/CSS and respects reduced motion; no backend, account or external analytics was added.

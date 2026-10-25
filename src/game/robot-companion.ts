@@ -16,6 +16,7 @@ export class RobotCompanion {
   private replanAt = 0;
   private tripKey = "";
   private arrived = false;
+  private appearance = "";
   private world: () => CollisionWorld;
   private arrival: (id: string, next: number) => void;
   constructor(
@@ -45,7 +46,7 @@ export class RobotCompanion {
     this.root.add([this.art, this.name, hit]);
     this.draw(0x6be9ef);
   }
-  private draw(color: number) {
+  private draw(color: number, antenna = "standard") {
     const g = this.art.clear();
     g.fillStyle(0x092134, 0.28).fillEllipse(0, 1, 32, 10);
     g.fillStyle(0x132b42).fillRoundedRect(-14, -11, 8, 13, 3).fillRoundedRect(6, -11, 8, 13, 3);
@@ -53,8 +54,17 @@ export class RobotCompanion {
     g.lineStyle(1, 0xd7fcff, 0.9).strokeRoundedRect(-12, -28, 24, 22, 6);
     g.fillStyle(0x132d46).fillRoundedRect(-9, -24, 18, 9, 3);
     g.fillStyle(0xc5ffed).fillCircle(-4, -20, 2).fillCircle(4, -20, 2);
-    g.lineStyle(2, color).lineBetween(0, -28, 0, -33);
-    g.fillStyle(0xffd085).fillCircle(0, -34, 2).fillRect(-4, -10, 8, 3);
+    if (antenna === "double") {
+      for (const x of [-5, 5]) {
+        g.lineStyle(2, color).lineBetween(x, -28, x, -33);
+        g.fillStyle(0xffd085).fillCircle(x, -34, 2);
+      }
+    } else {
+      g.lineStyle(2, color).lineBetween(0, -28, 0, -33);
+      if (antenna === "dish") g.fillStyle(0xd7fcff).fillEllipse(0, -32, 13, 5);
+      else g.fillStyle(0xffd085).fillCircle(0, -34, 2);
+    }
+    g.fillStyle(0xffd085).fillRect(-4, -10, 8, 3);
   }
   sync(state: GameState | null, hero: Position): void {
     const old = this.state;
@@ -66,6 +76,14 @@ export class RobotCompanion {
       return;
     }
     this.name.setText(state.beginner?.robotName ?? "Pixel");
+    const color = state.journey?.room?.robot ?? "cyan",
+      antenna = state.journey?.room?.antenna ?? "standard",
+      appearance = `${color}:${antenna}`;
+    if (appearance !== this.appearance) {
+      this.draw({ cyan: 0x6be9ef, rose: 0xf3a4cc, gold: 0xf4cf78 }[color], antenna);
+      this.appearance = appearance;
+    }
+    this.root.setData("appearance", appearance);
     if (
       !old ||
       old.adventureId !== state.adventureId ||

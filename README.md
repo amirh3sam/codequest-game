@@ -6,7 +6,20 @@ A 2D adventure game that teaches programming in a modern tech city. Pick **Java,
 
 **Never programmed before? Choose “Start from zero · New to coding.”** Its untimed robot rescue starts with instruction cards, then teaches a name variable, battery predictions, a guided value replay and small real-code changes. Solve an independent rescue using the same instruction with two starting batteries, then try a fresh prediction. Three levels of clues and unlimited retries help you practise. All four languages work, including Java with its surrounding class/main method supplied. Your robot name, drafts and seven discoveries stay with the adventure and its downloaded backup. Existing players can enter through **Menu → Start from zero** or **Tablet → Guide**.
 
-> Status: **23 playable districts in all four languages, plus the beginner chapter.** Move with WASD/arrows, click a destination, or use mobile touch controls. Press E to interact. Eight tasks unlock each boss; defeating it unlocks the next district. See [docs/ROADMAP.md](docs/ROADMAP.md).
+Open **Menu → Learning adventures** (or **Tablet → Guide → Learning adventures**) for the learning-and-building path after Robot Rescue:
+
+| Adventure | What your code changes |
+| --- | --- |
+| The Smart Gate | Test `if/else`, comparison boundaries and delivery badges against five visitors. |
+| Robot companion | Program a loop or delivery list, then watch your named robot navigate real city paths. |
+| Arcade Builder | Edit separate GameRules/Main files in any language, run them, save a custom collecting game and play it. |
+| Restore the city | Reopen a useful workshop, start the existing district trams and repair the campus network. |
+| Review adventures | Revisit a surprising answer with fresh examples of values, decisions and loops. |
+| My developer room | Earn hoodie colors, robot shells/antennas and room decorations; equip them and see your city character change. |
+
+These activities are optional and save independently for each adventure. Chapters, robot routes, playable game designs/records, restoration, review drafts and earned room rewards are included in **Save backup file**. Use the tablet's **Export project** separately to download editable coding folders/files. Download fresh copies after a study session; browser autosave cannot protect against cleared site data or a different device.
+
+> Status: **23 playable districts in all four languages, plus the learning adventures above.** Move with WASD/arrows, click a destination, or use mobile touch controls. Press E to interact. Eight tasks unlock each boss; defeating it unlocks the next district. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 Keep **multiple saved adventures**, including several in the same language. The title screen lists every save under its language; use **Menu → Switch adventure** to manage them. Progress, event choices, hub repairs and tablet drafts stay separate. Existing language saves appear automatically.
 

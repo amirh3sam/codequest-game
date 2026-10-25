@@ -23,6 +23,7 @@ import { makeAdventureBackup, parseAdventureBackup } from "../core/backup";
 import { type BeginnerProgress, createBeginnerProgress } from "../core/beginner";
 import { cityReaction, restoreService, SERVICES, serviceRequirement } from "../core/city-restoration";
 import { checkpoint, deliveryExample } from "../core/companion";
+import { awardRewards, canEquipRoom, type RoomState } from "../core/developer-room";
 import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone-mission";
 import { hubStage, restoreHubSubsystem } from "../core/finale";
 import { readGuideProgress, saveGuideProgress } from "../core/guided-tour";
@@ -63,6 +64,7 @@ import { SPRITES } from "../game/assets";
 import { gameAudio } from "../game/audio";
 import { type ControlScheme, controlHint } from "../game/control-scheme";
 import { portalArrivalPosition } from "../game/district-layout";
+import { hoodieTexture } from "../game/hoodie-palette";
 import type { BootScene, VillageCallbacks } from "../game/scenes/BootScene";
 import { executionError, grade } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
@@ -70,6 +72,7 @@ import { WorkerHost } from "../runners/worker-host";
 import { openArcade } from "./arcade";
 import { openCompanion } from "./companion";
 import { beginnerHint, diagnosticLine, focusEditorLine } from "./debug-guidance";
+import { openDeveloperRoom } from "./developer-room";
 import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
 import { openFirstProgram } from "./first-program";
@@ -247,11 +250,18 @@ export class GameApp {
   getState(): GameState | null {
     return this.state;
   }
-  private icon(name: keyof typeof SPRITES, portrait = false): HTMLCanvasElement {
+  private icon(name: keyof typeof SPRITES, portrait = false, hoodie?: RoomState["hoodie"]): HTMLCanvasElement {
     const canvas = el("canvas", "sprite");
     if (name === "heroBoy" || name === "heroGirl") canvas.classList.add("developer-sprite");
     const sprite = SPRITES[name],
-      frame = this.scene.textures.getFrame(sprite.texture, sprite.frame);
+      own =
+        (name === "heroBoy" && this.state?.hero.kind === "boy") ||
+        (name === "heroGirl" && this.state?.hero.kind === "girl"),
+      texture =
+        name === "heroBoy" || name === "heroGirl"
+          ? hoodieTexture(this.scene, sprite.texture, hoodie ?? (own ? this.state?.journey?.room?.hoodie : undefined))
+          : sprite.texture,
+      frame = this.scene.textures.getFrame(texture, sprite.frame);
     const crop = portrait
       ? { x: 18, y: 3, width: 60, height: 66 }
       : { x: 0, y: 0, width: frame.cutWidth, height: frame.cutHeight };
@@ -639,6 +649,7 @@ export class GameApp {
     return result.status === "saved";
   }
   private commit(state: GameState): void {
+    state = awardRewards(state);
     this.state = state;
     this.area = loadArea(state.lang, state.currentArea);
     this.scene.setSession(state, this.area, this.callbacks);
@@ -1538,6 +1549,26 @@ export class GameApp {
     panel.append(summary);
     const badges = [
       {
+        title: "Robot Navigator",
+        detail: `${state.journey?.companion?.trips ?? 0} city routes delivered`,
+        earned: (state.journey?.companion?.trips ?? 0) > 0,
+      },
+      {
+        title: "Game Creator",
+        detail: "Build and beat a saved arcade creation",
+        earned: !!state.journey?.earned?.includes("robot-rose"),
+      },
+      {
+        title: "City Engineer",
+        detail: `${state.journey?.restored?.length ?? 0}/3 city services restored`,
+        earned: state.journey?.restored?.length === 3,
+      },
+      {
+        title: "Fresh Perspective",
+        detail: "Complete three personal review adventures",
+        earned: !!state.journey?.earned?.includes("decor-trophy"),
+      },
+      {
         title: "Gatekeeper",
         detail: "Protect the clinic with a tested if/else condition",
         earned: state.journey?.gate?.status === "complete",
@@ -1939,8 +1970,7 @@ export class GameApp {
     const save = (progress: BeginnerProgress) => {
       if (!this.state || this.state.adventureId !== adventureId) return false;
       this.state = { ...this.state, beginner: progress, updatedAt: now() };
-      this.scene.syncJourney(this.state);
-      return this.persist();
+      return this.updateJourney({});
     };
     const previous = this.state.beginner ?? createBeginnerProgress();
     const progress: BeginnerProgress = {
@@ -2004,6 +2034,7 @@ export class GameApp {
   private updateJourney(patch: Partial<JourneyState>): boolean {
     if (!this.state) return false;
     this.state = { ...this.state, journey: { ...this.state.journey, ...patch }, updatedAt: now() };
+    this.state = awardRewards(this.state);
     this.scene.syncJourney(this.state);
     return this.persist();
   }
@@ -2014,6 +2045,17 @@ export class GameApp {
       "Build abilities through stories, real code and free experiments",
       true,
     );
+    const state = this.state,
+      counters = [
+        `${state.beginner?.completed.length ?? 0}/7 discoveries`,
+        `${state.journey?.gate?.completed.length ?? 0}/5 discoveries`,
+        `${state.journey?.companion?.trips ?? 0} routes delivered`,
+        `${state.journey?.creations?.length ?? 0}/8 saved games`,
+        `${state.journey?.restored?.length ?? 0}/3 services restored`,
+        `${Object.values(state.journey?.reviews ?? {}).reduce((sum, r) => sum + (r?.wins ?? 0), 0)} reviews completed`,
+        `${state.journey?.earned?.length ?? 0}/10 rewards earned`,
+      ];
+    let index = 0;
     for (const [title, body, action] of [
       [
         "1 · Robot rescue",
@@ -2045,11 +2087,40 @@ export class GameApp {
         "Revisit an idea that surprised you. Short new stories, helpful clues and fresh inputs.",
         () => this.reviewHub(),
       ],
+      [
+        "7 · My developer room",
+        "Wear earned hoodie colors, upgrade your city robot and decorate a room of your own.",
+        () => this.developerRoom(),
+      ],
     ] as const) {
       const card = el("article", "adventure-hub-card");
-      card.append(el("h3", "", title), el("p", "", body), button(`Open ${title}`, action, "button primary"));
+      card.append(
+        el("span", "eyebrow", counters[index++]),
+        el("h3", "", title),
+        el("p", "", body),
+        button(`Open ${title}`, action, "button primary"),
+      );
       panel.append(card);
     }
+  }
+  private developerRoom(): void {
+    if (!this.state) return;
+    this.updateJourney({});
+    const id = this.state.adventureId,
+      earned = this.state.journey?.earned ?? [],
+      kind = this.state.hero.kind;
+    openDeveloperRoom({
+      name: this.state.hero.name,
+      robotName: this.state.beginner?.robotName ?? "Pixel",
+      room: this.state.journey?.room,
+      earned,
+      panel: () => this.panel("My developer room", "A place of your own · Rewards you earn stay earned", true),
+      hero: (color) =>
+        this.scene.textures.get(hoodieTexture(this.scene, `hero-${kind}`, color)).getSourceImage() as CanvasImageSource,
+      save: (room) =>
+        !!this.state && this.state.adventureId === id && canEquipRoom(room, earned) && this.updateJourney({ room }),
+      workshop: () => this.workshop(),
+    });
   }
   private noteLearningMistake(topic: ReviewTopic): void {
     if (this.state) this.updateJourney({ reviews: noteMistake(this.state.journey?.reviews, topic, Date.now()) });
@@ -2200,6 +2271,7 @@ export class GameApp {
       el("p", "city-reaction", `${this.courierName()}: ${cityReaction(this.state)}`),
       button("Open developer studio", () => this.tablet(false, undefined, undefined, 6), "button primary"),
       button("My arcade", () => this.myArcade()),
+      button("My developer room", () => this.developerRoom()),
       button("City restoration", () => this.cityRestoration()),
     );
   }

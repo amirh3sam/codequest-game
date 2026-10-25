@@ -140,7 +140,14 @@ export function openLearningReview(host: {
         );
         results.append(
           row,
-          button(`Replay ${test.label}`, () => show(actual[i], test.expected, test.label), "studio-small-action"),
+          button(
+            `Replay ${test.label}`,
+            () => {
+              show(actual[i], test.expected, test.label);
+              scene.scrollIntoView({ block: "nearest", behavior: "instant" });
+            },
+            "button",
+          ),
         );
       }
       show(actual[selected], tests[selected].expected, tests[selected].label);

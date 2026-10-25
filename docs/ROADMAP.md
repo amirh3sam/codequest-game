@@ -9,7 +9,7 @@ Each task fits in one session. Tags point to PRD requirements.
 - [x] 3. Make and save a playable arcade creation through real code and tablet projects.
 - [x] 4. Persistent city restoration: useful shops, repaired infrastructure and running transit with character reactions.
 - [x] 5. Short review adventures that revisit recent mistakes with new examples.
-- [ ] 6. Earned hoodie colors, robot parts and a customizable developer room.
+- [x] 6. Earned hoodie colors, robot parts and a customizable developer room.
 
 ## City maps and programmable lighting (2026-10-24)
 

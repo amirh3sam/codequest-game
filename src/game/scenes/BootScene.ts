@@ -14,6 +14,7 @@ import { districtLayout, portalArrivalPosition, portalPosition } from "../distri
 import { DistrictLighting } from "../district-lighting";
 import { DroneQuest } from "../drone-quest";
 import { createHeroTextures, type Facing, heroFrame } from "../hero-sprites";
+import { hoodieTexture } from "../hoodie-palette";
 import { HubSignals } from "../hub-signals";
 import { findWalkingRoute } from "../navigation";
 import { createQuestProps } from "../quest-props";
@@ -351,8 +352,7 @@ export class BootScene extends Phaser.Scene {
       this.facing = "south";
       this.walked = 0;
     }
-    const sprite = state.hero.kind === "girl" ? SPRITES.heroGirl : SPRITES.heroBoy;
-    this.hero.setTexture(sprite.texture, heroFrame(this.facing));
+    this.hero.setTexture(this.heroTexture(), heroFrame(this.facing));
     const entrance = districtLayout(area.id).spawn,
       location = state.position ?? entrance;
     const arrival = portalArrivalPosition(area.id);
@@ -464,8 +464,7 @@ export class BootScene extends Phaser.Scene {
     });
     this.route = [this.tapTarget];
     this.facing = x ? (x < 0 ? "west" : "east") : y < 0 ? "north" : "south";
-    const sprite = this.state.hero.kind === "girl" ? SPRITES.heroGirl : SPRITES.heroBoy;
-    this.hero.setTexture(sprite.texture, heroFrame(this.facing));
+    this.hero.setTexture(this.heroTexture(), heroFrame(this.facing));
   }
   private cancelClickMovement(): void {
     this.tapTarget = null;
@@ -547,8 +546,7 @@ export class BootScene extends Phaser.Scene {
     this.blocked = true;
     this.input.keyboard?.resetKeys();
     this.prompt.setVisible(false);
-    const sprite = this.state.hero.kind === "girl" ? SPRITES.heroGirl : SPRITES.heroBoy;
-    this.hero.setTexture(sprite.texture, heroFrame(this.facing));
+    this.hero.setTexture(this.heroTexture(), heroFrame(this.facing));
     this.cameras.main.stopFollow();
     if (!this.reducedMotion) this.cameras.main.pan(720, 324, 550, "Sine.easeInOut");
     this.droneQuest.launch(() => {
@@ -626,6 +624,15 @@ export class BootScene extends Phaser.Scene {
     this.state = state;
     this.companion.sync(state, this.position);
     this.restoredCity.sync(state);
+    const key = this.heroTexture(this.hero.texture.key.startsWith("hero-walk-"));
+    if (this.hero.texture.key !== key) this.hero.setTexture(key, this.hero.frame.name);
+  }
+  private heroTexture(walking = false): string {
+    return hoodieTexture(
+      this,
+      `hero-${walking ? "walk-" : ""}${this.state?.hero.kind ?? "boy"}`,
+      this.state?.journey?.room?.hoodie ?? "default",
+    );
   }
   update(time: number, delta: number): void {
     if (this.blocked || !this.state || !this.area || document.activeElement?.matches("input, textarea, select")) return;
@@ -699,10 +706,9 @@ export class BootScene extends Phaser.Scene {
     this.walked = moving ? this.walked + distance : 0;
     if (moving && Math.floor(this.walked / 24) > previousStep) gameAudio.play("step");
     const walking = moving && !this.reducedMotion;
-    const sprite = this.state.hero.kind === "girl" ? "girl" : "boy";
     this.hero
       .setTexture(
-        `hero-${walking ? "walk-" : ""}${sprite}`,
+        this.heroTexture(walking),
         heroFrame(this.facing, walking ? Math.floor(this.walked / 16) % 6 : 0, walking ? 6 : 4),
       )
       .setPosition(this.position.x, this.position.y + 4)

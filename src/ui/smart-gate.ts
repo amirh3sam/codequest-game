@@ -143,7 +143,14 @@ export function openSmartGate(host: {
                   actual === expected ? "gate-result-pass" : "gate-result-fail",
                   `${test.label}: ${actual || "(No signal)"} · expected ${expected}`,
                 );
-                const view = button(`Show ${test.label}`, () => show(test, actual, expected), "studio-small-action");
+                const view = button(
+                  `Show ${test.label}`,
+                  () => {
+                    show(test, actual, expected);
+                    scene.scrollIntoView({ block: "nearest", behavior: "instant" });
+                  },
+                  "button",
+                );
                 table.append(result, view);
               });
               const firstFailure = inputs.findIndex((test, i) => signals[i] !== gateExpected(test, id === "challenge"));

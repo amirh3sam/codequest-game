@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
+import { REWARD_IDS } from "../../src/core/developer-room";
 import { reviewLesson } from "../../src/core/learning-review";
+import { createGame } from "../../src/core/state";
 import { openAdventureTool } from "./helpers/adventure-tools";
 
 test.use({ reducedMotion: "reduce" });
@@ -29,6 +31,54 @@ test("phone arcade creation runs code, saves a game and uses touch controls afte
   await page.screenshot({ path: info.outputPath("phone-custom-arcade.png") });
   await page.getByRole("button", { name: "My arcade", exact: true }).click();
   await expect(page.getByRole("button", { name: "Play My Byte Run", exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+test("phone room uses earned clothing, robot parts and decorations with saved touch choices", async ({
+  page,
+}, info) => {
+  test.setTimeout(90000);
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  const s = {
+    ...createGame("javascript", { name: "Ada", kind: "girl" }, new Date().toISOString()),
+    adventureId: "phone-room",
+    training: { districts: ["variables" as const] },
+    journey: { earned: [...REWARD_IDS], companion: { enabled: true, draft: "", trips: 1 } },
+  };
+  await page.goto("/");
+  await expect(page.locator(".language-grid .choice")).toHaveCount(4);
+  await page.evaluate(
+    (state) => localStorage.setItem("codequest:adventures:v1", JSON.stringify({ version: 1, adventures: [state] })),
+    s,
+  );
+  await page.reload();
+  await page.locator(".title-adventure-row").first().click();
+  await openAdventureTool(page, "Learning adventures");
+  await page.getByRole("button", { name: "Open 7 · My developer room", exact: true }).click();
+  for (const choice of [
+    "Wear amber hoodie",
+    "Use gold shell",
+    "Twin antenna",
+    "Wall forest",
+    "Add Workshop plant",
+    "Add Transit desk lamp",
+    "Add Review trophy",
+  ])
+    await page.getByRole("button", { name: choice, exact: true }).click();
+  expect(await page.locator(".developer-room-panel").evaluate((n) => n.scrollWidth <= n.clientWidth + 1)).toBe(true);
+  await page.locator(".developer-room-scene").scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath("phone-developer-room.png") });
+  await page.reload();
+  await page.locator(".title-adventure-row").first().click();
+  await openAdventureTool(page, "Learning adventures");
+  await page.getByRole("button", { name: "Open 7 · My developer room", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Wear amber hoodie", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.getByRole("button", { name: "Wall plum", exact: true }).click();
+  await expect(page.locator(".developer-room-scene")).toHaveAttribute("data-wall", "plum");
   expect(errors).toEqual([]);
 });
 test("phone review adventure verifies a real cooling repair and stays usable after rotation", async ({

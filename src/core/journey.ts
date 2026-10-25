@@ -1,6 +1,7 @@
 import { type ArcadeCreation, isArcadeCreations } from "./arcade-creation";
 import { type CityService, isRestored } from "./city-restoration";
 import { type CompanionState, isCompanion } from "./companion";
+import { isEarned, isRoom, type RewardId, type RoomState } from "./developer-room";
 import { isReviewState, type ReviewState } from "./learning-review";
 
 export type LessonProgress = {
@@ -17,6 +18,8 @@ export type JourneyState = {
   creations?: ArcadeCreation[];
   restored?: CityService[];
   reviews?: ReviewState;
+  room?: RoomState;
+  earned?: RewardId[];
 };
 export function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -52,6 +55,8 @@ export function isJourney(value: unknown): value is JourneyState {
     (value.companion === undefined || isCompanion(value.companion)) &&
     (value.creations === undefined || isArcadeCreations(value.creations)) &&
     (value.restored === undefined || isRestored(value.restored)) &&
-    (value.reviews === undefined || isReviewState(value.reviews))
+    (value.reviews === undefined || isReviewState(value.reviews)) &&
+    (value.room === undefined || isRoom(value.room)) &&
+    (value.earned === undefined || isEarned(value.earned))
   );
 }
