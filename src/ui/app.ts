@@ -23,6 +23,7 @@ import { type BeginnerProgress, createBeginnerProgress } from "../core/beginner"
 import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone-mission";
 import { hubStage, restoreHubSubsystem } from "../core/finale";
 import { readGuideProgress, saveGuideProgress } from "../core/guided-tour";
+import { type JourneyState, type LessonProgress, newLesson } from "../core/journey";
 import { setDistrictLights } from "../core/map-lighting";
 import { GEM_REWARD, isValidHeroName, STORY_AREA_IDS, STUDY_AREA_IDS } from "../core/rules";
 import { loadGame, saveGame } from "../core/save";
@@ -65,6 +66,7 @@ import { openHubFinale } from "./hub-finale";
 import { openLightingConsole } from "./lighting-console";
 import { mobileControls } from "./mobile-controls";
 import { mobileViewport } from "./mobile-viewport";
+import { openSmartGate } from "./smart-gate";
 import { openTablet } from "./tablet";
 import { presentTaskConsoleOpening } from "./task-console-opening";
 import { openTraining } from "./training";
@@ -515,6 +517,10 @@ export class GameApp {
     );
     const training = readTrainingSettings();
     const guide = readGuideProgress();
+    if (state.journey?.gate?.status === "in-progress") {
+      this.smartGate();
+      return;
+    }
     if (startZero || state.beginner?.status === "in-progress") {
       this.beginnerChapter();
       return;
@@ -1042,6 +1048,7 @@ export class GameApp {
       button("World map", () => this.worldMap()),
       button("Training", () => this.training()),
       button("Start from zero", () => this.beginnerChapter()),
+      button("Learning adventures", () => this.learningHub()),
       button("Guide tour", () => this.guidedTour()),
       button("Menu", () => this.pause()),
       this.soundToggle(),
@@ -1341,6 +1348,7 @@ export class GameApp {
       initialTab,
       help: (tab) => this.training("tablet", false, tab),
       beginner: () => this.beginnerChapter(),
+      adventures: () => this.learningHub(),
       focusCamera: () => this.scene.focusTablet(),
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
       run: (code, files, entryPath) => this.practice(code, files, entryPath),
@@ -1491,6 +1499,11 @@ export class GameApp {
     panel.append(summary);
     const badges = [
       {
+        title: "Gatekeeper",
+        detail: "Protect the clinic with a tested if/else condition",
+        earned: state.journey?.gate?.status === "complete",
+      },
+      {
         title: "Rescue Coder",
         detail: "Complete the Start from zero robot rescue chapter",
         earned: state.beginner?.status === "complete",
@@ -1633,6 +1646,7 @@ export class GameApp {
       button("Accessibility & controls", () => this.accessibility()),
       button("Training", () => this.training()),
       button("Start from zero", () => this.beginnerChapter()),
+      button("Learning adventures", () => this.learningHub()),
       button("Guide tour", () => this.guidedTour()),
       button("Title screen", () => this.intro()),
     );
@@ -1934,6 +1948,85 @@ export class GameApp {
       tour: () => {
         leave();
         this.guidedTour();
+      },
+      nextChapter: () => {
+        leave();
+        this.smartGate();
+      },
+    });
+    this.trainingDismiss = leave;
+    this.tabletCleanup = () => {
+      this.trainingDismiss = null;
+      cleanup();
+    };
+  }
+  private updateJourney(patch: Partial<JourneyState>): boolean {
+    if (!this.state) return false;
+    this.state = { ...this.state, journey: { ...this.state.journey, ...patch }, updatedAt: now() };
+    return this.persist();
+  }
+  private learningHub(): void {
+    if (!this.state) return;
+    const panel = this.panel(
+      "Learning adventures",
+      "Build abilities through stories, real code and free experiments",
+      true,
+    );
+    for (const [title, body, action] of [
+      [
+        "1 · Robot rescue",
+        "Start from zero: instructions, variables, changing values and your first independent repair.",
+        () => this.beginnerChapter(),
+      ],
+      [
+        "2 · The Smart Gate",
+        "Teach a gate to choose using if/else, include a comparison boundary and check delivery badges.",
+        () => this.smartGate(),
+      ],
+    ] as const) {
+      const card = el("article", "adventure-hub-card");
+      card.append(el("h3", "", title), el("p", "", body), button(`Open ${title}`, action, "button primary"));
+      panel.append(card);
+    }
+  }
+  private smartGate(): void {
+    if (!this.state) return;
+    this.tabletNavigation = false;
+    this.capturePosition();
+    const id = this.state.adventureId,
+      previous = this.state.journey?.gate ?? newLesson();
+    const progress: LessonProgress = {
+      ...previous,
+      status: previous.status === "complete" ? "complete" : "in-progress",
+    };
+    const save = (gate: LessonProgress) => (this.state?.adventureId === id ? this.updateJourney({ gate }) : false);
+    save(progress);
+    const leave = () => {
+      this.trainingDismiss = null;
+      if (this.state && this.state.adventureId === id && this.state.journey?.gate?.status === "in-progress")
+        save({ ...this.state.journey.gate, status: "paused" });
+      this.close();
+      void this.viewport.requestLandscape();
+    };
+    const cleanup = openSmartGate({
+      lang: this.lang,
+      progress,
+      robotName: this.state.beginner?.robotName ?? "Pixel",
+      panel: () =>
+        this.panel("The Smart Gate", "Chapter 2 · Real decisions, safe experiments · Unlimited retries", true),
+      save,
+      run: (code) => this.practice(code),
+      cancel: () => {
+        if (this.busy) {
+          this.runToken++;
+          this.runner?.kill();
+          this.busy = false;
+        }
+      },
+      leave,
+      hub: () => {
+        leave();
+        this.learningHub();
       },
     });
     this.trainingDismiss = leave;

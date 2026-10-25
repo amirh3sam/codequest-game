@@ -1,3 +1,10 @@
+## 2026-10-24 (Smart Gate learning adventure)
+- Added a five-discovery follow-up chapter: run a condition, predict a closed gate, replay the chosen branch, repair a boundary comparison and combine delivery credentials with available energy. The illustrated gate responds to actual output; failed batches select the first failing visitor so unsafe behavior stays visible. Layered clues and expandable complete programs support all four languages.
+- Chapter progress and condition drafts belong to each adventure and its disk backup. Refresh resumes active work; intentional exit pauses it. Completion earns the separate Gatekeeper badge and leaves district tasks, hearts and gems unchanged. Learning adventures is available through desktop/phone menus and the tablet Guide, with a direct link after Robot Rescue.
+- **Checks:** 300 unit tests passed. Complete real-worker browser journeys passed in JavaScript, TypeScript, Python and Java, including wrong predictions, the exact minimum-energy boundary, missing credentials, completion and reload. Lint, type checking and production build are checked before publication.
+- **Next:** programmable city robot companion, followed by arcade creation, city restoration, personal reviews and earned room/avatar rewards.
+- **Blockers:** none.
+
 ## 2026-10-24 (tablet file and folder creation buttons)
 - Styled + File and + Folder with the studio's navy gradients, language-accent hover/focus borders, rounded edges and matching document/folder icons. Accessible button names and selected-folder creation behavior are preserved. Touch targets grow to 44px. The stacked Explorer defaults to 200px and reserves a usable editor/output area as its divider moves, keeping files and adjustable output available together.
 - Mounted the beginner clinic's status plate on its roof so even the robot antenna stays clear of the text; the phone geometry check includes the antenna light.

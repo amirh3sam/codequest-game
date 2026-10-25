@@ -36,6 +36,7 @@ type Host = {
   leave(): void;
   mission(): void;
   tour(): void;
+  nextChapter?(): void;
 };
 const COMMANDS: Record<RobotCommand, string> = {
   move: "Move to supplies",
@@ -133,6 +134,7 @@ export function openFirstProgram(host: Host): () => void {
         "Your robot and lessons are saved with this adventure. Save backup file in Menu keeps a copy on your computer. Your next city mission is waiting with your courier.",
       ),
       button("Meet my courier", host.mission, "button primary"),
+      ...(host.nextChapter ? [button("Continue to Smart Gate", host.nextChapter, "button primary")] : []),
       button("Tour the game controls", host.tour),
       button("Explore the city", host.leave),
     );

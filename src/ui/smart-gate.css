@@ -1,0 +1,162 @@
+.gate-scene {
+  background: linear-gradient(#143753, #142b45 70%, #12273c 70%);
+}
+.gate-input {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  margin: 0;
+  padding: 10px;
+  max-width: 43%;
+  white-space: pre-line;
+  color: #baf4e0;
+  background: #081c30;
+  border: 1px solid #6797ba;
+  border-radius: 8px;
+  font:
+    11px / 1.6 Consolas,
+    monospace;
+}
+.gate-arch {
+  position: absolute;
+  left: 56%;
+  top: 27%;
+  width: 29%;
+  height: 52%;
+  border: 6px solid #6892ad;
+  border-bottom: 0;
+  background: #071524;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+}
+.gate-sign {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 3;
+  padding: 7px 2px;
+  background: #183953;
+  color: #c8e8f4;
+  text-align: center;
+  font:
+    8px Consolas,
+    monospace;
+}
+.gate-door {
+  position: absolute;
+  top: 28px;
+  bottom: 0;
+  width: 50%;
+  background: repeating-linear-gradient(0deg, #2a526c 0 12px, #22455e 12px 14px);
+  border: 1px solid #81c8d3;
+  transition: transform 450ms ease;
+}
+.gate-door-left {
+  left: 0;
+}
+.gate-door-right {
+  right: 0;
+}
+.gate-open .gate-door-left {
+  transform: translateX(-100%);
+}
+.gate-open .gate-door-right {
+  transform: translateX(100%);
+}
+.gate-open .gate-arch {
+  border-color: #a4efbb;
+  box-shadow: 0 0 20px #79eccd55;
+}
+.gate-unsafe .gate-arch {
+  border-color: #ff9a8d;
+}
+.gate-track {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 20%;
+  height: 8px;
+  border-block: 1px solid #74d6f5;
+  background: #407193;
+}
+.gate-robot {
+  position: absolute;
+  left: 21%;
+  bottom: 21%;
+  width: 28px;
+  height: 36px;
+  border-radius: 5px;
+  background: #76bfc7;
+  box-shadow:
+    inset 0 -8px #28465c,
+    0 4px 2px #061321;
+  transition: left 550ms ease;
+}
+.gate-robot span {
+  position: absolute;
+  left: -3px;
+  top: -10px;
+  width: 34px;
+  height: 21px;
+  border: 2px solid #b2ede6;
+  border-radius: 7px;
+  background: #14364d;
+}
+.gate-robot span::after {
+  content: "••";
+  color: #c2ffe4;
+  position: absolute;
+  inset: -4px 0 0;
+  text-align: center;
+  letter-spacing: 6px;
+  padding-left: 4px;
+  font: 22px monospace;
+}
+.gate-open .gate-robot {
+  left: 73%;
+}
+.gate-summary {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  min-height: 35px;
+  margin: 0;
+  padding: 8px;
+  background: #091a2eee;
+  color: #c5e0e8;
+  font-size: 10px;
+}
+.gate-results {
+  margin-top: 12px;
+  font-size: 11px;
+}
+.gate-results p {
+  margin: 9px 0 5px;
+  line-height: 1.6;
+}
+.gate-result-pass {
+  color: #b1ebbe;
+}
+.gate-result-fail {
+  color: #ffd1a6;
+}
+.adventure-hub-card {
+  padding: 18px;
+  margin: 14px 0;
+  border: 1px solid #7096b64d;
+  border-radius: 10px;
+  background: #152b40;
+}
+.adventure-hub-card p {
+  color: #bcd0e0;
+  font-size: 13px;
+  line-height: 1.7;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gate-door,
+  .gate-robot {
+    transition: none;
+  }
+}

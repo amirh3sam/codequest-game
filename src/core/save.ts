@@ -1,6 +1,7 @@
 import type { Lang } from "../runners/types";
 import { isBeginnerProgress } from "./beginner";
 import { isBeaconChoice } from "./discoveries";
+import { isJourney } from "./journey";
 import { isDistrictLights } from "./map-lighting";
 import {
   AREA_IDS,
@@ -151,6 +152,7 @@ export function isGameState(value: unknown): value is GameState {
     return false;
   if (Object.hasOwn(value, "beginner") && value.beginner !== undefined && !isBeginnerProgress(value.beginner))
     return false;
+  if (Object.hasOwn(value, "journey") && value.journey !== undefined && !isJourney(value.journey)) return false;
   const areas = value.areas;
   if (Object.keys(areas).length !== AREA_IDS.length || !AREA_IDS.every((id) => isAreaState(areas[id]))) return false;
   // All fields have been narrowed above; now check invariants across the seven areas.
