@@ -27,6 +27,14 @@ import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone
 import { hubStage, restoreHubSubsystem } from "../core/finale";
 import { readGuideProgress, saveGuideProgress } from "../core/guided-tour";
 import { type JourneyState, type LessonProgress, newLesson } from "../core/journey";
+import {
+  finishReview,
+  newReview,
+  noteMistake,
+  REVIEW_TOPICS,
+  type ReviewTopic,
+  recommendedReview,
+} from "../core/learning-review";
 import { setDistrictLights } from "../core/map-lighting";
 import { GEM_REWARD, isValidHeroName, STORY_AREA_IDS, STUDY_AREA_IDS } from "../core/rules";
 import { loadGame, saveGame } from "../core/save";
@@ -66,6 +74,7 @@ import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
 import { openFirstProgram } from "./first-program";
 import { openGridGame } from "./grid-game";
+import { openLearningReview } from "./learning-review";
 import "./city-restoration.css";
 import { openGuidedTour } from "./guided-tour";
 import { openHubFinale } from "./hub-finale";
@@ -1948,6 +1957,7 @@ export class GameApp {
     };
     const image = (key: string) => this.scene.textures.get(key).getSourceImage() as CanvasImageSource;
     const cleanup = openFirstProgram({
+      miss: () => this.noteLearningMistake("variables"),
       lang: this.lang,
       courier: this.courierName(),
       artwork: {
@@ -2030,11 +2040,87 @@ export class GameApp {
         "Reopen your workshop, get the tram running and reconnect the district. Your code leaves a lasting mark.",
         () => this.cityRestoration(),
       ],
+      [
+        "6 · Review adventures",
+        "Revisit an idea that surprised you. Short new stories, helpful clues and fresh inputs.",
+        () => this.reviewHub(),
+      ],
     ] as const) {
       const card = el("article", "adventure-hub-card");
       card.append(el("h3", "", title), el("p", "", body), button(`Open ${title}`, action, "button primary"));
       panel.append(card);
     }
+  }
+  private noteLearningMistake(topic: ReviewTopic): void {
+    if (this.state) this.updateJourney({ reviews: noteMistake(this.state.journey?.reviews, topic, Date.now()) });
+  }
+  private reviewHub(): void {
+    if (!this.state) return;
+    const reviews = this.state.journey?.reviews,
+      recommended = recommendedReview(reviews),
+      panel = this.panel("Review adventures", "Small repairs · Fresh examples · Unlimited retries", true);
+    panel.append(
+      el(
+        "p",
+        "zero-concept",
+        "If an answer in Robot Rescue, Smart Gate, robot routes or early district submissions surprises you, we suggest a new example of that idea here. Suggestions stay with this adventure on your device and in backups. Syntax errors do not count as concept mistakes.",
+      ),
+    );
+    for (const topic of [recommended, ...REVIEW_TOPICS.filter((t) => t !== recommended)]) {
+      const record = reviews?.[topic] ?? newReview(),
+        card = el("article", "adventure-hub-card");
+      card.dataset.reviewTopic = topic;
+      const title =
+        topic === "variables"
+          ? "Changing values"
+          : topic === "conditions"
+            ? "Making decisions"
+            : "Repeating instructions";
+      card.append(
+        el(
+          "span",
+          "eyebrow",
+          record.needsReview ? "AN IDEA TO REVISIT" : topic === recommended ? "SUGGESTED PRACTICE" : "FREE PRACTICE",
+        ),
+        el("h3", "", title),
+        el(
+          "p",
+          "",
+          `${record.wins} reviews completed · Next story ${record.variant + 1}/3 · ${record.draft ? "Draft saved" : "Ready for a short adventure"}`,
+        ),
+        button(`Review ${topic}`, () => this.reviewAdventure(topic), "button primary"),
+      );
+      panel.append(card);
+    }
+  }
+  private reviewAdventure(topic: ReviewTopic): void {
+    if (!this.state) return;
+    const id = this.state.adventureId;
+    this.tabletCleanup = openLearningReview({
+      lang: this.lang,
+      topic,
+      progress: this.state.journey?.reviews?.[topic],
+      panel: (title) => this.panel(title, "Review adventure · Use the idea in a new situation", true),
+      save: (progress) => {
+        if (!this.state || this.state.adventureId !== id) return false;
+        const current = this.state.journey?.reviews?.[topic] ?? newReview();
+        if (current.variant !== progress.variant) return false;
+        return this.updateJourney({
+          reviews: { ...this.state.journey?.reviews, [topic]: { ...current, draft: progress.draft } },
+        });
+      },
+      run: (code) => this.practice(code),
+      miss: () => {
+        if (this.state?.adventureId === id) this.noteLearningMistake(topic);
+      },
+      complete: () => {
+        if (this.state && this.state.adventureId === id)
+          this.updateJourney({ reviews: finishReview(this.state.journey?.reviews, topic) });
+        gameAudio.play("success");
+      },
+      next: () => this.reviewAdventure(topic),
+      hub: () => this.reviewHub(),
+    });
   }
   private cityRestoration(): void {
     if (!this.state) return;
@@ -2215,6 +2301,7 @@ export class GameApp {
     const c = this.state.journey?.companion ?? { enabled: true, draft: deliveryExample(this.lang), trips: 0 };
     this.updateJourney({ companion: c });
     this.tabletCleanup = openCompanion({
+      miss: () => this.noteLearningMistake("loops"),
       lang: this.lang,
       name: this.state.beginner?.robotName ?? "Pixel",
       companion: c,
@@ -2257,6 +2344,7 @@ export class GameApp {
       void this.viewport.requestLandscape();
     };
     const cleanup = openSmartGate({
+      miss: () => this.noteLearningMistake("conditions"),
       lang: this.lang,
       progress,
       robotName: this.state.beginner?.robotName ?? "Pixel",
@@ -2567,6 +2655,8 @@ export class GameApp {
               actions.prepend(button(`Continue with ${this.courierName()}`, () => this.mission(), "button primary"));
           } else {
             gameAudio.play("error");
+            if (result.failure === "wrong-output" && REVIEW_TOPICS.includes(this.area.id as ReviewTopic))
+              this.noteLearningMistake(this.area.id as ReviewTopic);
             const transition = applySubmissionFailure(
               this.state,
               this.area.id,

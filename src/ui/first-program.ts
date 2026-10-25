@@ -37,6 +37,7 @@ type Host = {
   mission(): void;
   tour(): void;
   nextChapter?(): void;
+  miss?(): void;
 };
 const COMMANDS: Record<RobotCommand, string> = {
   move: "Move to supplies",
@@ -305,6 +306,7 @@ export function openFirstProgram(host: Host): () => void {
             ? "Exactly: += adds to what is already there. 2 becomes 5, and battery keeps its name."
             : "Look at the update: the original 2 is still part of 2 + 3 = 5. Try another answer.";
           if (correct) complete();
+          else host.miss?.();
         }),
       );
     for (const choice of answers.querySelectorAll("button")) choice.disabled = true;
@@ -335,6 +337,7 @@ export function openFirstProgram(host: Host): () => void {
             return;
           }
           scene.update({ battery: value });
+          if (picked !== value) host.miss?.();
           status.textContent = `${picked === value ? "You predicted it!" : `You chose ${picked}; the program printed ${value}.`} ${start} + ${add} = ${value}. ${transfer && picked !== value ? "Think it through, choose again and rerun. No hearts were spent." : "The updated value is stored under battery."}`;
           if (!transfer || picked === value) complete();
         });
@@ -410,6 +413,7 @@ export function openFirstProgram(host: Host): () => void {
               goal = id === "charge" ? 8 : 10;
             scene.update({ battery: value ?? null });
             if (value !== goal) {
+              host.miss?.();
               status.textContent =
                 value === undefined
                   ? "Print one whole battery value from 0 to 12. Look at your output and try again."
@@ -430,6 +434,7 @@ export function openFirstProgram(host: Host): () => void {
               const output = work.querySelector(".zero-output");
               if (output) output.textContent = `Starting at 3:\n${result.stdout}\nStarting at 4:\n${variation.stdout}`;
               if (alternate !== 11) {
+                host.miss?.();
                 status.textContent = `Your instruction reached 10 from 3, but produced ${alternate ?? "unexpected output"} from 4. Add the missing charge to battery instead of replacing its value with 10.`;
                 return;
               }

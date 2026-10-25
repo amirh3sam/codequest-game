@@ -15,6 +15,7 @@ export function openSmartGate(host: {
   cancel(): void;
   leave(): void;
   hub(): void;
+  miss?(): void;
 }): () => void {
   const scene = el("div", "zero-scene gate-scene"),
     data = el("p", "gate-input"),
@@ -149,9 +150,11 @@ export function openSmartGate(host: {
               const selected = firstFailure >= 0 ? firstFailure : inputs.length - 1;
               show(inputs[selected], signals[selected], gateExpected(inputs[selected], id === "challenge"));
               if (id === "predict") {
+                if (picked !== signals[0]) host.miss?.();
                 status.textContent = `${picked === signals[0] ? "You predicted it!" : `You chose ${picked}; the program printed ${signals[0]}.`} 2 >= 4 is false, so else runs.`;
                 if (passed) complete();
               } else {
+                if (editable && !passed && Object.hasOwn(progress.drafts, id)) host.miss?.();
                 status.textContent = passed
                   ? id === "challenge"
                     ? "Gate secured! Your condition handled all five visitors, including exactly 4 cells and missing badges."

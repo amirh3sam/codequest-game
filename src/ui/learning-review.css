@@ -1,0 +1,178 @@
+.review-scene {
+  position: relative;
+  isolation: isolate;
+  height: 240px;
+  overflow: hidden;
+  border: 1px solid #46718d;
+  border-radius: 16px;
+  background: linear-gradient(#14243e, #345579 70%, #152635 70%);
+  margin: 15px 0;
+}
+.review-sky {
+  position: absolute;
+  inset: 20px 20px 75px;
+  background:
+    radial-gradient(circle at 8% 12%, #e4f8ff 0 2px, transparent 3px),
+    radial-gradient(circle at 80% 15%, #d2eaff 0 1px, transparent 2px);
+}
+.review-building {
+  position: absolute;
+  bottom: 65px;
+  left: 12%;
+  width: 46%;
+  height: 125px;
+  background: linear-gradient(120deg, #1b3f5b, #122b42);
+  border: 2px solid #7597aa;
+  border-top: 9px solid #a4becb;
+  box-shadow: 12px 7px 0 #102236;
+}
+.review-building > span {
+  position: absolute;
+  top: 12px;
+  left: 8%;
+  width: 84%;
+  font: 10px monospace;
+  text-align: center;
+  background: #0c1f31;
+  color: #b4eadc;
+  padding: 6px 2px;
+}
+.review-building::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  width: 30%;
+  height: 55px;
+  background: repeating-linear-gradient(90deg, #82e2e944 0 12px, #17324a 12px 15px);
+  border: 3px solid #0c2436;
+}
+.review-fan {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border: 5px solid #8ca8bc;
+  border-radius: 50%;
+  bottom: 17px;
+  right: 14%;
+  background: conic-gradient(
+    #6c8fa8 0 45deg,
+    #122e43 45deg 90deg,
+    #6c8fa8 90deg 135deg,
+    #122e43 135deg 180deg,
+    #6c8fa8 180deg 225deg,
+    #122e43 225deg 270deg,
+    #6c8fa8 270deg 315deg,
+    #122e43 315deg
+  );
+}
+.review-cooling .review-fan {
+  animation: review-spin 1.5s linear infinite;
+  border-color: #a0ffde;
+}
+.review-cart {
+  position: absolute;
+  bottom: 51px;
+  right: 17%;
+  width: 75px;
+  height: 58px;
+  background: #506d8b;
+  border: 2px solid #94b7ca;
+  border-radius: 7px;
+  color: #fff;
+  text-align: center;
+  box-shadow:
+    -18px 4px 0 -13px #afffe8,
+    0 12px 0 -5px #091628;
+}
+.review-cart span {
+  display: block;
+  font: 8px monospace;
+  margin-top: 7px;
+}
+.review-cart strong {
+  font: 24px monospace;
+}
+.review-conditions .review-cart,
+.review-loops .review-cart {
+  display: none;
+}
+.review-lamps {
+  display: flex;
+  position: absolute;
+  bottom: 57px;
+  right: 5%;
+  gap: 8px;
+}
+.review-lamps i {
+  height: 27px;
+  width: 9px;
+  background: #47677e;
+  border-radius: 4px;
+  box-shadow: 0 12px #10233b;
+}
+.review-lamps .lit {
+  background: #ffe69b;
+  box-shadow:
+    0 12px #10233b,
+    0 0 12px #f7d779;
+}
+.review-scene:not(.review-loops) .review-lamps {
+  display: none;
+}
+.review-signal {
+  position: absolute;
+  bottom: 3px;
+  left: 4%;
+  right: 4%;
+  max-height: 46px;
+  overflow: auto;
+  background: #071c31ed;
+  border: 1px solid #557a94;
+  border-radius: 8px;
+  padding: 7px 10px;
+  margin: 0;
+  color: #d0e7f7;
+  font: 11px / 1.4 monospace;
+  white-space: pre-line;
+}
+.review-good .review-signal {
+  border-color: #7de4bc;
+  color: #b8ffda;
+}
+.review-bad .review-signal {
+  border-color: #edbd79;
+  color: #ffddb0;
+}
+.review-panel > .button {
+  margin: 4px;
+}
+.review-panel > .zero-code {
+  display: block;
+  width: 100%;
+  min-height: 95px;
+}
+@keyframes review-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .review-cooling .review-fan {
+    animation: none;
+  }
+}
+@media (max-width: 600px) {
+  .review-scene {
+    height: 200px;
+  }
+  .review-building {
+    height: 95px;
+  }
+  .review-building > span {
+    font-size: 8px;
+  }
+  .review-lamps {
+    gap: 5px;
+  }
+}

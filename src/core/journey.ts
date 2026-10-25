@@ -1,6 +1,7 @@
 import { type ArcadeCreation, isArcadeCreations } from "./arcade-creation";
 import { type CityService, isRestored } from "./city-restoration";
 import { type CompanionState, isCompanion } from "./companion";
+import { isReviewState, type ReviewState } from "./learning-review";
 
 export type LessonProgress = {
   version: 1;
@@ -15,6 +16,7 @@ export type JourneyState = {
   companion?: CompanionState;
   creations?: ArcadeCreation[];
   restored?: CityService[];
+  reviews?: ReviewState;
 };
 export function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -49,6 +51,7 @@ export function isJourney(value: unknown): value is JourneyState {
     (value.gate === undefined || isLesson(value.gate, GATE_STEPS, ["modify", "challenge"])) &&
     (value.companion === undefined || isCompanion(value.companion)) &&
     (value.creations === undefined || isArcadeCreations(value.creations)) &&
-    (value.restored === undefined || isRestored(value.restored))
+    (value.restored === undefined || isRestored(value.restored)) &&
+    (value.reviews === undefined || isReviewState(value.reviews))
   );
 }
