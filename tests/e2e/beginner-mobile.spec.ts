@@ -17,8 +17,8 @@ for (const lang of ["javascript", "java"] as const) {
     expect(await page.locator(".zero-shell").evaluate((node) => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
     await expect(page.locator(".zero-scene")).toBeInViewport();
     const label = await page.locator(".zero-clinic small").boundingBox();
-    const robot = await page.locator(".zero-robot-head").boundingBox();
-    expect(label && robot && label.y + label.height <= robot.y).toBe(true);
+    const antenna = await page.locator(".zero-antenna").boundingBox();
+    expect(label && antenna && label.y + label.height <= antenna.y - 4).toBe(true);
     await page.screenshot({ path: info.outputPath(`beginner-phone-${lang}.png`) });
     await page.getByRole("button", { name: "Next lesson →", exact: true }).tap();
     await page.setViewportSize({ width: 844, height: 390 });

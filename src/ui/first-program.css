@@ -673,6 +673,17 @@
     scroll-margin-top: 240px;
   }
 }
+.zero-scene .zero-clinic small {
+  position: absolute;
+  bottom: 100%;
+  left: 6%;
+  right: 6%;
+  margin: 0;
+  padding: 4px 1px;
+  border: 1px solid #7ddbb8;
+  border-radius: 4px 4px 0 0;
+  background: #102d43;
+}
 @media (prefers-reduced-motion: reduce) {
   .zero-robot,
   .zero-battery span {

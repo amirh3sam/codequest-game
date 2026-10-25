@@ -2327,6 +2327,41 @@ small {
   padding: 5px 8px;
   font-size: 10px;
 }
+.studio-create-action {
+  display: inline-flex;
+  flex: 1 1 62px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px;
+  border: 1px solid #5684a975;
+  border-radius: 7px;
+  color: #d4eaf6;
+  background: linear-gradient(145deg, #25445b, #142c40);
+  box-shadow:
+    inset 0 1px #b8edff12,
+    0 2px 5px #0002;
+  white-space: nowrap;
+}
+.studio-create-action:hover:not(:disabled) {
+  border-color: var(--language-accent);
+  background: color-mix(in srgb, var(--language-accent) 16%, #152d42);
+  color: #f1fbff;
+  box-shadow:
+    inset 0 1px #b8edff18,
+    0 0 12px color-mix(in srgb, var(--language-accent) 12%, transparent);
+}
+.studio-create-action:focus-visible {
+  outline: 2px solid var(--language-accent);
+  outline-offset: 2px;
+}
+@media (pointer: coarse) {
+  .studio-create-action {
+    min-height: 44px;
+  }
+}
 .studio-file-tree {
   display: grid;
   gap: 2px;
@@ -2489,6 +2524,12 @@ small {
 .studio-file-icon svg {
   width: 100%;
   height: 100%;
+}
+.studio-create-action .studio-file-icon {
+  width: 15px;
+  height: 15px;
+  flex-basis: 15px;
+  color: color-mix(in srgb, var(--language-accent) 55%, #c7f2ff);
 }
 .studio-entry-name {
   overflow: hidden;
@@ -3209,9 +3250,9 @@ small {
   }
   .studio-editor-pane {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: var(--explorer-height, 145px) 10px minmax(0, 1fr);
-    --studio-editor-min-height: 640px;
-    min-height: 640px;
+    grid-template-rows: var(--explorer-height, 200px) 10px minmax(0, 1fr);
+    --studio-editor-min-height: calc(var(--explorer-height, 200px) + 520px);
+    min-height: var(--studio-editor-min-height);
   }
   .study-layout {
     grid-template-columns: minmax(0, 1fr);

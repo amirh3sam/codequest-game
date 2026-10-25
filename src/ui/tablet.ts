@@ -196,7 +196,7 @@ export function openTablet(host: TabletHost): () => void {
     );
   };
   let explorerWidth = readPanelSize(explorerWidthKey, 185, 150, 420);
-  let explorerHeight = readPanelSize(explorerHeightKey, 145, 96, 280);
+  let explorerHeight = readPanelSize(explorerHeightKey, 200, 96, 280);
   setExplorerSize(explorerWidth, explorerHeight);
   const mobileExplorer = () => {
     const mobile = matchMedia("(max-width: 700px)").matches;
@@ -712,8 +712,10 @@ export function openTablet(host: TabletHost): () => void {
       status.textContent = "Using the built-in editor; Monaco could not load.";
     });
   const toolbar = el("div", "studio-toolbar");
-  const addFile = button("+ File", () => createEntry("file"), "studio-small-action");
-  const addFolder = button("+ Folder", () => createEntry("folder"), "studio-small-action");
+  const addFile = button("+ File", () => createEntry("file"), "studio-small-action studio-create-action");
+  const addFolder = button("+ Folder", () => createEntry("folder"), "studio-small-action studio-create-action");
+  addFile.prepend(fileIcon("new-file"));
+  addFolder.prepend(toolIcon("folder"));
   const connect = button(
     "Open local folder",
     () => {

@@ -5,6 +5,7 @@ Each task fits in one session. Tags point to PRD requirements.
 ## City maps and programmable lighting (2026-10-24)
 
 - [x] Add a Start from zero robot rescue for complete beginners: instruction cards, real-code naming/prediction/charging, a guided value replay, an independent two-input rescue, transfer practice, layered clues, per-adventure backups and phone support.
+- [x] Style tablet file/folder creation buttons with matching icons and language accents, retain touch-sized controls and keep the stacked Explorer/output divider usable.
 - [x] Simplify the desktop HUD to Tablet, World map and Menu; retain all tools in menus, add circuit cursors and file-format icons, resize inline output with a saved divider, remove the duplicate Console tab and style project file controls.
 - [x] Match lighting/transit click targets to visible building shapes and sprite interactions to opaque artwork; show a pointer over clickable props and leave surrounding pavement for movement.
 - [x] Add a character-led guided tour inspired by amirhesamtech.com, with animated captions, live control highlights/arrows, actual menu/tablet navigation, saved resume and phone-safe placement; retain the detailed handbook.
