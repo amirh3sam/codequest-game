@@ -17,6 +17,7 @@ import { createHeroTextures, type Facing, heroFrame } from "../hero-sprites";
 import { HubSignals } from "../hub-signals";
 import { findWalkingRoute } from "../navigation";
 import { createQuestProps } from "../quest-props";
+import { RobotCompanion } from "../robot-companion";
 import { TransitPortal } from "../transit-portal";
 
 type Marker = {
@@ -36,6 +37,7 @@ export type VillageCallbacks = {
   interact(id: string): void;
   position(position: Position): void;
   message(text: string): void;
+  delivery?(id: string, next: number): void;
 };
 
 export class BootScene extends Phaser.Scene {
@@ -45,6 +47,7 @@ export class BootScene extends Phaser.Scene {
   private keys: Record<string, Phaser.Input.Keyboard.Key> = {};
   private markers: Marker[] = [];
   private droneQuest!: DroneQuest;
+  private companion!: RobotCompanion;
   private communityBeacon!: CommunityBeacon;
   private districtLighting!: DistrictLighting;
   private levelPortal!: TransitPortal;
@@ -132,6 +135,14 @@ export class BootScene extends Phaser.Scene {
         );
     });
     this.droneQuest.sync(null);
+    this.companion = new RobotCompanion(
+      this,
+      () => ({ bounds: districtLayout(this.area?.id).bounds, solids: this.worldSolids() }),
+      (id, next) => this.callbacks?.delivery?.(id, next),
+      () => {
+        if (!this.blocked) this.callbacks?.interact("companion");
+      },
+    );
     this.communityBeacon = new CommunityBeacon(this, () => {
       const point = this.communityBeacon.position;
       if (this.blocked || !point) return;
@@ -283,6 +294,7 @@ export class BootScene extends Phaser.Scene {
     this.hero.setVisible(Boolean(state));
     this.shadow.setVisible(Boolean(state));
     if (!state || !area) {
+      this.companion.sync(null, this.position);
       this.districtLighting.sync(null);
       this.cameras.main.stopFollow().centerOn(village.world.width / 2, village.world.height / 2);
       return;
@@ -353,6 +365,7 @@ export class BootScene extends Phaser.Scene {
         ? { ...location }
         : { ...entrance };
     this.hero.setPosition(this.position.x, this.position.y + 4).setDepth(this.position.y);
+    this.companion.sync(state, this.position);
     this.shadow.setPosition(this.position.x, this.position.y - 1);
     this.cameras.main.startFollow(this.hero, true, 0.14, 0.14);
     if (changedDistrict) this.cameras.main.centerOn(this.position.x, this.position.y);
@@ -601,8 +614,13 @@ export class BootScene extends Phaser.Scene {
       null
     );
   }
+  syncJourney(state: GameState): void {
+    this.state = state;
+    this.companion.sync(state, this.position);
+  }
   update(time: number, delta: number): void {
     if (this.blocked || !this.state || !this.area || document.activeElement?.matches("input, textarea, select")) return;
+    this.companion.update(time, delta, this.position);
     const pressed = (key: string) => this.keys[key]?.isDown;
     const movement = directionKeys(this.controlScheme);
     const arrowAlternate = this.controlScheme !== "arrows";

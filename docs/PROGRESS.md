@@ -1,3 +1,11 @@
+## 2026-10-24 (programmable robot companion)
+- Added a named robot in the actual city, using the shared walking planner and swept obstacle collision. It follows the player between deliveries and accepts clicks only on its visible body. Robot Rescue graduates automatically gain their saved partner; other players can adopt Pixel through Learning adventures.
+- The companion lab runs genuine loops and delivery-list programs in all four languages. Exactly three distinct terminal numbers form a verified route; editing invalidates deployment. Each physical arrival saves an ordered checkpoint, unfinished routes resume in their district and duplicate/stale callbacks cannot award another completion. Robots pause with open panels and do not solve tasks or alter resources.
+- Drafts, visibility, route checkpoints and completed routes belong to the adventure and its backup. **Checks:** 302 unit tests passed, including backup round trips and stale arrival rejection. Browser journeys verify both examples in all four real workers, reload/draft preservation and a complete physical city route. A city screenshot was reviewed; lint, type checking, build and diff checks precede publication.
+- **Previous release:** Smart Gate commit `5bbf39e` is public and deployment `dpl_CyBFMFyNcvMW2ZUVSa83iwMhF1fD` is READY. Its complete JavaScript journey passed on the public game.
+- **Next:** build a custom playable mini-game through tablet project files.
+- **Blockers:** none.
+
 ## 2026-10-24 (Smart Gate learning adventure)
 - Added a five-discovery follow-up chapter: run a condition, predict a closed gate, replay the chosen branch, repair a boundary comparison and combine delivery credentials with available energy. The illustrated gate responds to actual output; failed batches select the first failing visitor so unsafe behavior stays visible. Layered clues and expandable complete programs support all four languages.
 - Chapter progress and condition drafts belong to each adventure and its disk backup. Refresh resumes active work; intentional exit pauses it. Completion earns the separate Gatekeeper badge and leaves district tasks, hearts and gems unchanged. Learning adventures is available through desktop/phone menus and the tablet Guide, with a direct link after Robot Rescue.

@@ -1,3 +1,5 @@
+import { type CompanionState, isCompanion } from "./companion";
+
 export type LessonProgress = {
   version: 1;
   status: "in-progress" | "paused" | "complete";
@@ -6,7 +8,7 @@ export type LessonProgress = {
   drafts: Record<string, string>;
 };
 export const GATE_STEPS = ["welcome", "predict", "branches", "modify", "challenge"] as const;
-export type JourneyState = { gate?: LessonProgress };
+export type JourneyState = { gate?: LessonProgress; companion?: CompanionState };
 export function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -35,5 +37,9 @@ export function isLesson(
   );
 }
 export function isJourney(value: unknown): value is JourneyState {
-  return record(value) && (value.gate === undefined || isLesson(value.gate, GATE_STEPS, ["modify", "challenge"]));
+  return (
+    record(value) &&
+    (value.gate === undefined || isLesson(value.gate, GATE_STEPS, ["modify", "challenge"])) &&
+    (value.companion === undefined || isCompanion(value.companion))
+  );
 }

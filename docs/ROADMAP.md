@@ -5,7 +5,7 @@ Each task fits in one session. Tags point to PRD requirements.
 ## Learning adventure expansion (2026-10-24)
 
 - [x] 1. Smart Gate chapter: real if/else programs, boundary comparisons, badge checks and persistent progress.
-- [ ] 2. A named city robot companion with programmable routes, loops and delivery lists.
+- [x] 2. A named city robot companion with programmable routes, loops and delivery lists.
 - [ ] 3. Make and save a playable arcade creation through real code and tablet projects.
 - [ ] 4. Persistent city restoration: useful shops, repaired infrastructure and running transit with character reactions.
 - [ ] 5. Short review adventures that revisit recent mistakes with new examples.

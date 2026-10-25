@@ -20,6 +20,7 @@ import {
 import { ADVENTURES_KEY, loadAdventures, saveAdventure } from "../core/adventures";
 import { makeAdventureBackup, parseAdventureBackup } from "../core/backup";
 import { type BeginnerProgress, createBeginnerProgress } from "../core/beginner";
+import { checkpoint, deliveryExample } from "../core/companion";
 import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone-mission";
 import { hubStage, restoreHubSubsystem } from "../core/finale";
 import { readGuideProgress, saveGuideProgress } from "../core/guided-tour";
@@ -57,6 +58,7 @@ import { executionError, grade } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
 import { WorkerHost } from "../runners/worker-host";
 import { openArcade } from "./arcade";
+import { openCompanion } from "./companion";
 import { beginnerHint, diagnosticLine, focusEditorLine } from "./debug-guidance";
 import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
@@ -115,6 +117,18 @@ export class GameApp {
     interact: (id) => this.interact(id),
     position: (position) => this.storePosition(position),
     message: (text) => this.toast(text),
+    delivery: (id, next) => {
+      const c = this.state?.journey?.companion;
+      if (!c) return;
+      const updated = checkpoint(c, id, next);
+      if (updated === c) return;
+      this.updateJourney({ companion: updated });
+      this.toast(
+        next === 3
+          ? "Delivery route complete! Your robot remembers this adventure."
+          : `Robot delivery ${next}/3 complete`,
+      );
+    },
   };
   constructor(root: HTMLElement, scene: BootScene) {
     gameAudio.init();
@@ -1158,6 +1172,7 @@ export class GameApp {
     if (!this.state) return;
     gameAudio.play("open");
     if (id === "courier") this.mission();
+    else if (id === "companion") this.companionLab();
     else if (id === "level-portal") this.worldMap();
     else if (id === "discovery-beacon") this.communityBeacon();
     else if (id === "lesson") this.lesson();
@@ -1900,6 +1915,7 @@ export class GameApp {
     const save = (progress: BeginnerProgress) => {
       if (!this.state || this.state.adventureId !== adventureId) return false;
       this.state = { ...this.state, beginner: progress, updatedAt: now() };
+      this.scene.syncJourney(this.state);
       return this.persist();
     };
     const previous = this.state.beginner ?? createBeginnerProgress();
@@ -1963,6 +1979,7 @@ export class GameApp {
   private updateJourney(patch: Partial<JourneyState>): boolean {
     if (!this.state) return false;
     this.state = { ...this.state, journey: { ...this.state.journey, ...patch }, updatedAt: now() };
+    this.scene.syncJourney(this.state);
     return this.persist();
   }
   private learningHub(): void {
@@ -1983,11 +2000,45 @@ export class GameApp {
         "Teach a gate to choose using if/else, include a comparison boundary and check delivery badges.",
         () => this.smartGate(),
       ],
+      [
+        "3 · Robot companion",
+        "Write loops and delivery lists, then send your named partner along real city paths.",
+        () => this.companionLab(),
+      ],
     ] as const) {
       const card = el("article", "adventure-hub-card");
       card.append(el("h3", "", title), el("p", "", body), button(`Open ${title}`, action, "button primary"));
       panel.append(card);
     }
+  }
+  private companionLab(): void {
+    if (!this.state) return;
+    this.capturePosition();
+    const id = this.state.adventureId;
+    const c = this.state.journey?.companion ?? { enabled: true, draft: deliveryExample(this.lang), trips: 0 };
+    this.updateJourney({ companion: c });
+    this.tabletCleanup = openCompanion({
+      lang: this.lang,
+      name: this.state.beginner?.robotName ?? "Pixel",
+      companion: c,
+      district: this.area.name,
+      panel: () => this.panel("Robot companion", "Program a route · Watch your partner carry it out", true),
+      run: (code) => this.practice(code),
+      save: (companion) => this.state?.adventureId === id && this.updateJourney({ companion }),
+      deploy: (stops) => {
+        if (!this.state || this.state.adventureId !== id) return;
+        const companion = this.state.journey?.companion ?? c;
+        this.updateJourney({
+          companion: {
+            ...companion,
+            enabled: true,
+            trip: { id: crypto.randomUUID(), area: this.state.currentArea, stops, next: 0 },
+          },
+        });
+        this.close();
+        void this.viewport.requestLandscape();
+      },
+    });
   }
   private smartGate(): void {
     if (!this.state) return;
