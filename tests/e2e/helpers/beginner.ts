@@ -22,6 +22,8 @@ export async function seedBeginner(page: Page, lang: Lang = "javascript", step: 
     beginner: progress,
   };
   await page.goto("/");
+  // Let the initial asset preload finish before the fixture reloads the page.
+  await expect(page.locator(".language-grid .choice")).toHaveCount(4, { timeout: 30_000 });
   await page.evaluate(
     ({ key, state }) => localStorage.setItem(key, JSON.stringify({ version: 1, adventures: [state] })),
     { key: ADVENTURES_KEY, state },
