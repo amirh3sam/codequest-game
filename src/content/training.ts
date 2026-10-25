@@ -41,22 +41,26 @@ export const TABLET_TRAINING = [
 ] as const;
 export const MENU_TRAINING = [
   [
+    "My adventure",
+    "One ordered path with a single next action: rescue a robot, make your first city repair, learn decisions, program deliveries, build a game, restore services, practise and claim rewards.",
+  ],
+  [
     "Tablet",
     "Open your personal coding workspace with T or this button. Escape closes panels. On phones, use the hamburger menu.",
   ],
-  ["Mission", "In Variable District, revisit your courier's drone story and guided badge/battery exercises."],
-  ["Lighting", "Run code to change the whole district's route lights or the circuit around one task."],
-  ["Lesson", "Read this district's programming explanation and examples. Return as often as you like."],
   ["Progress", "Check hearts, gems, badges and all 23 district task/boss tracks. Open the next available task here."],
   ["World map", "Choose any unlocked district. Locked cards explain the previous boss you must finish."],
-  ["Training", "Replay this tour, jump to one topic or review the current district's briefing."],
   [
-    "Menu",
-    "Resume, switch adventures, manage your character, download/load a backup, change accessibility settings or return to the title screen. Manage character lets you rename, restart or delete an adventure; Manage adventures also offers deleting all game data on this device.",
+    "City activities",
+    "Play arcade games or revisit the robot lab, lighting console, saved creations and your room. These are free-play choices outside the recommended path.",
   ],
   [
-    "Sound",
-    "Mute effects quickly. Menu → Accessibility & controls also has effects volume, larger text, high contrast and movement-key choices.",
+    "Help & controls",
+    "Show the controls tour, open this detailed handbook, read district code examples, or change accessibility and sound settings.",
+  ],
+  [
+    "Save & profile",
+    "Download/load a backup, switch adventures, manage a character or try a fresh guided copy. The first-time replay keeps your existing adventure and coding projects.",
   ],
 ] as const;
 
@@ -98,7 +102,7 @@ export function welcomeTraining(courier: string): (TrainingChapter & { id: Train
         `${courier} is your first contact in Variable District. Talk to them, create the training badge and learn how to charge the delivery drone.`,
         "Mission instructions tell you what to build and what output to expect. Lessons and guided explanations are available before you try a repair.",
       ],
-      tip: "Talk to your courier in the map, use Mission in the menu, or open the courier story from the tablet's Missions tab.",
+      tip: "Follow My adventure for the first city repair. You can also talk to your courier on the map or reopen Courier mission from City activities.",
     },
     {
       id: "missions",
@@ -176,7 +180,7 @@ export function welcomeTraining(courier: string): (TrainingChapter & { id: Train
       scene: "save",
       body: [
         "Autosave keeps your character, tasks and progress on this browser/device, including after a normal or hard refresh. Different browsers, private browsing and cleared site data do not share that save. Other people opening the public game link have their own adventures.",
-        "Menu → Save backup file downloads a .json snapshot to your computer's Downloads folder or the location you choose. Keeping that file on your hard drive is safer than relying on browser storage alone: you can restore it after site data is cleared, a browser is reset, or you copy the file to another computer. Normal refreshes already keep autosaves.",
+        "Menu → Save & profile → Save backup file downloads a .json snapshot to your computer's Downloads folder or the location you choose. Keeping that file on your hard drive is safer than relying on browser storage alone: you can restore it after site data is cleared, a browser is reset, or you copy the file to another computer. Normal refreshes already keep autosaves.",
         "To restore, choose Menu → Load backup file and select your saved .json. It adds a separate adventure without overwriting your other characters. A backup remembers the moment you saved it; it does not update itself. Download a fresh backup after each study session or important milestone.",
         "Use the tablet's Export project separately to save its coding folders/files, and Import project to restore them. Keep that project file alongside your adventure backup. Manage adventures lets you rename, restart or delete individual characters, or delete all game data from this browser. Back up anything you want to keep before restarting or deleting.",
       ],
@@ -187,10 +191,10 @@ export function welcomeTraining(courier: string): (TrainingChapter & { id: Train
       title: "Make the game comfortable",
       scene: "settings",
       body: [
-        "Menu → Accessibility & controls lets you choose WASD, arrow keys or IJKL, larger text, high contrast and effects volume. Sound also has a quick mute button.",
-        "The game respects your device's Reduce Motion preference. First-time training and district briefings can be skipped, resumed or replayed from Training. Turn automatic district introductions on or off in this handbook.",
+        "Menu → Help & controls → Accessibility & controls lets you choose WASD, arrow keys or IJKL, larger text, high contrast and effects volume. Sound also has a quick mute button.",
+        "The game respects your device's Reduce Motion preference. Help & controls contains this handbook and the optional controls tour. My adventure gives new learners one ordered coding step instead of several competing introductions.",
       ],
-      tip: "Try the preview controls below. They demonstrate the options; change your real preferences from Menu → Accessibility & controls.",
+      tip: "Try the preview controls below. They demonstrate the options; change your real preferences from Menu → Help & controls → Accessibility & controls.",
     },
     {
       id: "ready",

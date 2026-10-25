@@ -1,6 +1,28 @@
 # CodeQuest — Architecture
 
-_Last updated: 2026-10-25 · Learning adventures, programmable companions, arcade creation, restoration, reviews and earned rooms_
+_Last updated: 2026-10-25 · Unified guided adventure and compact navigation_
+
+## Guided learning and navigation
+
+`core/adventure-path.ts` derives eight ordered steps from real chapter, city-task,
+physical-delivery, saved-game win, restoration, review and room progress. It does
+not store an independently incremented completion counter. A validated optional
+`journey.path` saves guided/free mode, an unfinished review topic and an explicitly
+opened help session. Missing fields keep released version-1 adventures compatible;
+existing players are not forced into the new onboarding flow. New title forms
+default to guided; a device-local preference remembers an explicit free choice.
+
+`ui/adventure-path.ts` renders the mentor, next goal, expected outcome and timeline.
+The HUD and tablet Guide link to the same recommendation. Result buttons route to
+the next actual activity, while free-play choices remain collapsible. Desktop and
+phone navigation share seven entries; controls/reference help and profile/backups
+are separate groups. Guided adventures suppress competing automatic tours and
+district briefings; explicitly opened tour/handbook sessions can resume on refresh.
+
+`freshGuidedAdventure` saves a separate UUID adventure with the same hero/language,
+empty progress and guided mode. The first-time link and profile action download the
+original adventure backup before calling it. Existing adventures and coding files
+are preserved. No deployment can directly erase a user's independent browser save.
 
 ## 1. Stack
 | Area | Pick (version) | Why |

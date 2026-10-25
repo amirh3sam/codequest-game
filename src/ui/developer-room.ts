@@ -11,6 +11,7 @@ export function openDeveloperRoom(host: {
   save(room: RoomState): boolean;
   hero(color: RoomState["hoodie"]): CanvasImageSource;
   workshop(): void;
+  next?(): void;
 }): void {
   let room = structuredClone(host.room ?? defaultRoom());
   const panel = host.panel();
@@ -48,6 +49,8 @@ export function openDeveloperRoom(host: {
   const controls = el("div", "room-controls"),
     status = el("p", "feedback");
   status.setAttribute("role", "status");
+  const next = host.next ? button("Continue my adventure", host.next, "button primary") : null;
+  if (next) next.hidden = !host.room;
   panel.append(
     el(
       "p",
@@ -79,6 +82,7 @@ export function openDeveloperRoom(host: {
       : "Device saving unavailable. Download an adventure backup before leaving.";
     draw();
     render();
+    panel.querySelector<HTMLButtonElement>(".room-continue")?.removeAttribute("hidden");
     controls.querySelector<HTMLButtonElement>(`[data-room-choice="${key}"]`)?.focus();
   }
   function option(
@@ -158,4 +162,8 @@ export function openDeveloperRoom(host: {
   }
   draw();
   render();
+  if (next) {
+    next.classList.add("room-continue");
+    panel.append(next);
+  }
 }

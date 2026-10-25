@@ -9,6 +9,7 @@ export function openGridGame(host: {
   panel(): HTMLElement;
   record(score: number, won: boolean): void;
   library(): void;
+  adventure?(): void;
 }): () => void {
   const d = host.design,
     panel = host.panel();
@@ -91,6 +92,7 @@ export function openGridGame(host: {
       round = next;
       best = Math.max(best, round.collected * d.points);
       host.record(round.collected * d.points, round.won);
+      if (round.won) panel.querySelector<HTMLButtonElement>(".grid-continue")?.removeAttribute("hidden");
       paint();
     }
   }
@@ -171,6 +173,11 @@ export function openGridGame(host: {
     button("My arcade", host.library),
   );
   paint();
+  if (host.adventure) {
+    const next = button("Continue my adventure", host.adventure, "button primary grid-continue");
+    next.hidden = true;
+    panel.append(next);
+  }
   frame = requestAnimationFrame(tick);
   return () => {
     alive = false;

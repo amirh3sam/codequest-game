@@ -17,6 +17,7 @@ export default defineConfig({
         {
           origin: "http://localhost:4317",
           localStorage: [
+            { name: "codequest:path-preference:v1", value: "free" },
             {
               name: "codequest:training:v1",
               value: JSON.stringify({
@@ -43,6 +44,7 @@ export default defineConfig({
         "**/guided-tour-mobile.spec.ts",
         "**/beginner-mobile.spec.ts",
         "**/learning-mobile.spec.ts",
+        "**/adventure-path-mobile.spec.ts",
       ],
       use: { ...devices["iPhone 13"], browserName: "webkit" },
     },

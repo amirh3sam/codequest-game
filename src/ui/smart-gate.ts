@@ -16,6 +16,7 @@ export function openSmartGate(host: {
   leave(): void;
   hub(): void;
   miss?(): void;
+  continueLabel?(): string;
 }): () => void {
   const scene = el("div", "zero-scene gate-scene"),
     data = el("p", "gate-input"),
@@ -195,7 +196,7 @@ export function openSmartGate(host: {
           "zero-achievement",
           "Gatekeeper earned! You used if/else, included the boundary with >= and combined two conditions. Your policy checks are saved with this adventure.",
         ),
-        button("Continue my learning adventure", host.hub, "button primary"),
+        button(host.continueLabel?.() ?? "Continue my learning adventure", host.hub, "button primary"),
         button("Explore the city", host.leave),
       );
     },

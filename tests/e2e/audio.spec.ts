@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 type AudioProbe = {
   contexts: number;
@@ -78,6 +79,7 @@ test("effects unlock on interaction, follow walking, stop when muted and remembe
   await page.getByRole("button", { name: "Run practice code", exact: true }).click();
   await expect(page.getByLabel("Practice output", { exact: true })).toHaveText("42\n");
   await page.keyboard.press("Escape");
+  await openAdventureTool(page, "Accessibility & controls");
   await page.getByRole("button", { name: "Mute sound effects", exact: true }).click();
   await expect
     .poll(async () => {
@@ -86,17 +88,19 @@ test("effects unlock on interaction, follow walking, stop when muted and remembe
     })
     .toBe(true);
   const mutedCount = (await probe()).starts.length;
+  await page.keyboard.press("Escape");
   await page.keyboard.down("d");
   await page.waitForTimeout(350);
   await page.keyboard.up("d");
-  await page.getByRole("button", { name: "Tasks", exact: true }).click();
+  await openAdventureTool(page, "Progress");
   expect((await probe()).starts.length).toBe(mutedCount);
   await page.reload();
   await expect(page.getByRole("button", { name: "Enable sound effects", exact: true })).toBeVisible();
   await page.locator(".title-adventure-row").first().click();
   expect((await probe()).contexts).toBe(0);
+  await openAdventureTool(page, "Accessibility & controls");
   await page.getByRole("button", { name: "Enable sound effects", exact: true }).click();
-  await page.getByRole("button", { name: "Tasks", exact: true }).click();
+  await openAdventureTool(page, "Progress");
   await expect.poll(async () => (await probe()).starts.length).toBeGreaterThan(0);
   expect((await probe()).contexts).toBe(1);
   expect(errors).toEqual([]);
@@ -105,15 +109,15 @@ test("effects unlock on interaction, follow walking, stop when muted and remembe
 test("effects volume is adjustable and survives a reload independently of mute", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await openAdventureTool(page, "Accessibility & controls");
   await page.getByRole("slider", { name: "Effects volume", exact: true }).fill("25");
-  await expect(page.locator(".sound-settings output")).toHaveText("25%");
+  await expect(page.locator(".accessibility-setting output")).toHaveText("25%");
   await page.reload();
   await page.locator(".title-adventure-row").first().click();
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await openAdventureTool(page, "Accessibility & controls");
   await expect(page.getByRole("slider", { name: "Effects volume", exact: true })).toHaveValue("25");
   await expect(
-    page.locator(".sound-settings").getByRole("button", { name: "Mute sound effects", exact: true }),
+    page.locator(".accessibility-setting").getByRole("button", { name: "Mute sound effects", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
 });
 
@@ -121,8 +125,9 @@ test("missing audio support leaves the game and preference controls usable", asy
   await page.addInitScript(() => Object.defineProperty(window, "AudioContext", { value: undefined }));
   await page.goto("/");
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
+  await openAdventureTool(page, "Accessibility & controls");
   await page.getByRole("button", { name: "Mute sound effects", exact: true }).click();
   await page.getByRole("button", { name: "Enable sound effects", exact: true }).click();
-  await page.getByRole("button", { name: "Tasks", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "District missions", exact: true })).toBeVisible();
+  await openAdventureTool(page, "Progress");
+  await expect(page.getByRole("heading", { name: "Your coding progress", exact: true })).toBeVisible();
 });

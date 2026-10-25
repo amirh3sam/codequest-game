@@ -15,7 +15,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await page.getByRole("button", { name: "Start adventure", exact: true }).click();
     const hub = async () => {
       await openAdventureTool(page, "Learning adventures");
-      await page.getByRole("button", { name: "Open 6 · Review adventures", exact: true }).click();
+      await page.getByRole("button", { name: "Open Review adventures", exact: true }).click();
     };
     const run = async () => {
       const b = page.getByRole("button", { name: "Test my review repair", exact: true });
@@ -82,7 +82,7 @@ test("a wrong Smart Gate prediction recommends conditions and syntax errors leav
   await page.goto("/");
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
   await openAdventureTool(page, "Learning adventures");
-  await page.getByRole("button", { name: "Open 2 · The Smart Gate", exact: true }).click();
+  await page.getByRole("button", { name: "Open The Smart Gate", exact: true }).click();
   const gateRun = page.getByRole("button", { name: "Run gate example", exact: true });
   await gateRun.click();
   await expect(gateRun).toBeEnabled();
@@ -92,7 +92,7 @@ test("a wrong Smart Gate prediction recommends conditions and syntax errors leav
   await expect(gateRun).toBeEnabled();
   await page.getByRole("button", { name: "Save & explore city", exact: true }).click();
   await openAdventureTool(page, "Learning adventures");
-  await page.getByRole("button", { name: "Open 6 · Review adventures", exact: true }).click();
+  await page.getByRole("button", { name: "Open Review adventures", exact: true }).click();
   await expect(page.locator("[data-review-topic]").first()).toHaveAttribute("data-review-topic", "conditions");
   await page.getByRole("button", { name: "Review conditions", exact: true }).click();
   await page.getByLabel("Review repair code", { exact: true }).fill(") invalid");

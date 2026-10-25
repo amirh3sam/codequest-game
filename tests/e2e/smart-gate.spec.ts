@@ -11,7 +11,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await page.locator(`.language-grid [data-language="${lang}"]`).click();
     await page.getByRole("button", { name: "Start adventure", exact: true }).click();
     await openAdventureTool(page, "Learning adventures");
-    await page.getByRole("button", { name: "Open 2 · The Smart Gate", exact: true }).click();
+    await page.getByRole("button", { name: "Open The Smart Gate", exact: true }).click();
     const read = () =>
       page.evaluate(() => JSON.parse(localStorage.getItem("codequest:adventures:v1") ?? "{}").adventures[0]);
     const before = (await read()).areas;
@@ -56,7 +56,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await page.reload();
     await page.locator(".title-adventure-row").first().click();
     await openAdventureTool(page, "Learning adventures");
-    await page.getByRole("button", { name: "Open 2 · The Smart Gate", exact: true }).click();
+    await page.getByRole("button", { name: "Open The Smart Gate", exact: true }).click();
     await expect(page.locator(".lesson-finished")).toContainText("Gatekeeper earned");
     expect(errors).toEqual([]);
   });

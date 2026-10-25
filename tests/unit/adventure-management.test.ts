@@ -3,6 +3,7 @@ import { loadArea } from "../../src/content/loader";
 import {
   deleteAdventure,
   deleteAllGameData,
+  freshGuidedAdventure,
   renameAdventure,
   restartAdventure,
 } from "../../src/core/adventure-management";
@@ -30,6 +31,25 @@ class MemoryStorage {
 }
 const at = "2026-10-24T12:00:00.000Z";
 const later = "2026-10-24T13:00:00.000Z";
+it("starts a new-player guided copy without removing the original adventure, projects or other characters", () => {
+  const { storage, state, other } = setup();
+  if (!state.adventureId) throw new Error("Fixture adventure ID missing");
+  storage.setItem(`codequest:project-workspace:v1:${state.adventureId}:arcade-builder`, "keep my classes");
+  const result = freshGuidedAdventure(state.adventureId, "fresh-guided", later, storage);
+  expect(result.status).toBe("saved");
+  if (result.status !== "saved" || !result.state) throw new Error("Fresh adventure missing");
+  expect(result.state.hero).toEqual(state.hero);
+  expect(result.state.areas).toEqual(createGame(state.lang, state.hero, later).areas);
+  expect(result.state.journey?.path).toEqual({ version: 1, mode: "guided" });
+  const library = loadAdventures(storage);
+  if (library.status !== "loaded") throw new Error("Unreadable library");
+  expect(library.adventures).toHaveLength(3);
+  expect(library.adventures.find((s) => s.adventureId === state.adventureId)).toEqual(state);
+  expect(library.adventures.find((s) => s.adventureId === other.adventureId)).toEqual(other);
+  expect(storage.getItem(`codequest:project-workspace:v1:${state.adventureId}:arcade-builder`)).toBe("keep my classes");
+  expect(freshGuidedAdventure(state.adventureId, state.adventureId, later, storage).status).toBe("invalid");
+  expect(freshGuidedAdventure(state.adventureId, other.adventureId, later, storage).status).toBe("invalid");
+});
 function setup() {
   const storage = new MemoryStorage();
   const base = { ...createGame("javascript", { name: "Ada", kind: "girl" }, at), adventureId: "hero-1" };

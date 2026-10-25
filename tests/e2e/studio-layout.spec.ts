@@ -1,5 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import { serializeWorkspaceShare } from "../../src/ui/local-workspace";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 declare const Buffer: { from(input: string): Uint8Array };
 
@@ -43,27 +44,22 @@ test("compact desktop bar keeps every tool available in the menu", async ({ page
   }
   await page.screenshot({ path: info.outputPath("compact-hud.png") });
   await page.getByRole("button", { name: "Menu", exact: true }).click();
-  const menu = page.getByRole("dialog", { name: "Take a breath", exact: true });
+  const menu = page.getByRole("dialog", { name: "Adventure menu", exact: true });
   for (const name of [
     "Tablet",
-    "Mission",
-    "Lighting",
-    "Lesson",
+    "My adventure",
     "Progress",
     "World map",
-    "Training",
-    "Guide tour",
-    "Save backup file",
-    "Load backup file",
-    "Manage character",
-    "Accessibility & controls",
+    "City activities",
+    "Help & controls",
+    "Save & profile",
   ])
     await expect(menu.getByRole("button", { name, exact: true })).toBeVisible();
   await menu.getByRole("button", { name: "Progress", exact: true }).click();
   await expect(page.locator(".task-row")).toHaveCount(8);
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Menu", exact: true }).click();
-  await page.getByRole("button", { name: "Lighting", exact: true }).click();
+  await openAdventureTool(page, "Lighting");
   await expect(page.getByLabel("Lighting code", { exact: true })).toBeVisible();
 });
 

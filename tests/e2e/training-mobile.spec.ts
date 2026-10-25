@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 test.use({
   storageState: { cookies: [], origins: [] },
@@ -13,7 +14,7 @@ test("portrait and landscape have reachable training and mobile replay controls"
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
   await page.getByRole("button", { name: "Start adventure", exact: true }).tap();
-  await page.getByRole("button", { name: "Open detailed handbook", exact: true }).tap();
+  await openAdventureTool(page, "Training");
   await expect(page.locator(".training-shell")).toBeVisible();
   // Orientation changes are simulated here; fullscreen itself is covered by mobile-layout.
   await page.evaluate(() =>
@@ -36,7 +37,7 @@ test("portrait and landscape have reachable training and mobile replay controls"
   }
   await page.getByRole("button", { name: "Skip training", exact: true }).tap();
   await page.getByRole("button", { name: "Open game menu", exact: true }).tap();
-  await page.getByRole("button", { name: "Training", exact: true }).tap();
+  await openAdventureTool(page, "Training");
   await expect(page.locator(".training-shell")).toBeVisible();
   await page.getByRole("button", { name: "Skip training", exact: true }).tap();
   await expect(page.locator(".training-overlay")).toHaveCount(0);

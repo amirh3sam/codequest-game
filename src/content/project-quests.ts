@@ -58,20 +58,20 @@ export const PROJECT_QUESTS: readonly ProjectQuest[] = [
     id: "arcade-builder",
     title: "Arcade Builder",
     description:
-      "Create a playable gem-collecting game. Edit GameRules, run Main, then choose Play my game. Goal 3–12, walls 0–12, speed 2–8, points 1–100, color #RRGGBB, theme night/garden. Export project for source files; save the game for its playable rules.",
+      "Create a playable gem-collecting game. Edit GameRules, press Run, then choose Play my game. Run starts Main for this project. Goal 3–12, walls 0–12, speed 2–8, points 1–100, color #RRGGBB, theme night/garden. Export project for source files; save the game for its playable rules.",
     entryPath: MAIN_PATH,
     files: arcadeBuilderFiles,
     steps: [
       {
         title: "Name your game",
-        prompt: "In GameRules change the name to Byte Run. Open Main and run it, then play your creation.",
+        prompt: "In GameRules change the name to Byte Run, then press Run. Next change the challenge below.",
         hint: "Keep the remaining rules unchanged for this milestone. GameRules supplies data; Main prints the game design as JSON.",
         expectedOutput: arcadeMilestone(5),
       },
       {
         title: "Change the challenge",
         prompt:
-          "Change goal to 8 while keeping the other rules. Run Main again. Your game now needs eight gems to win.",
+          "Change goal to 8 while keeping the other rules, then press Run again. Choose Play my game, save it and collect eight gems to win.",
         hint: "GameRules.goal controls how many gems appear. After the milestone, experiment with colors, walls, speed and scoring.",
         expectedOutput: arcadeMilestone(8),
       },

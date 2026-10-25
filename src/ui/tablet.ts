@@ -56,8 +56,8 @@ type TabletHost = {
   adventureId?: string;
   initialStudyTopicId?: string;
   initialTab?: number;
+  initialProjectQuestId?: string;
   help?(tab: number): void;
-  beginner?(): void;
   adventures?(): void;
   playCreation?(design: GameDesign): void;
   myArcade?(): void;
@@ -307,6 +307,9 @@ export function openTablet(host: TabletHost): () => void {
   let connectedFolder: LocalDirectoryHandle | null = null;
   let personalFolder: LocalDirectoryHandle | null = null;
   let activeProjectQuest: (typeof PROJECT_QUESTS)[number] | null = null;
+  const pathGoal = el("section", "studio-path-goal");
+  pathGoal.hidden = true;
+  editorPane.prepend(pathGoal);
   let questStep = 0;
   let saveTimer = 0;
   const editorHeader = el("div", "studio-editor-header");
@@ -632,6 +635,7 @@ export function openTablet(host: TabletHost): () => void {
   const execute = async () => {
     if (running || !panel.isConnected) return;
     running = true;
+    for (const b of pathGoal.querySelectorAll<HTMLButtonElement>("button")) b.disabled = true;
     invalidateCreation();
     run.disabled = true;
     code.disabled = true;
@@ -640,7 +644,7 @@ export function openTablet(host: TabletHost): () => void {
     try {
       project.files[activePath] = code.value;
       const extension = { javascript: ".js", typescript: ".ts", python: ".py", java: ".java" }[host.lang];
-      const runPath = host.lang === "java" ? activePath : entryPath;
+      const runPath = host.lang === "java" && !activeProjectQuest ? activePath : entryPath;
       const projectSources = Object.fromEntries(
         Object.entries(project.files).filter(([path]) => path.endsWith(extension) && path !== runPath),
       );
@@ -698,6 +702,7 @@ export function openTablet(host: TabletHost): () => void {
     } finally {
       if (panel.isConnected) {
         running = false;
+        for (const b of pathGoal.querySelectorAll<HTMLButtonElement>("button")) b.disabled = false;
         run.disabled = false;
         code.disabled = false;
         monacoEditor?.setReadOnly(false);
@@ -832,6 +837,35 @@ export function openTablet(host: TabletHost): () => void {
       ? el("p", "studio-java-shortcuts", `Java snippets: ${JAVA_SHORTCUTS} · Press Ctrl+Space for suggestions`)
       : null;
   const renderProjectQuest = () => {
+    pathGoal.replaceChildren();
+    pathGoal.hidden = !(host.initialProjectQuestId && activeProjectQuest);
+    if (!pathGoal.hidden && activeProjectQuest) {
+      const quest = activeProjectQuest,
+        step = quest.steps[questStep];
+      pathGoal.append(
+        el("strong", "", step ? `Your next game-building step: ${step.title}` : "Your game project is ready to play"),
+        el(
+          "p",
+          "",
+          step?.prompt ??
+            "Run your project, choose Play my game, then Save game & play. Collect all gems to finish this adventure step.",
+        ),
+        el(
+          "p",
+          "",
+          "GameRules contains the choices for your game. Main connects those choices to the playable design. Run always starts Main for this project.",
+        ),
+        button(
+          "Edit game rules",
+          () => {
+            const rules = Object.keys(project.files).find((p) => /GameRules|game_rules/.test(p));
+            if (rules) openFile(rules);
+          },
+          "button",
+        ),
+        button("Run game project", () => void execute(), "button primary"),
+      );
+    }
     projectsPane.replaceChildren();
     projectsPane.append(
       el("span", "eyebrow", "MULTI-FILE PROJECTS"),
@@ -1121,8 +1155,7 @@ export function openTablet(host: TabletHost): () => void {
     missionsPane.append(card);
   }
   guidePane.append(
-    ...(host.beginner ? [button("Start from zero", host.beginner, "button primary")] : []),
-    ...(host.adventures ? [button("Learning adventures", host.adventures)] : []),
+    ...(host.adventures ? [button("My adventure", host.adventures, "button primary")] : []),
     el("span", "eyebrow", `${host.district.toUpperCase()} / GUIDE`),
     el("h3", "", "Understand the idea, then try it"),
   );
@@ -1498,6 +1531,13 @@ export function openTablet(host: TabletHost): () => void {
   studio.append(title, tabs, body, bottom);
   panel.append(studio);
   select(host.initialStudyTopicId ? 5 : (host.initialTab ?? 0));
+  const initialQuest = PROJECT_QUESTS.find((q) => q.id === host.initialProjectQuestId);
+  if (initialQuest) {
+    launchProjectQuest(initialQuest);
+    select(0);
+    const rules = Object.keys(project.files).find((p) => /GameRules|game_rules/.test(p));
+    if (rules) openFile(rules);
+  }
   const close = presentTabletOpening(panel, host.kind, host.name, host.focusCamera, host.animate);
   return () => {
     window.clearTimeout(saveTimer);

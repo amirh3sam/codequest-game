@@ -13,10 +13,18 @@ import {
   cleanAdventureData,
   deleteAdventure,
   deleteAllGameData,
+  freshGuidedAdventure,
   type ManagementResult,
   renameAdventure,
   restartAdventure,
 } from "../core/adventure-management";
+import {
+  type AdventureMode,
+  type AdventureStepId,
+  adventurePath,
+  preferredAdventureMode,
+  saveAdventureMode,
+} from "../core/adventure-path";
 import { ADVENTURES_KEY, loadAdventures, saveAdventure } from "../core/adventures";
 import type { GameDesign } from "../core/arcade-creation";
 import { makeAdventureBackup, parseAdventureBackup } from "../core/backup";
@@ -69,6 +77,7 @@ import type { BootScene, VillageCallbacks } from "../game/scenes/BootScene";
 import { executionError, grade } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
 import { WorkerHost } from "../runners/worker-host";
+import { openAdventurePath } from "./adventure-path";
 import { openArcade } from "./arcade";
 import { openCompanion } from "./companion";
 import { beginnerHint, diagnosticLine, focusEditorLine } from "./debug-guidance";
@@ -461,14 +470,24 @@ export class GameApp {
       "button primary start-button",
     );
     start.type = "submit";
-    const startZero = button("Start from zero · New to coding", () => {}, "button beginner-start");
-    startZero.type = "submit";
-    startZero.disabled = !isValidHeroName(input.value);
+    const style = el("select"),
+      styleLabel = el("label", "editor-label", "How would you like to play?");
+    style.id = "adventure-style";
+    styleLabel.htmlFor = style.id;
+    for (const [value, text] of [
+      ["guided", "Guided adventure · Recommended for beginners"],
+      ["free", "Explore freely · I know the tools"],
+    ] as const) {
+      const option = el("option", "", text);
+      option.value = value;
+      style.append(option);
+    }
+    style.value = preferredAdventureMode();
+    style.addEventListener("change", () => saveAdventureMode(style.value as AdventureMode));
     start.disabled = !isValidHeroName(input.value);
     input.addEventListener("input", () => {
       this.heroName = input.value;
       start.disabled = !isValidHeroName(input.value);
-      startZero.disabled = start.disabled;
     });
     const field = el("div", "name-field");
     field.append(
@@ -479,38 +498,72 @@ export class GameApp {
           this.heroName = village.heroNames[Math.floor(Math.random() * village.heroNames.length)] ?? "Ada";
           input.value = this.heroName;
           start.disabled = false;
-          startZero.disabled = false;
         },
         "dice-button",
       ),
     );
     field.lastElementChild?.setAttribute("aria-label", "Random hero name");
     naming.append(label, field, el("small", "", "1–16 letters, numbers or spaces"));
-    form.append(heroes, naming, start, startZero);
+    form.append(
+      heroes,
+      naming,
+      styleLabel,
+      style,
+      el("p", "intro-footer", "The guided adventure gives you one clear next step. No coding experience needed."),
+      start,
+    );
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       if (!isValidHeroName(this.heroName)) return;
+      saveAdventureMode(style.value as AdventureMode);
       this.savingAllowed = library.status === "loaded";
       this.begin(
         {
           ...createGame(this.lang, { kind: this.heroKind, name: this.heroName.trim() }, now()),
           adventureId: crypto.randomUUID(),
           training: { districts: [] },
+          journey: { path: { version: 1, mode: style.value as AdventureMode } },
         },
         true,
-        event.submitter === startZero,
       );
     });
     panel.append(
       form,
       el("p", "intro-footer", "Start as many adventures as you like. Each keeps its own progress on this device."),
       this.backupControls(),
-      button("How to play · Interactive training", () => this.training()),
-      button("Guide tour", () => this.guidedTour()),
+      button("Help & controls", () => this.helpCenter()),
       this.soundToggle(),
     );
+    if (new URLSearchParams(location.search).get("first-time") === "1") {
+      const saved = library.status === "loaded" ? library.adventures[0] : undefined,
+        card = el("section", "path-current fresh-guided-start");
+      card.append(
+        el("span", "eyebrow", "FIRST-TIME EXPERIENCE"),
+        el("h3", "", "Try the new guided adventure from the beginning"),
+        el(
+          "p",
+          "",
+          saved
+            ? `${saved.hero.name}'s ${saved.lang} adventure will start again at the first lesson. A backup downloads first, and your existing adventure stays in Saved adventures.`
+            : "Start with one clear guided repair. Your next step appears automatically.",
+        ),
+        button(
+          "Start fresh guided adventure",
+          () => {
+            if (saved) this.freshGuidedStart(saved);
+            else {
+              style.value = "guided";
+              saveAdventureMode("guided");
+              form.requestSubmit(start);
+            }
+          },
+          "button primary",
+        ),
+      );
+      panel.prepend(card);
+    }
   }
-  private begin(state: GameState, firstRun = false, startZero = false): void {
+  private begin(state: GameState, firstRun = false): void {
     // Existing adventurers can opt in from Training without an unsolicited tour.
     const existing = !firstRun && state.training === undefined;
     if (existing) state = markDistrictTrained(state);
@@ -548,9 +601,7 @@ export class GameApp {
         this.toast("The language runtime couldn't load. Run your code to retry.");
     });
     this.toast(
-      this.onboardingStage < 3
-        ? "Your first steps are ready in the field guide."
-        : "Welcome back! Your adventure is ready.",
+      this.onboardingStage < 3 ? "Your first step is ready in My adventure." : "Welcome back! Your adventure is ready.",
     );
     const training = readTrainingSettings();
     const guide = readGuideProgress();
@@ -558,8 +609,16 @@ export class GameApp {
       this.smartGate();
       return;
     }
-    if (startZero || state.beginner?.status === "in-progress") {
+    if (state.beginner?.status === "in-progress") {
       this.beginnerChapter();
+      return;
+    }
+    if (state.journey?.path) {
+      if (firstRun && state.journey.path.mode === "guided") this.learningHub(true);
+      else if (state.journey.path.help === "tour" && guide.status === "in-progress") this.guidedTour(guide.index);
+      else if (state.journey.path.help === "handbook" && training.welcome === "in-progress")
+        this.training(training.chapter);
+      else void this.viewport.requestLandscape();
       return;
     }
     if (!existing && training.welcome === "new" && guide.status === "new") this.guidedTour();
@@ -1026,28 +1085,41 @@ export class GameApp {
     mobileMenu.setAttribute("aria-label", "Open game menu");
     mobileMenu.setAttribute("aria-haspopup", "dialog");
     const objective = el("div", "objective");
+    const guided = state.journey?.path?.mode === "guided",
+      path = adventurePath(state);
     objective.append(
-      el("span", "eyebrow", "✦  YOUR NEXT QUEST"),
+      el("span", "eyebrow", guided ? `YOUR NEXT STEP · ${Math.min(path.index + 1, 8)}/8` : "✦  YOUR NEXT QUEST"),
       el(
         "strong",
         "",
-        progress.bossDefeated
-          ? "The district is online. Well played!"
-          : progress.solved.length === 8
-            ? `${this.area.boss.name} is ready. Visit the data hub!`
-            : this.area.id === "variables" && !isDroneRepaired(state)
-              ? `Help ${this.courierName()} launch the delivery drone ${String.fromCharCode(183)} Mission`
-              : `Next: ${this.area.tasks[progress.solved.length]?.title ?? "Explore the district"}`,
+        guided && path.next
+          ? path.next.title
+          : progress.bossDefeated
+            ? "The district is online. Well played!"
+            : progress.solved.length === 8
+              ? `${this.area.boss.name} is ready. Visit the data hub!`
+              : this.area.id === "variables" && !isDroneRepaired(state)
+                ? `Help ${this.courierName()} launch the delivery drone ${String.fromCharCode(183)} Mission`
+                : `Next: ${this.area.tasks[progress.solved.length]?.title ?? "Explore the district"}`,
       ),
     );
     const meter = el("div", "quest-meter");
     meter.setAttribute("role", "progressbar");
-    meter.setAttribute("aria-label", "District tasks completed");
+    meter.setAttribute("aria-label", guided ? "Adventure steps completed" : "District tasks completed");
     meter.setAttribute("aria-valuemin", "0");
     meter.setAttribute("aria-valuemax", "8");
-    meter.setAttribute("aria-valuenow", String(progress.solved.length));
-    for (let i = 0; i < 8; i++) meter.append(el("span", i < progress.solved.length ? "complete" : ""));
+    meter.setAttribute("aria-valuenow", String(guided ? path.completed : progress.solved.length));
+    for (let i = 0; i < 8; i++)
+      meter.append(el("span", i < (guided ? path.completed : progress.solved.length) ? "complete" : ""));
     objective.append(meter);
+    if (guided)
+      objective.append(
+        button(
+          path.next ? "Continue this step" : "Continue city missions",
+          () => this.continueAdventure(),
+          "path-hud-next",
+        ),
+      );
     const location = el("div", "location-banner");
     location.append(
       el("span", "eyebrow", `DISTRICT ${String(this.area.order).padStart(2, "0")}`),
@@ -1070,53 +1142,27 @@ export class GameApp {
   private navigationActions(allTools = false): HTMLElement {
     const actions = el("nav", "hud-actions");
     actions.setAttribute("aria-label", "Adventure tools");
-    actions.append(button("Tablet", () => this.tablet()));
     if (!allTools) {
       actions.append(
+        button("Tablet", () => this.tablet()),
         button("World map", () => this.worldMap()),
         button("Menu", () => this.pause()),
       );
       return actions;
     }
-    if (this.area.id === "variables") actions.append(button("Mission", () => this.mission()));
     actions.append(
-      button("Lighting", () => this.communityBeacon()),
-      button("Lesson", () => this.lesson()),
+      button("My adventure", () => this.learningHub(), "button primary"),
+      button("Tablet", () => this.tablet()),
       button("Progress", () => this.journal()),
       button("World map", () => this.worldMap()),
-      button("Training", () => this.training()),
-      button("Start from zero", () => this.beginnerChapter()),
-      button("Learning adventures", () => this.learningHub()),
-      button("Guide tour", () => this.guidedTour()),
-      button("Menu", () => this.pause()),
-      this.soundToggle(),
+      button("City activities", () => this.activityMenu()),
+      button("Help & controls", () => this.helpCenter()),
+      button("Save & profile", () => this.saveMenu()),
     );
     return actions;
   }
   private mobileMenu(): void {
-    if (!this.state) return;
-    const progress = this.state.areas[this.area.id];
-    const panel = this.panel(
-      "Adventure menu",
-      `${this.area.name} · ${progress.solved.length}/8 tasks · ${this.state.hero.name}`,
-      true,
-    );
-    panel.classList.add("mobile-game-menu");
-    const objective = this.hud.querySelector(".objective")?.cloneNode(true);
-    if (objective) panel.append(objective);
-    const guide = this.onboardingCard();
-    if (guide) panel.append(guide);
-    const actions = this.navigationActions(true);
-    actions.className = "mobile-menu-actions";
-    panel.append(
-      button("Resume adventure", () => this.close(), "button primary"),
-      el(
-        "p",
-        "mobile-player-stats",
-        `${progress.hearts} hearts · ${progress.gems} gems · ${progress.solved.length}/8 tasks`,
-      ),
-      actions,
-    );
+    this.pause();
   }
   private syncMobileViewport(): void {
     const worldOpen = Boolean(this.state && this.overlay.hidden);
@@ -1128,6 +1174,7 @@ export class GameApp {
   private onboardingCard(): HTMLElement | null {
     if (
       this.onboardingStage >= 3 ||
+      (this.state?.journey?.path?.mode === "guided" && adventurePath(this.state).next?.id !== "mission") ||
       !this.state ||
       this.area.id !== "variables" ||
       this.state.areas.variables.bossDefeated
@@ -1381,6 +1428,7 @@ export class GameApp {
     studyTopicId?: string,
     studyLevelOffset = STORY_AREA_IDS.length,
     initialTab = 0,
+    initialProjectQuestId?: string,
   ): void {
     if (!this.state) return;
     gameAudio.play("open");
@@ -1394,8 +1442,8 @@ export class GameApp {
       courierName: this.courierName(),
       animate,
       initialTab,
+      initialProjectQuestId,
       help: (tab) => this.training("tablet", false, tab),
-      beginner: () => this.beginnerChapter(),
       adventures: () => this.learningHub(),
       playCreation: (design) => this.creationPreview(design),
       myArcade: () => this.myArcade(),
@@ -1699,46 +1747,137 @@ export class GameApp {
   private pause(): void {
     if (!this.state) return;
     this.capturePosition();
-    const panel = this.panel("Take a breath", "Your adventure is saved on this device.");
-    const actions = el("div", "menu-actions");
+    const panel = this.panel(
+      "Adventure menu",
+      `${this.state.hero.name} · ${this.area.name} · Saved on this device`,
+      true,
+    );
+    panel.classList.add("adventure-menu");
+    const stats = this.state.areas[this.area.id];
+    panel.append(
+      el(
+        "p",
+        "mobile-player-stats",
+        `${stats.hearts} hearts · ${stats.gems} gems · ${stats.solved.length}/8 city tasks`,
+      ),
+    );
+    if (matchMedia("(pointer: coarse)").matches || innerWidth < 800) panel.classList.add("mobile-game-menu");
+    const next = adventurePath(this.state).next;
+    panel.append(
+      el(
+        "p",
+        "zero-concept",
+        next
+          ? `Your next step: ${next.title}. Open My adventure to continue in order.`
+          : "Your first adventure is complete. Continue city missions or enjoy free play.",
+      ),
+    );
+    const actions = this.navigationActions(true);
+    actions.className = "adventure-menu-primary";
+    panel.append(
+      actions,
+      button("Resume adventure", () => this.close()),
+    );
+  }
+  private saveMenu(): void {
+    if (!this.state) return;
+    const panel = this.panel("Save & profile", "Your adventure, backups and character settings", true),
+      actions = el("div", "adventure-menu-utilities");
+    panel.append(
+      el(
+        "p",
+        "zero-concept",
+        "Browser autosave keeps normal refreshes. Download an adventure backup to protect your progress on disk. Export coding projects separately from the tablet.",
+      ),
+    );
     actions.append(
-      button("Resume adventure", () => this.close(), "button primary"),
-      button("Tablet", () => this.tablet()),
-      ...(this.area.id === "variables" ? [button("Mission", () => this.mission())] : []),
-      button("Lighting", () => this.communityBeacon()),
-      button("Lesson", () => this.lesson()),
-      button("Progress", () => this.journal()),
+      button("Save backup file", () => this.exportAdventure(), "button primary"),
+      button("Load backup file", () => this.importAdventure()),
       button("Switch adventure", () => this.adventureLibrary()),
       button("Manage character", () => this.state?.adventureId && this.characterSettings(this.state.adventureId)),
-      button("Save backup file", () => this.exportAdventure()),
-      button("Load backup file", () => this.importAdventure()),
-      button("World map", () => this.worldMap()),
-      button("Accessibility & controls", () => this.accessibility()),
-      button("Training", () => this.training()),
-      button("Start from zero", () => this.beginnerChapter()),
-      button("Learning adventures", () => this.learningHub()),
-      button("Guide tour", () => this.guidedTour()),
+      button("Try as a new player", () => this.freshStartPanel()),
       button("Title screen", () => this.intro()),
+      button("Back to menu", () => this.pause()),
     );
     panel.append(actions);
-    const audio = el("div", "sound-settings"),
-      label = el("label", "", "Effects volume"),
-      volume = el("input"),
-      value = el("output", "", `${Math.round(gameAudio.volume * 100)}%`);
-    volume.type = "range";
-    volume.id = "effects-volume";
-    volume.min = "0";
-    volume.max = "100";
-    volume.step = "5";
-    volume.value = String(Math.round(gameAudio.volume * 100));
-    label.htmlFor = volume.id;
-    volume.addEventListener("input", () => {
-      gameAudio.setVolume(Number(volume.value) / 100);
-      value.textContent = `${volume.value}%`;
-    });
-    volume.addEventListener("change", () => gameAudio.play("tap"));
-    audio.append(label, volume, value, this.soundToggle());
-    panel.append(audio);
+  }
+  private freshStartPanel(): void {
+    if (!this.state) return;
+    const state = this.state,
+      panel = this.panel(
+        "A fresh first-time experience",
+        `Start ${state.hero.name}'s ${state.lang} adventure from the first lesson`,
+        true,
+      );
+    panel.append(
+      el(
+        "p",
+        "zero-concept",
+        "A backup downloads first. Then a fresh guided adventure starts at Step 1 with the same character and language. Your current adventure and coding projects remain in Saved adventures, so you can return to them.",
+      ),
+      button("Start fresh guided adventure", () => this.freshGuidedStart(state), "button primary"),
+      button("Back to profile", () => this.saveMenu()),
+    );
+  }
+  private helpCenter(): void {
+    const panel = this.panel(
+        "Help & controls",
+        "Controls explain the game. My adventure teaches coding in order.",
+        true,
+      ),
+      grid = el("div", "adventure-help-grid");
+    const controls = el("article"),
+      reference = el("article"),
+      settings = el("article");
+    controls.append(
+      el("h3", "", "Game controls"),
+      el("p", "", "Learn movement, map interactions, the tablet, saving and character settings."),
+      button("Show controls tour", () => this.guidedTour()),
+      button("Open player handbook", () => this.training()),
+    );
+    reference.append(
+      el("h3", "", "Coding help"),
+      el("p", "", "Follow the next guided repair, or read examples for the district you are currently visiting."),
+    );
+    if (this.state)
+      reference.append(
+        button("My adventure", () => this.learningHub(), "button primary"),
+        button("Read district examples", () => this.lesson()),
+      );
+    else
+      reference.append(
+        el(
+          "p",
+          "",
+          "Choose Guided adventure on the start screen. Your first robot repair opens before you need to understand any menus.",
+        ),
+      );
+    settings.append(
+      el("h3", "", "Comfort & sound"),
+      el("p", "", "Change movement keys, text size, contrast, sound volume or mute."),
+      button("Accessibility & controls", () => this.accessibility()),
+    );
+    grid.append(controls, reference, settings);
+    panel.append(
+      grid,
+      button(this.state ? "Back to menu" : "Back to title", () => (this.state ? this.pause() : this.intro())),
+    );
+  }
+  private activityMenu(): void {
+    const panel = this.panel("City activities", "Take a break or choose a tool you already know", true),
+      actions = el("div", "adventure-menu-primary");
+    actions.append(
+      button("City arcade", () => this.packetDash(), "button primary"),
+      button("Robot delivery lab", () => this.companionLab()),
+      button("Lighting console", () => this.communityBeacon()),
+      button("My arcade", () => this.myArcade()),
+      button("My developer room", () => this.developerRoom()),
+    );
+    if (this.area.id === "variables") actions.append(button("Courier mission", () => this.mission()));
+    panel.append(
+      actions,
+      button("Back to menu", () => this.pause()),
+    );
   }
   private accessibility(): void {
     const panel = this.panel(
@@ -1828,7 +1967,7 @@ export class GameApp {
       contrast,
       motionNote,
       audio,
-      button("Back to menu", () => this.pause()),
+      button(this.state ? "Back to menu" : "Back to help", () => (this.state ? this.pause() : this.helpCenter())),
     );
   }
   private worldMap(): void {
@@ -1889,12 +2028,17 @@ export class GameApp {
     this.commit(enterArea(this.state, id, now(), portalArrivalPosition(id)));
     this.close();
     this.toast(`Arrived at ${this.area.name} transit. Choose a terminal or open the world map to travel again.`);
-    if (readTrainingSettings().autoDistricts && !this.state?.training?.districts.includes(id))
+    if (
+      this.state?.journey?.path?.mode !== "guided" &&
+      readTrainingSettings().autoDistricts &&
+      !this.state?.training?.districts.includes(id)
+    )
       this.training(undefined, true);
   }
   private guidedTour(initial = 0): void {
     this.guideCleanup?.();
     this.guideCleanup = null;
+    if (this.state?.journey?.path) this.updateJourney({ path: { ...this.state.journey.path, help: "tour" } });
     this.capturePosition();
     this.tabletNavigation = false;
     const inCity = !!this.state,
@@ -1920,7 +2064,7 @@ export class GameApp {
           else if (step.view === "map") this.worldMap();
           else if (step.view === "lighting") this.communityBeacon();
           else if (step.view === "arcade") this.packetDash();
-          else if (step.view === "menu") this.pause();
+          else if (step.view === "menu") this.saveMenu();
           else if (step.view === "comfort") this.accessibility();
           else if (step.view === "character" && this.state?.adventureId) this.characterSettings(this.state.adventureId);
         }
@@ -1934,6 +2078,7 @@ export class GameApp {
       done: (reason) => {
         this.guideCleanup?.();
         this.guideCleanup = null;
+        if (this.state?.journey?.path) this.updateJourney({ path: { ...this.state.journey.path, help: undefined } });
         if (inCity) {
           const guide = readGuideProgress();
           saveGuideProgress({ ...guide, status: reason === "complete" ? "complete" : "skipped" });
@@ -2022,8 +2167,14 @@ export class GameApp {
       },
       nextChapter: () => {
         leave();
-        this.smartGate();
+        if (this.state?.journey?.path?.mode === "guided") this.continueAdventure();
+        else this.smartGate();
       },
+      guided: this.state.journey?.path?.mode === "guided",
+      nextChapterLabel: () =>
+        this.state?.journey?.path?.mode === "guided"
+          ? `Continue: ${adventurePath(this.state).next?.title ?? "my next city mission"}`
+          : "Continue to Smart Gate",
     });
     this.trainingDismiss = leave;
     this.tabletCleanup = () => {
@@ -2036,15 +2187,79 @@ export class GameApp {
     this.state = { ...this.state, journey: { ...this.state.journey, ...patch }, updatedAt: now() };
     this.state = awardRewards(this.state);
     this.scene.syncJourney(this.state);
+    this.renderHud();
     return this.persist();
   }
-  private learningHub(): void {
+  private learningHub(fresh = false): void {
     if (!this.state) return;
-    const panel = this.panel(
-      "Learning adventures",
-      "Build abilities through stories, real code and free experiments",
-      true,
-    );
+    openAdventurePath({
+      state: this.state,
+      fresh,
+      courier: this.courierName(),
+      mentor: this.icon(this.state.hero.kind === "boy" ? "heroGirl" : "heroBoy"),
+      panel: () => this.panel("My adventure", "One path · One next step · Your own saved progress", true),
+      start: (id) => this.continueAdventure(id),
+      freePlay: (panel) => this.activityCards(panel),
+      help: () => this.helpCenter(),
+    });
+  }
+  private continueAdventure(id?: AdventureStepId | "district"): void {
+    if (!this.state) return;
+    const step = id ?? adventurePath(this.state).next?.id ?? "district";
+    if (step === "basics") this.beginnerChapter();
+    else if (step === "mission") this.mission();
+    else if (step === "gate") this.smartGate();
+    else if (step === "robot") {
+      const trip = this.state.journey?.companion?.trip;
+      if (trip && trip.next < 3) {
+        if (trip.area !== this.state.currentArea && isAreaUnlocked(this.state, trip.area))
+          this.commit(enterArea(this.state, trip.area, now()));
+        this.close();
+        void this.viewport.requestLandscape();
+        this.toast("Your robot is continuing its saved route. You can walk around while it delivers.");
+      } else this.companionLab();
+    } else if (step === "game") {
+      const saved = this.state.journey?.creations?.find((c) => !c.won);
+      if (saved) this.playCreation(saved.design, saved.id);
+      else this.tablet(false, undefined, undefined, 0, "arcade-builder");
+    } else if (step === "city") this.cityRestoration();
+    else if (step === "review") {
+      const topic = this.state.journey?.path?.reviewTopic;
+      this.reviewAdventure(
+        topic && this.state.journey?.reviews?.[topic]?.draft ? topic : recommendedReview(this.state.journey?.reviews),
+      );
+    } else if (step === "room") this.developerRoom();
+    else {
+      const level = WORLD_LEVELS.find(
+        (level) => isAreaUnlocked(this.state as GameState, level.id) && !this.state?.areas[level.id].bossDefeated,
+      );
+      if (!level) {
+        this.journal();
+        return;
+      }
+      if (this.state.currentArea !== level.id) {
+        this.commit(enterArea(this.state, level.id, now()));
+      }
+      const task = this.area.tasks.find((t) => this.state && canSolveTask(this.state, this.area, t.id));
+      if (task) this.editor(task);
+      else if (canFightBoss(this.state, this.area)) this.openBoss();
+      else this.journal();
+    }
+  }
+  private freshGuidedStart(state: GameState): void {
+    if (!state.adventureId) return;
+    this.exportAdventure(state);
+    const result = freshGuidedAdventure(state.adventureId, crypto.randomUUID(), now());
+    if (result.status !== "saved" || !result.state) {
+      this.toast("The fresh adventure could not be saved. Your existing adventure is kept.");
+      return;
+    }
+    saveAdventureMode("guided");
+    history.replaceState(null, "", location.pathname);
+    this.begin(result.state, true);
+  }
+  private activityCards(panel: HTMLElement): void {
+    if (!this.state) return;
     const state = this.state,
       counters = [
         `${state.beginner?.completed.length ?? 0}/7 discoveries`,
@@ -2093,12 +2308,13 @@ export class GameApp {
         () => this.developerRoom(),
       ],
     ] as const) {
+      const name = title.replace(/^\d+ · /, "");
       const card = el("article", "adventure-hub-card");
       card.append(
         el("span", "eyebrow", counters[index++]),
-        el("h3", "", title),
+        el("h3", "", name),
         el("p", "", body),
-        button(`Open ${title}`, action, "button primary"),
+        button(`Open ${name}`, action, "button primary"),
       );
       panel.append(card);
     }
@@ -2110,6 +2326,7 @@ export class GameApp {
       earned = this.state.journey?.earned ?? [],
       kind = this.state.hero.kind;
     openDeveloperRoom({
+      next: this.state.journey?.path?.mode === "guided" ? () => this.learningHub() : undefined,
       name: this.state.hero.name,
       robotName: this.state.beginner?.robotName ?? "Pixel",
       room: this.state.journey?.room,
@@ -2166,6 +2383,8 @@ export class GameApp {
   }
   private reviewAdventure(topic: ReviewTopic): void {
     if (!this.state) return;
+    if (this.state.journey?.path?.mode === "guided")
+      this.updateJourney({ path: { ...this.state.journey.path, reviewTopic: topic } });
     const id = this.state.adventureId;
     this.tabletCleanup = openLearningReview({
       lang: this.lang,
@@ -2189,7 +2408,12 @@ export class GameApp {
           this.updateJourney({ reviews: finishReview(this.state.journey?.reviews, topic) });
         gameAudio.play("success");
       },
-      next: () => this.reviewAdventure(topic),
+      next: () =>
+        this.state?.journey?.path?.mode === "guided" ? this.continueAdventure() : this.reviewAdventure(topic),
+      nextLabel: () =>
+        this.state?.journey?.path?.mode === "guided"
+          ? `Continue: ${adventurePath(this.state).next?.title ?? "my next city mission"}`
+          : "Try a new example",
       hub: () => this.reviewHub(),
     });
   }
@@ -2203,6 +2427,18 @@ export class GameApp {
       );
     panel.classList.add("restoration-panel");
     const labels = { workshop: "Developer workshop", tram: "City tram", network: "Data exchange" };
+    const guided = state.journey?.path?.mode === "guided",
+      nextService = SERVICES.find((id) => !state.journey?.restored?.includes(id));
+    if (guided)
+      panel.append(
+        el(
+          "p",
+          "zero-concept",
+          nextService
+            ? `Restore the services in order: 1 Workshop → 2 Tram → 3 Data exchange. Next: ${labels[nextService]}.`
+            : "All three services are online. Your next review adventure is ready.",
+        ),
+      );
     panel.append(el("p", "city-reaction", `${this.courierName()}: ${cityReaction(state)}`));
     const cards = el("div", "city-restoration-grid");
     for (const id of SERVICES) {
@@ -2240,7 +2476,7 @@ export class GameApp {
           },
           "button primary",
         );
-        action.disabled = !!requirement;
+        action.disabled = !!requirement || (guided && id !== nextService);
         card.append(action);
       } else
         card.append(
@@ -2260,6 +2496,8 @@ export class GameApp {
       cards.append(card);
     }
     panel.append(cards);
+    if (guided && !nextService)
+      panel.append(button("Continue my adventure", () => this.continueAdventure(), "button primary"));
   }
   private workshop(): void {
     if (!this.state?.journey?.restored?.includes("workshop")) {
@@ -2350,6 +2588,7 @@ export class GameApp {
     if (!this.state) return;
     const adventureId = this.state.adventureId;
     this.tabletCleanup = openGridGame({
+      adventure: creationId && this.state.journey?.path?.mode === "guided" ? () => this.learningHub() : undefined,
       design,
       best: this.state.journey?.creations?.find((c) => c.id === creationId)?.best ?? 0,
       panel: () => this.panel(design.name, "Your code, your game · Collect data gems and avoid walls", true),
@@ -2434,8 +2673,13 @@ export class GameApp {
       leave,
       hub: () => {
         leave();
-        this.learningHub();
+        if (this.state?.journey?.path?.mode === "guided") this.continueAdventure();
+        else this.learningHub();
       },
+      continueLabel: () =>
+        this.state?.journey?.path?.mode === "guided"
+          ? `Continue: ${adventurePath(this.state).next?.title ?? "my next city mission"}`
+          : "Continue my learning adventure",
     });
     this.trainingDismiss = leave;
     this.tabletCleanup = () => {
@@ -2446,6 +2690,8 @@ export class GameApp {
   private training(chapter?: string, district = false, returnTab?: number): void {
     this.tabletNavigation = false;
     this.capturePosition();
+    if (this.state?.journey?.path && !district)
+      this.updateJourney({ path: { ...this.state.journey.path, help: "handbook" } });
     const settings = readTrainingSettings();
     const chapters = district
       ? districtTraining(this.area)
@@ -2463,6 +2709,8 @@ export class GameApp {
     };
     const leave = () => {
       this.trainingDismiss = null;
+      if (this.state?.journey?.path && !district)
+        this.updateJourney({ path: { ...this.state.journey.path, help: undefined } });
       if (returnTab !== undefined && this.state) this.tablet(false, undefined, STORY_AREA_IDS.length, returnTab);
       else if (this.state) {
         this.close();
@@ -2703,9 +2951,15 @@ export class GameApp {
             const next = this.area.tasks[this.state.areas[this.area.id].solved.length];
             actions.replaceChildren(
               button(
-                next ? "Next task →" : `Inspect ${this.area.boss.name.replace(/^The /, "the ")} →`,
+                this.state.journey?.path?.mode === "guided" && task.id === "variables-1"
+                  ? "Continue my adventure"
+                  : next
+                    ? "Next task →"
+                    : `Inspect ${this.area.boss.name.replace(/^The /, "the ")} →`,
                 () => {
-                  if (next) this.editor(next);
+                  if (this.state?.journey?.path?.mode === "guided" && task.id === "variables-1")
+                    this.continueAdventure();
+                  else if (next) this.editor(next);
                   else this.openBoss();
                 },
                 "button primary",
@@ -2723,7 +2977,7 @@ export class GameApp {
                   "button primary",
                 ),
               );
-            else if (task.id === "variables-1")
+            else if (task.id === "variables-1" && this.state.journey?.path?.mode !== "guided")
               actions.prepend(button(`Continue with ${this.courierName()}`, () => this.mission(), "button primary"));
           } else {
             gameAudio.play("error");

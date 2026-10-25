@@ -6,7 +6,7 @@ import { openAdventureTool } from "./helpers/adventure-tools";
 test.use({ reducedMotion: "reduce" });
 async function library(page: Page) {
   await page.getByRole("button", { name: "Menu", exact: true }).click();
-  await page.getByRole("button", { name: "Switch adventure", exact: true }).click();
+  await openAdventureTool(page, "Switch adventure");
 }
 async function start(page: Page, lang: string, name: string) {
   await page.locator(`.language-grid [data-language="${lang}"]`).click();

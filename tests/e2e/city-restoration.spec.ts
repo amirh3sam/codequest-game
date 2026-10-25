@@ -33,7 +33,7 @@ test("earned services restore visible city objects, useful destinations and pers
   await page.reload();
   await page.locator(".title-adventure-row").first().click();
   await openAdventureTool(page, "Learning adventures");
-  await page.getByRole("button", { name: "Open 5 · Restore the city", exact: true }).click();
+  await page.getByRole("button", { name: "Open Restore the city", exact: true }).click();
   await expect(page.getByRole("button", { name: "Restore Data exchange", exact: true })).toBeDisabled();
   for (const name of ["Developer workshop", "City tram", "Data exchange"])
     await page.getByRole("button", { name: `Restore ${name}`, exact: true }).click();
@@ -74,7 +74,7 @@ test("earned services restore visible city objects, useful destinations and pers
   await page.reload();
   await page.locator(".title-adventure-row").first().click();
   await openAdventureTool(page, "Learning adventures");
-  await page.getByRole("button", { name: "Open 5 · Restore the city", exact: true }).click();
+  await page.getByRole("button", { name: "Open Restore the city", exact: true }).click();
   await expect(page.locator(".restoration-panel [data-service] .feedback")).toHaveText([
     "Restored · remembered by this adventure",
     "Restored · remembered by this adventure",
@@ -128,7 +128,7 @@ test.describe("restored tram motion", () => {
       });
     expect(await pod()).toEqual({ x: 1040, alpha: 0.35, service: "offline" });
     await openAdventureTool(page, "Learning adventures");
-    await page.getByRole("button", { name: "Open 5 · Restore the city", exact: true }).click();
+    await page.getByRole("button", { name: "Open Restore the city", exact: true }).click();
     await page.getByRole("button", { name: "Restore City tram", exact: true }).click();
     await page.getByRole("button", { name: "Close panel", exact: true }).click();
     await expect.poll(async () => (await pod()).x, { timeout: 8000 }).not.toBe(1040);

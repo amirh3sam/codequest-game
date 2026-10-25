@@ -45,7 +45,7 @@ async function seed(page: Page, kind: "boy" | "girl") {
 }
 async function room(page: Page) {
   await openAdventureTool(page, "Learning adventures");
-  await page.getByRole("button", { name: "Open 7 · My developer room", exact: true }).click();
+  await page.getByRole("button", { name: "Open My developer room", exact: true }).click();
 }
 for (const kind of ["boy", "girl"] as const) {
   test(`${kind}: earned room choices change city clothing and robot parts and survive reload`, async ({
@@ -110,7 +110,7 @@ for (const kind of ["boy", "girl"] as const) {
     await expect(page.locator(".developer-room-scene")).toHaveAttribute("data-wall", "plum");
     await page.getByRole("button", { name: "Close panel", exact: true }).click();
     await openAdventureTool(page, "Learning adventures");
-    await page.getByRole("button", { name: "Open 4 · Arcade Builder", exact: true }).click();
+    await page.getByRole("button", { name: "Open Arcade Builder", exact: true }).click();
     page.once("dialog", (d) => d.accept());
     await page.getByRole("button", { name: "Delete My Byte Run", exact: true }).click();
     await room(page);
@@ -180,13 +180,13 @@ test("journey lifecycle: disk backup restores every feature and rename restart a
   await openAdventureTool(page, "Menu");
   // Capture the actual downloaded Blob before its object URL is revoked.
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Save backup file", exact: true }).click();
+  await openAdventureTool(page, "Save backup file");
   expect((await download).suggestedFilename()).toContain("Ada");
   const source = await page.evaluate(() => (window as unknown as { __journeyBackup: Promise<string> }).__journeyBackup);
   const backup = JSON.parse(source);
   expect(backup.state.journey.room.hoodie).toBe("amber");
   const chooser = page.waitForEvent("filechooser");
-  await page.getByRole("button", { name: "Load backup file", exact: true }).click();
+  await openAdventureTool(page, "Load backup file");
   await (await chooser).setFiles({
     name: "my-codequest-adventure.json",
     mimeType: "application/json",

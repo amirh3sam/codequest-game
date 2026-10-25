@@ -2,6 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 import { loadArea } from "../../src/content/loader";
 import { ADVENTURES_KEY } from "../../src/core/adventures";
 import { createGame, solveTask } from "../../src/core/state";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 test.use({ reducedMotion: "reduce" });
 async function seed(page: Page, resume = true) {
@@ -41,7 +42,7 @@ async function seed(page: Page, resume = true) {
 }
 async function manageActive(page: Page) {
   await page.getByRole("button", { name: "Menu", exact: true }).click();
-  await page.getByRole("button", { name: "Manage character", exact: true }).click();
+  await openAdventureTool(page, "Manage character");
 }
 const library = (page: Page) =>
   page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").adventures, ADVENTURES_KEY);
@@ -152,12 +153,13 @@ test("erasing the profile stops another tab's open tablet from restoring deleted
   await second.keyboard.press("t");
   await second.getByLabel("Practice code", { exact: true }).fill('console.log("Pending draft");');
   await page.getByRole("button", { name: "Menu", exact: true }).click();
-  await page.getByRole("button", { name: "Switch adventure", exact: true }).click();
+  await openAdventureTool(page, "Switch adventure");
   await page.getByRole("button", { name: "Delete all game data", exact: true }).click();
   await page.getByLabel("Type DELETE ALL to confirm", { exact: true }).fill("DELETE ALL");
   await page.getByRole("button", { name: "Delete all data permanently", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Start adventure", exact: true })).toBeVisible();
-  await expect(second.getByRole("button", { name: "Start adventure", exact: true })).toBeVisible();
+  // Full-profile deletion performs a cold page reload, including the city artwork.
+  await expect(page.getByRole("button", { name: "Start adventure", exact: true })).toBeVisible({ timeout: 30000 });
+  await expect(second.getByRole("button", { name: "Start adventure", exact: true })).toBeVisible({ timeout: 30000 });
   await second.close();
   expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith("codequest:")))).toEqual(
     [],

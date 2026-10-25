@@ -13,7 +13,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await page.locator(`.language-grid [data-language="${lang}"]`).click();
     await page.getByRole("button", { name: "Start adventure", exact: true }).click();
     await openAdventureTool(page, "Learning adventures");
-    await page.getByRole("button", { name: "Open 3 · Robot companion", exact: true }).click();
+    await page.getByRole("button", { name: "Open Robot companion", exact: true }).click();
     const run = async () => {
       const b = page.getByRole("button", { name: "Test delivery program", exact: true });
       await b.click();
@@ -50,7 +50,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await page.reload();
     await page.locator(".title-adventure-row").first().click();
     await openAdventureTool(page, "Learning adventures");
-    await page.getByRole("button", { name: "Open 3 · Robot companion", exact: true }).click();
+    await page.getByRole("button", { name: "Open Robot companion", exact: true }).click();
     await expect(page.getByLabel("Delivery program")).toHaveValue(/deliveries/);
     const state = await page.evaluate(
       () => JSON.parse(localStorage.getItem("codequest:adventures:v1") ?? "{}").adventures[0],

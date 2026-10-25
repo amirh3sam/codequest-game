@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { cityGuide } from "../../src/content/guided-tour";
+import { openAdventureTool } from "./helpers/adventure-tools";
 
 test.use({
   storageState: { cookies: [], origins: [] },
@@ -17,6 +18,7 @@ test("phone guided tour shows real targets and keeps captions/navigation reachab
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
   await page.getByRole("button", { name: "Start adventure", exact: true }).tap();
+  await openAdventureTool(page, "Guide tour");
   await expect(page.locator(".guide-tour")).toBeVisible();
   await page.evaluate(() =>
     Object.defineProperty(document.documentElement, "requestFullscreen", { value: async () => {} }),
@@ -72,7 +74,7 @@ test("phone guided tour shows real targets and keeps captions/navigation reachab
   await expect(page.locator(".guide-tour")).toHaveCount(0);
   await expect(page.locator("#ui")).toHaveJSProperty("inert", false);
   await page.getByRole("button", { name: "Open game menu", exact: true }).tap();
-  await page.getByRole("button", { name: "Guide tour", exact: true }).tap();
+  await openAdventureTool(page, "Guide tour");
   await expect(page.locator(".guide-tour")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.locator(".guide-tour")).toHaveCount(0);

@@ -77,11 +77,37 @@ export function restartAdventure(
       ...createGame(previous.lang, previous.hero, at),
       adventureId: freshId,
       training: { districts: [] },
+      ...(previous.journey?.path
+        ? { journey: { path: { version: 1 as const, mode: previous.journey.path.mode } } }
+        : {}),
     };
     const result = removeAdventure(id, state, storage);
     return result.status === "saved"
       ? { status: "saved", state, cleanupComplete: cleanAdventureData(previous, storage) }
       : { status: result.status };
+  } catch {
+    return { status: "storage-error" };
+  }
+}
+
+/** First-time replay keeps the original adventure and coding work intact. */
+export function freshGuidedAdventure(
+  id: string,
+  freshId: string,
+  at: string,
+  storage: ManagementStorage = localStorage,
+): ManagementResult {
+  try {
+    const previous = find(id, storage);
+    if (!previous || freshId === id || find(freshId, storage)) return { status: "invalid" };
+    const state: Adventure = {
+      ...createGame(previous.lang, previous.hero, at),
+      adventureId: freshId,
+      training: { districts: [] },
+      journey: { path: { version: 1, mode: "guided" } },
+    };
+    const result = saveAdventure(state, storage);
+    return result.status === "saved" ? { status: "saved", state, cleanupComplete: true } : { status: result.status };
   } catch {
     return { status: "storage-error" };
   }

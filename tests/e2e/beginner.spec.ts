@@ -15,7 +15,8 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     page.on("pageerror", (e) => errors.push(e.message));
     await page.goto("/");
     await page.locator(`[data-language="${lang}"]`).click();
-    await page.getByRole("button", { name: "Start from zero · New to coding", exact: true }).click();
+    await page.getByRole("button", { name: "Start adventure", exact: true }).click();
+    await openAdventureTool(page, "Start from zero");
     await expect(page.locator(".zero-shell")).toHaveAttribute("data-beginner-step", "instructions");
     const before = (await beginnerState(page)).areas;
     await expect(page.getByRole("button", { name: "Next lesson →", exact: true })).toBeDisabled();
@@ -118,12 +119,12 @@ test("chapter resumes after refresh, keeps its own drafts and restores them from
   });
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Save backup file", exact: true }).click();
+  await openAdventureTool(page, "Save backup file");
   expect((await download).suggestedFilename()).toContain(".json");
   const source = await page.evaluate(() => (window as unknown as { __zeroBackup: Promise<string> }).__zeroBackup);
   expect(JSON.parse(source).state.beginner.drafts.charge).toBe(draft);
   const chooser = page.waitForEvent("filechooser");
-  await page.getByRole("button", { name: "Load backup file", exact: true }).click();
+  await openAdventureTool(page, "Load backup file");
   await (await chooser).setFiles({
     name: "robot-rescue.json",
     mimeType: "application/json",

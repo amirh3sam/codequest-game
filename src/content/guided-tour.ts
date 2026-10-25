@@ -45,8 +45,8 @@ export function cityGuide(courier: string): GuideStep[] {
       id: "tools",
       title: "Your tools are always nearby",
       view: "tools",
-      target: ".mobile-menu-actions,.menu-actions",
-      text: "Tablet, World map and Menu stay in the top bar. Menu contains Mission, Lighting, Lesson, Progress, Training, Guide tour, backups, character settings and sound. On phones, use the hamburger menu. Training opens the detailed handbook; Guide tour brings me back beside the real controls.",
+      target: ".adventure-menu-primary",
+      text: "Tablet, World map and Menu stay in the top bar. My adventure gives you one ordered next step. City activities contains free play and lighting. Help & controls holds this controls tour, the handbook and district examples. Save & profile holds backups and character settings. On phones, the hamburger opens the same compact menu.",
     },
     {
       id: "tablet",
@@ -121,7 +121,7 @@ export function cityGuide(courier: string): GuideStep[] {
       view: "tablet",
       tab: 3,
       target: ".studio-guide",
-      text: "Guide explains the concept used in this district and includes examples. Lesson in the main tools opens the same material. You can return whenever you need a reminder; no timer makes you rush through a coding task.",
+      text: "Guide explains the current district and includes code examples. My adventure continues the guided learning path. Read district examples under Help & controls opens this reference separately; you can return whenever you need a reminder.",
     },
     {
       id: "daily",
@@ -248,13 +248,13 @@ export const TITLE_GUIDE: GuideStep[] = [
     title: "Keep and restore backups",
     view: "title",
     target: ".backup-controls",
-    text: "Load adventure backup imports a downloaded .json as a separate adventure. After entering the game, Menu → Save backup file downloads your progress to your hard drive. Save fresh copies regularly, and export tablet coding projects separately.",
+    text: "Load adventure backup imports a downloaded .json as a separate adventure. After entering the game, Menu → Save & profile → Save backup file downloads your progress to your hard drive. Save fresh copies regularly, and export tablet coding projects separately.",
   },
   {
     id: "title-ready",
     title: "Ready for the city?",
     view: "title",
     target: ".hero-form button[type=submit]",
-    text: "Finish this tour, choose your language and developer, then start. I'll meet you in the city for the full walkthrough. Guide tour replays this introduction; How to play opens the detailed interactive handbook.",
+    text: "Choose your language and developer, then Start adventure. Guided adventure opens one clear first lesson and remembers your next step. Help & controls contains this optional controls tour and the detailed player handbook.",
   },
 ];

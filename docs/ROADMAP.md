@@ -2,6 +2,13 @@
 
 Each task fits in one session. Tags point to PRD requirements.
 
+## Clear first-time learning path (2026-10-25)
+
+- [x] Default new players to one guided adventure with an automatic welcome, one next action, expected outcomes and an eight-step progress timeline.
+- [x] Connect the robot rescue, first city mission, Smart Gate, real delivery, built-and-beaten game, city restoration, reviews and room rewards with direct Continue actions and saved resume.
+- [x] Combine overlapping learning choices under My adventure; group reference/controls and save/profile tools, with the same seven menu entries on desktop and phone.
+- [x] Add a backup-first first-time replay link that preserves the original adventure/projects; keep experienced free exploration and existing saves compatible.
+
 ## Learning adventure expansion (2026-10-24)
 
 - [x] 1. Smart Gate chapter: real if/else programs, boundary comparisons, badge checks and persistent progress.

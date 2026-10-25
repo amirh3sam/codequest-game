@@ -18,10 +18,9 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await page.getByRole("button", { name: "Open project files", exact: true }).click();
     const files = arcadeBuilderFiles(lang),
       rule = Object.keys(files).find((p) => /GameRules|game_rules/.test(p)) as string;
-    const main = Object.keys(files).find((p) => /Main|main/.test(p)) as string;
     await page.locator(`.studio-file[title='${rule}']`).click();
     await page.getByLabel(`Code editor: ${rule}`).fill(files[rule].replace("My Byte Run", "Byte Run"));
-    await page.locator(`.studio-file[title='${main}']`).click();
+    // Running the rules file must execute this project's Main in every language.
     await page.getByRole("button", { name: "Run practice code", exact: true }).click();
     await expect(page.getByRole("button", { name: "Play my game", exact: true })).toBeVisible({ timeout: 60000 });
     await expect(page.getByLabel("Practice output", { exact: true })).toContainText('"name":"Byte Run"');
@@ -30,7 +29,6 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
       .getByLabel(`Code editor: ${rule}`)
       .fill(files[rule].replace("My Byte Run", "Byte Run").replace("goal = 5", "goal = 8"));
     await expect(page.getByRole("button", { name: "Play my game", exact: true })).toBeHidden();
-    await page.locator(`.studio-file[title='${main}']`).click();
     await page.getByRole("button", { name: "Run practice code", exact: true }).click();
     await expect(page.getByRole("button", { name: "Play my game", exact: true })).toBeVisible({ timeout: 60000 });
     await expect(page.getByLabel("Practice output", { exact: true })).toContainText('"goal":8');
@@ -83,7 +81,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await page.reload();
     await page.locator(".title-adventure-row").first().click();
     await openAdventureTool(page, "Learning adventures");
-    await page.getByRole("button", { name: "Open 4 · Arcade Builder", exact: true }).click();
+    await page.getByRole("button", { name: "Open Arcade Builder", exact: true }).click();
     await expect(page.getByRole("button", { name: "Play Byte Run", exact: true })).toBeVisible();
     const state = await page.evaluate(
       () => JSON.parse(localStorage.getItem("codequest:adventures:v1") ?? "{}").adventures[0],

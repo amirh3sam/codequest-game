@@ -89,7 +89,7 @@ test("accessibility settings remap movement and persist on this device", async (
   await page.goto("/");
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "Accessibility & controls", exact: true }).click();
+  await openAdventureTool(page, "Accessibility & controls");
   await page.getByLabel("Movement keys", { exact: true }).selectOption("ijkl");
   await page.getByRole("button", { name: "Large text", exact: true }).click();
   await page.getByRole("button", { name: "High contrast", exact: true }).click();

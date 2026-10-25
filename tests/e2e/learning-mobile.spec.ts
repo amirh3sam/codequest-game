@@ -54,7 +54,7 @@ test("phone room uses earned clothing, robot parts and decorations with saved to
   await page.reload();
   await page.locator(".title-adventure-row").first().click();
   await openAdventureTool(page, "Learning adventures");
-  await page.getByRole("button", { name: "Open 7 · My developer room", exact: true }).click();
+  await page.getByRole("button", { name: "Open My developer room", exact: true }).click();
   for (const choice of [
     "Wear amber hoodie",
     "Use gold shell",
@@ -71,7 +71,7 @@ test("phone room uses earned clothing, robot parts and decorations with saved to
   await page.reload();
   await page.locator(".title-adventure-row").first().click();
   await openAdventureTool(page, "Learning adventures");
-  await page.getByRole("button", { name: "Open 7 · My developer room", exact: true }).click();
+  await page.getByRole("button", { name: "Open My developer room", exact: true }).click();
   await expect(page.getByRole("button", { name: "Wear amber hoodie", exact: true })).toHaveAttribute(
     "aria-pressed",
     "true",
@@ -88,7 +88,7 @@ test("phone review adventure verifies a real cooling repair and stays usable aft
   await page.goto("/");
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
   await openAdventureTool(page, "Learning adventures");
-  await page.getByRole("button", { name: "Open 6 · Review adventures", exact: true }).click();
+  await page.getByRole("button", { name: "Open Review adventures", exact: true }).click();
   await page.getByRole("button", { name: "Review conditions", exact: true }).click();
   await page
     .getByLabel("Review repair code", { exact: true })

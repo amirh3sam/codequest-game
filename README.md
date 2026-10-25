@@ -4,9 +4,9 @@
 
 A 2D adventure game that teaches programming in a modern tech city. Pick **Java, JavaScript, TypeScript or Python**, choose a hoodie developer, and help your courier repair the city. Explore 23 districts, each with eight coding tasks and a boss. Your code runs in the browser, with no account.
 
-**Never programmed before? Choose “Start from zero · New to coding.”** Its untimed robot rescue starts with instruction cards, then teaches a name variable, battery predictions, a guided value replay and small real-code changes. Solve an independent rescue using the same instruction with two starting batteries, then try a fresh prediction. Three levels of clues and unlimited retries help you practise. All four languages work, including Java with its surrounding class/main method supplied. Your robot name, drafts and seven discoveries stay with the adventure and its downloaded backup. Existing players can enter through **Menu → Start from zero** or **Tablet → Guide**.
+**Never programmed before? Leave “Guided adventure” selected and press Start adventure.** Your courier opens **My adventure** automatically with one next action, what you will learn and what to expect. Follow eight steps: rescue a robot → complete your first city mission → teach the Smart Gate → program deliveries → build and beat your own game → restore the city → complete three review repairs → claim your room rewards. Each completed activity leads to the next; refresh and backups remember the actual progress. The city objective also has **Continue this step**. Experienced players can choose **Explore freely** instead.
 
-Open **Menu → Learning adventures** (or **Tablet → Guide → Learning adventures**) for the learning-and-building path after Robot Rescue:
+Open **Menu → My adventure** or **Tablet → Guide → My adventure** to continue. Completed, current and upcoming steps appear in order. Expand **All activities · Free play** to revisit an activity whenever you want:
 
 | Adventure | What your code changes |
 | --- | --- |
@@ -17,7 +17,9 @@ Open **Menu → Learning adventures** (or **Tablet → Guide → Learning advent
 | Review adventures | Revisit a surprising answer with fresh examples of values, decisions and loops. |
 | My developer room | Earn hoodie colors, robot shells/antennas and room decorations; equip them and see your city character change. |
 
-These activities are optional and save independently for each adventure. Chapters, robot routes, playable game designs/records, restoration, review drafts and earned room rewards are included in **Save backup file**. Use the tablet's **Export project** separately to download editable coding folders/files. Download fresh copies after a study session; browser autosave cannot protect against cleared site data or a different device.
+The desktop and phone menus share seven choices: **My adventure, Tablet, Progress, World map, City activities, Help & controls, Save & profile**. Controls tours, the detailed player handbook and district examples live under Help; coding lessons follow My adventure. Saves and character management live together under Save & profile. Chapters, robot routes, playable game designs/records, restoration, review drafts and earned room rewards are included in **Save backup file**. Use the tablet's **Export project** separately to download editable coding folders/files. Download fresh copies after a study session; browser autosave cannot protect against cleared site data or a different device.
+
+**Want to see the first-time experience again?** Use **Menu → Save & profile → Try as a new player**, or [open the fresh-start link](https://codequest-game-inky.vercel.app/?first-time=1). Start fresh guided adventure downloads a backup and creates a new guided copy of your character/language. Your original adventure and source projects remain in Saved adventures. Existing saves are never automatically reset or forced into the guided path.
 
 > Status: **23 playable districts in all four languages, plus the learning adventures above.** Move with WASD/arrows, click a destination, or use mobile touch controls. Press E to interact. Eight tasks unlock each boss; defeating it unlocks the next district. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
@@ -31,9 +33,9 @@ Progress saves in this browser profile and survives refreshes. Use **Menu → Sa
 
 ![CodeQuest gameplay: hoodie developer, Kai the courier and coding terminals in the modern tech city](docs/screenshots/tech-city.png)
 
-Choose from color-coded JavaScript, Python, TypeScript or Java, then start a personal adventure. A step-by-step field guide explains keyboard or mobile movement, meeting your courier and opening your first coding task; you can skip it at any time. Open **Progress** to see mission counts, the next skill and the story chapter. **Accessibility & controls** offers larger text, high contrast and remappable movement keys. The guided drone lesson lets you predict, run, investigate and change a battery value before writing your own repair. Practice previews are free; accepted repairs earn progress and change the city.
+Choose from color-coded JavaScript, Python, TypeScript or Java, then start a personal adventure. The untimed first robot rescue introduces instruction cards, a name variable, battery predictions, a guided value replay and independent repairs with different inputs. Clues and unlimited retries help you practise. All four runtimes execute real code; Java's surrounding class/main method is supplied. Open **Progress** to see mission counts, the next skill and story chapter. **Help & controls → Accessibility & controls** offers larger text, high contrast and remappable movement keys. Practice previews are free; accepted repairs earn progress and change the city.
 
-Use the **Lighting console** or **Menu → Lighting** to program the city's route lights. Choose the whole map or one task's circuit, then print online/offline and a color. Your real program changes the visible lights; each map/adventure remembers its own settings. Lighting practice never spends hearts or gems.
+Use **Menu → City activities → Lighting console** to program the city's route lights. Choose the whole map or one task's circuit, then print online/offline and a color. Your real program changes the visible lights; each map/adventure remembers its own settings. Lighting practice never spends hearts or gems.
 
 The **City Arcade** now offers Packet Dash, a 2D runner where you jump signal glitches and collect data bits, and Signal Stack, a timing game where you build a tower of relays. Both are optional, cost no coding hearts or gems, and save separate personal bests with each adventure. Touchscreens have dedicated game controls.
 
@@ -52,7 +54,7 @@ The **City Arcade** now offers Packet Dash, a 2D runner where you jump signal gl
 
 ![Mina's optional community beacon with a chosen event, working code and live preview](docs/screenshots/community-beacon.png)
 
-Sound effects include textured footsteps, tactile clicks, tablet swishes, soft error knocks and layered completion chimes. Set **Effects volume** in **Menu**, or use **Sound on/off** on the title screen or toolbar. Both settings stay on this device. Audio starts after an interaction and stops when the tab is hidden.
+Sound effects include textured footsteps, tactile clicks, tablet swishes, soft error knocks and layered completion chimes. Set **Effects volume** or mute in **Menu → Help & controls → Accessibility & controls**; the title screen also offers mute. Both settings stay on this device. Audio starts after an interaction and stops when the tab is hidden.
 
 ![The actual drone lesson with a working code example, prediction choices and battery meter](docs/screenshots/drone-lesson.png)
 

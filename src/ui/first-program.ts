@@ -37,6 +37,8 @@ type Host = {
   mission(): void;
   tour(): void;
   nextChapter?(): void;
+  nextChapterLabel?(): string;
+  guided?: boolean;
   miss?(): void;
 };
 const COMMANDS: Record<RobotCommand, string> = {
@@ -134,9 +136,11 @@ export function openFirstProgram(host: Host): () => void {
         "",
         "Your robot and lessons are saved with this adventure. Save backup file in Menu keeps a copy on your computer. Your next city mission is waiting with your courier.",
       ),
-      button("Meet my courier", host.mission, "button primary"),
-      ...(host.nextChapter ? [button("Continue to Smart Gate", host.nextChapter, "button primary")] : []),
-      button("Tour the game controls", host.tour),
+      ...(!host.guided ? [button("Meet my courier", host.mission, "button primary")] : []),
+      ...(host.nextChapter
+        ? [button(host.nextChapterLabel?.() ?? "Continue to Smart Gate", host.nextChapter, "button primary")]
+        : []),
+      ...(!host.guided ? [button("Tour the game controls", host.tour)] : []),
       button("Explore the city", host.leave),
     );
     work.append(card);

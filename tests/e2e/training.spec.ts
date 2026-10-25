@@ -13,7 +13,7 @@ async function start(page: Page, lang: Lang = "javascript") {
   await page.goto("/");
   await page.locator(`[data-language="${lang}"]`).click();
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
-  await page.getByRole("button", { name: "Open detailed handbook", exact: true }).click();
+  await openAdventureTool(page, "Training");
   await expect(page.getByRole("dialog", { name: "CodeQuest training", exact: true })).toBeVisible();
 }
 async function chapter(page: Page, title: string) {
@@ -144,7 +144,7 @@ test("the complete tour and tablet help preserve drafts and the selected tab", a
 test("the title handbook works before a character exists and animations can pause", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
-  await page.getByRole("button", { name: "How to play · Interactive training", exact: true }).click();
+  await openAdventureTool(page, "Training");
   await chapter(page, "Find your way around");
   await page.getByRole("button", { name: "Walk to the marker", exact: true }).click();
   const image = await page.locator(".training-canvas").evaluate((node) => (node as HTMLCanvasElement).toDataURL());

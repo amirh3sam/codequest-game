@@ -1,0 +1,288 @@
+.adventure-path-panel {
+  max-width: 1080px;
+}
+.intro #adventure-style {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #5b839d;
+  border-radius: 9px;
+  background: #10243a;
+  color: #e7f6ff;
+}
+.fresh-guided-start {
+  margin-top: 0;
+}
+.path-coach {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid #426b83;
+  border-radius: 16px;
+  background: radial-gradient(ellipse at 0 100%, #224c5d, transparent 65%), #11253b;
+}
+.path-mentor {
+  flex: 0 0 94px;
+  height: 122px;
+  border-bottom: 2px solid #85dac9;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.path-mentor::before {
+  content: "";
+  position: absolute;
+  inset: 12px 0;
+  background: radial-gradient(ellipse, #77dfd822, transparent 68%);
+  animation: path-pulse 3s ease-in-out infinite;
+}
+.path-mentor canvas {
+  height: 112px;
+  width: 96px;
+  image-rendering: pixelated;
+  position: relative;
+}
+.path-speech h3 {
+  margin: 6px 0 10px;
+  font-size: clamp(19px, 3vw, 26px);
+}
+.path-speech p {
+  margin: 0;
+  line-height: 1.7;
+  color: #d1e1ec;
+}
+.path-current {
+  margin: 20px 0 12px;
+  padding: 22px 24px;
+  border: 2px solid #87dfca;
+  border-radius: 16px;
+  background: linear-gradient(130deg, #143a43, #152b44);
+  box-shadow: 0 8px 24px #0002;
+}
+.path-current h3 {
+  font-size: clamp(21px, 3vw, 29px);
+  margin: 8px 0;
+}
+.path-current p {
+  line-height: 1.6;
+}
+.path-learn {
+  color: #adeade;
+  font-weight: 600;
+}
+.path-expect {
+  padding: 10px 14px;
+  background: #091e30;
+  border-radius: 8px;
+  color: #c9dfed;
+}
+.path-continue {
+  min-height: 48px;
+  white-space: normal;
+  width: 100%;
+  font-size: 15px;
+}
+.path-progress {
+  font-size: 12px;
+  color: #b7dbcf;
+  margin: 14px 4px;
+}
+.path-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 20px;
+}
+.path-step {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 13px;
+  border: 1px solid #344e69;
+  border-radius: 11px;
+  margin: 9px 0;
+  background: #0f2238;
+}
+.path-step::before {
+  content: "";
+  position: absolute;
+  left: 32px;
+  top: 100%;
+  height: 11px;
+  width: 2px;
+  background: #56758b;
+}
+.path-step:last-child::before {
+  display: none;
+}
+.path-step-number {
+  flex: 0 0 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #5e7b95;
+  border-radius: 50%;
+  font: 16px monospace;
+  background: #172d46;
+  color: #bdcddd;
+}
+.path-step > div {
+  flex: 1;
+}
+.path-step small {
+  display: block;
+  color: #afc2d5;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.path-step.current {
+  border-color: #8ce4d0;
+  background: #173843;
+}
+.path-step.current .path-step-number,
+.path-step.complete .path-step-number {
+  background: #21534f;
+  color: #c3ffdf;
+  border-color: #8ce4d0;
+}
+.path-step.upcoming {
+  opacity: 0.8;
+}
+.path-replay {
+  font-size: 11px;
+  max-width: 210px;
+  white-space: normal;
+}
+.path-free-play {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #476078;
+  border-radius: 12px;
+  background: #102139;
+}
+.path-free-play summary {
+  cursor: var(--cursor-action);
+  font-weight: 600;
+  line-height: 1.6;
+}
+.path-activities {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.path-activities .adventure-hub-card {
+  margin: 0;
+}
+.path-hud-next {
+  pointer-events: auto;
+  padding: 8px 10px;
+  border: 1px solid #7acbb7;
+  border-radius: 6px;
+  background: #153c45;
+  color: #c9f6e9;
+  margin-top: 9px;
+  text-align: left;
+  cursor: var(--cursor-action);
+  font: inherit;
+}
+.adventure-menu-primary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.adventure-menu-primary .button {
+  white-space: normal;
+  min-height: 48px;
+}
+.adventure-menu-utilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 16px;
+}
+.adventure-help-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+}
+.adventure-help-grid article {
+  padding: 16px;
+  border: 1px solid #496780;
+  border-radius: 12px;
+  background: #11273d;
+}
+.adventure-help-grid h3 {
+  margin-top: 0;
+}
+.adventure-help-grid p {
+  line-height: 1.6;
+  color: #c9dbea;
+}
+.studio-path-goal {
+  border: 1px solid #8bdac5;
+  border-radius: 10px;
+  background: #123540;
+  padding: 12px 16px;
+  margin: 8px 0;
+}
+.studio-path-goal p {
+  margin: 6px 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.studio-path-goal .button {
+  margin: 5px 5px 0 0;
+}
+@keyframes path-pulse {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.92);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .path-mentor::before {
+    animation: none;
+  }
+}
+@media (max-width: 600px) {
+  .path-coach {
+    gap: 10px;
+    padding: 12px;
+    align-items: start;
+  }
+  .path-mentor {
+    flex-basis: 68px;
+    height: 100px;
+  }
+  .path-mentor canvas {
+    width: 77px;
+    height: 90px;
+  }
+  .path-speech p {
+    font-size: 12px;
+  }
+  .path-current {
+    padding: 16px;
+  }
+  .path-step {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .path-step strong {
+    font-size: 13px;
+  }
+  .path-step small {
+    font-size: 11px;
+  }
+  .path-replay {
+    margin-left: 48px;
+    max-width: none;
+    font-size: 11px;
+  }
+  .adventure-menu-primary {
+    grid-template-columns: 1fr;
+  }
+}

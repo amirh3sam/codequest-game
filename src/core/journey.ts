@@ -1,3 +1,4 @@
+import { type AdventurePath, isAdventurePath } from "./adventure-path";
 import { type ArcadeCreation, isArcadeCreations } from "./arcade-creation";
 import { type CityService, isRestored } from "./city-restoration";
 import { type CompanionState, isCompanion } from "./companion";
@@ -20,6 +21,7 @@ export type JourneyState = {
   reviews?: ReviewState;
   room?: RoomState;
   earned?: RewardId[];
+  path?: AdventurePath;
 };
 export function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -57,6 +59,7 @@ export function isJourney(value: unknown): value is JourneyState {
     (value.restored === undefined || isRestored(value.restored)) &&
     (value.reviews === undefined || isReviewState(value.reviews)) &&
     (value.room === undefined || isRoom(value.room)) &&
-    (value.earned === undefined || isEarned(value.earned))
+    (value.earned === undefined || isEarned(value.earned)) &&
+    (value.path === undefined || isAdventurePath(value.path))
   );
 }

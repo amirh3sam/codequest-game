@@ -1,8 +1,43 @@
 # Player training
 
-**Start from zero · New to coding** on the title screen creates a separate
-adventure and starts the beginner robot rescue. Existing players can open it
-through **Menu → Start from zero**, the phone hamburger, or **Tablet → Guide**.
+**Guided adventure** is selected by default on a new player's title screen.
+**Start adventure** opens **My adventure** automatically: a character welcome,
+one next action, what to learn, what to expect, and a completed/current/upcoming
+timeline. There is no requirement to choose between lessons, missions and training.
+
+The order is **Robot Rescue → first city mission → Smart Gate → robot delivery
+→ build and beat a game → restore three city services → three review repairs
+→ room rewards**. Each verified completion offers the next step directly. The
+city objective's **Continue this step**, **Menu → My adventure**, and
+**Tablet → Guide → My adventure** return to the same recommendation. A deployed
+robot route resumes on its saved map; a saved unbeaten game opens for play;
+unfinished review drafts reopen. After eight steps, continue the next normal city
+task. The 23 districts still each have eight tasks and a boss with sequential locks.
+
+The desktop and phone menus share seven choices:
+
+| Choice | Purpose |
+| --- | --- |
+| My adventure | Continue the recommended learning order. |
+| Tablet | Files, editor, Run/output and project work. |
+| Progress | Actual coding task, boss and badge progress. |
+| World map | Travel to unlocked districts. |
+| City activities | Arcade, lighting, robot lab, saved games and room. |
+| Help & controls | Controls tour, player handbook, district examples and accessibility/sound. |
+| Save & profile | Backups, switch adventure, character management and first-time replay. |
+
+Experienced players can choose **Explore freely** at creation. Existing saves
+keep their previous mode. **My adventure → All activities · Free play** lets
+anyone revisit activities without losing the recommended order.
+
+To try the first-time flow with your current character/language, open
+**Menu → Save & profile → Try as a new player** or
+[the fresh-start link](https://codequest-game-inky.vercel.app/?first-time=1).
+**Start fresh guided adventure** downloads a backup and makes a separate blank
+guided adventure. The original adventure and its source projects remain available.
+It does not erase the browser profile or force a reset on other players.
+
+The first action opens the beginner robot rescue.
 Its seven discoveries introduce ordered instructions, a string variable, numeric
 prediction, a three-line value replay, changing a charge, an independent rescue
 and a follow-up with different numbers. All four selected language runtimes run
@@ -14,19 +49,19 @@ The rescue tests the same charging instruction from both 3 and 4 cells, requirin
 Animations/meters follow the actual results; the instruction-card puzzle and
 guided replay are explicitly teaching activities. There is no countdown or heart
 cost. Completing the chapter earns Rescue Coder separately from city tasks.
-Players can meet their courier, tour the game controls or explore afterward.
+Guided players continue directly to their first courier/city mission afterward.
 
 Robot name, cards, ordered completion, current lesson and editable drafts are
 saved per adventure under its optional version-1 `beginner` field and travel in
 **Save backup file / Load backup file**. Refresh resumes an active lesson; leaving
-pauses it for reopening from Menu. Existing saves work without the new field.
+pauses it for reopening from My adventure. Existing saves work without the new field.
 Restart resets this chapter too; rename preserves it and deletion removes it with
 the adventure. Storage failures are reported in the chapter banner. Phone scenes
 remain visible beside/above practice and adapt after rotation; Reduce Motion
 removes movement transitions.
 
-New developers choosing **Start adventure** enter a 24-step character-led **Guide tour** after choosing a
-language, character and name. Ava or Kai appears beside a speech bubble with
+The optional **Help & controls → Show controls tour** opens a 24-step
+character-led tour. Ava or Kai appears beside a speech bubble with
 animated captions, glowing spotlights and arrows pointing at the real controls.
 The tour opens the actual tablet tabs, world map, lighting console, arcade lobby,
 backup menu, character settings and accessibility controls. It explains each one
@@ -44,9 +79,9 @@ players can opt in, and prior handbook sessions continue where they stopped.
 
 The title screen also has a seven-step Guide tour covering languages, avatar/name
 selection, saved adventures and backups. Replaying it does not create a character.
-In the city, **Guide tour** is in Menu and the phone hamburger.
+In the city, the tour is under **Help & controls** in both menus.
 
-**Training** opens the separate 13-chapter interactive handbook. Its 2D scenes use
+**Help & controls → Open player handbook** opens a 13-chapter interactive handbook. Its 2D scenes use
 the game's developer sprites, city artwork and illustrated wrist tablet. Players
 control the pace with Back/Next, a chapter index, pause/replay animation controls
 and Skip training. The guide's **Open detailed handbook** provides direct access.
@@ -63,12 +98,12 @@ Submit and every other preview leave adventure tasks, hearts, gems and records
 unchanged. Leaving a running lesson cancels execution and removes its animation.
 
 Each of the 23 districts has a three-part briefing with its actual lesson,
-selected-language example, first task and boss. The first arrival opens it once;
+selected-language example, first task and boss. Free-exploration players can enable automatic first-arrival briefings;
 Finish/Skip remembers that district in the adventure, including downloaded backup
 files. Returning players with older saves can opt in without an unsolicited tour.
 
-Use **Menu → Training**, **Training** in the phone hamburger menu, or
-**How to play** on the title screen to replay. **Tablet help** opens the tablet
+Use **Menu → Help & controls → Open player handbook**, or **Help & controls**
+on the title screen to replay. **Tablet help** opens the tablet
 chapter and returns to the same tab on Finish/Skip, Escape or ×, preserving files
 and drafts. The handbook can turn automatic district introductions on/off.
 
@@ -85,7 +120,7 @@ Per-adventure district history is the optional
 Adventure backups and tablet project exports are separate; the training explains
 both and does not imply an account or automatic cloud synchronization.
 
-Character controls are available at **Menu → Manage character**, or from the title
+Character controls are available at **Menu → Save & profile → Manage character**, or from the title
 screen's **Manage adventures → Manage [name]**. Rename keeps the adventure ID,
 missions, records and coding files. Restart keeps the name, appearance and
 language but creates a fresh adventure at level 1, resetting all district progress
@@ -100,11 +135,11 @@ backups or files in connected computer folders. Other open tabs retire the old
 adventure and discard pending drafts when it is removed.
 ## Learning adventures and your own creations
 
-Open **Menu → Learning adventures** on desktop, or the phone hamburger menu's **Learning adventures**. The same hub is available in **Tablet → Guide**. Its cards show chapter discoveries, delivered routes, saved games, restored services, completed reviews and earned rewards. These optional activities add another path alongside the 23 district maps; they do not bypass district tasks or boss locks.
+Open **Menu → My adventure** on desktop or phone. The same path is available in **Tablet → Guide**. Its ordered steps show verified progress; expanded free-play cards show discoveries, delivered routes, saved games, restored services, reviews and rewards. These activities do not bypass district tasks or boss locks.
 
 1. After **Robot Rescue**, continue to **The Smart Gate**. Run a real condition, make a prediction, follow the chosen branch, include the exact minimum energy, then require a delivery badge as well. Expand the complete program whenever you want to see its supplied class/print scaffolding. All four languages work.
 2. Open **Robot companion**. Run a loop or a list that prints exactly three different terminal numbers from 1 to 8. **Deploy route in city** becomes available only for valid real output. The named robot walks around obstacles and saves each delivery checkpoint. It waits while menus are open; unfinished routes resume in their saved district. Deliveries do not complete coding tasks.
-3. Open **Arcade Builder → Build a game in tablet**, then **Start Arcade Builder → Open project files**. Change GameRules, select Main and run. The two milestones teach changing the title and gem goal. After that, experiment with color, wall count, scoring, speed and night/garden themes. **Play my game** appears for valid output; editing requires another run. Save a playable design or try it without saving. **My arcade** holds up to eight games per adventure; keyboard/touch controls, pause and restart are available. Collect all gems to win. Export project downloads its editable source separately.
+3. The guided game step opens **Code** directly with GameRules selected and the next goal above the editor. Change the title, Run, then change the gem goal and Run again. Run starts Main for this project in every language, even while editing GameRules. Free players can also start through **Projects → Start Arcade Builder → Open project files**. Experiment with color, walls, scoring, speed and themes. **Play my game** appears for valid output; editing requires another run. Save a playable design and collect all gems to finish the guided step. **My arcade** holds up to eight games per adventure with keyboard/touch controls, pause and restart. Export project downloads editable source separately.
 4. In **Restore the city**, Gatekeeper reopens the workshop, one physical robot route repairs tram service, and a workshop/tram plus a beaten saved game reconnect the data exchange. Use the workshop's actual campus door, project services or room. Tram ticket desks open the regular world map and retain its locks. Physical trams run on the districts' existing tracks; reduced motion keeps the art stationary while travel remains available. Courier dialogue remembers repairs.
 5. **Review adventures** suggests a recent unresolved idea from beginner answers, robot routes or early district submissions. Every repair uses fresh inputs; fixed answers can fail another check. Three variants per concept cover changing values, cooling decisions and repeated markers. Clues build toward an explained solution. Syntax/runtime errors do not create a concept-mistake record. Completion clears the suggestion and rotates its next story. This information stays on your device and in adventure backups.
 6. In **My developer room**, equip earned hoodie colors, robot shells and antenna parts, choose a free wall color, and add earned plants, a lamp or a trophy. Requirements appear beside locked choices. Clothing and robot parts also change in the city. Earned rewards stay earned when you remove a saved mini-game. Restarting the adventure starts fresh; renaming keeps it all.

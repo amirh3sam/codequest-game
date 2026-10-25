@@ -15,6 +15,7 @@ export function openLearningReview(host: {
   miss(): void;
   complete(): void;
   next(): void;
+  nextLabel?(): string;
   hub(): void;
 }): () => void {
   const progress = structuredClone(host.progress ?? newReview()),
@@ -158,6 +159,7 @@ export function openLearningReview(host: {
       } else {
         complete = true;
         host.complete();
+        next.textContent = host.nextLabel?.() ?? "Try a new example";
         status.textContent =
           "Review complete! You used the idea in a new situation. Your next example will use different values.";
         next.hidden = false;

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { chargeInstruction } from "../../src/content/first-program";
+import { openAdventureTool } from "./helpers/adventure-tools";
 import { beginnerState, seedBeginner } from "./helpers/beginner";
 
 test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
@@ -29,7 +30,7 @@ for (const lang of ["javascript", "java"] as const) {
     await expect(page.locator(".zero-achievement")).toBeVisible();
     await page.getByRole("button", { name: "Explore the city", exact: true }).tap();
     await page.getByRole("button", { name: "Open game menu", exact: true }).tap();
-    await page.getByRole("button", { name: "Start from zero", exact: true }).tap();
+    await openAdventureTool(page, "Start from zero");
     await expect(page.locator(".zero-achievement")).toBeVisible();
     expect((await beginnerState(page)).beginner?.status).toBe("complete");
     expect(errors).toEqual([]);

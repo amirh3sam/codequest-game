@@ -9,6 +9,7 @@ async function start(page: Page) {
   await page.goto("/");
   await page.getByRole("button", { name: "Boy hero", exact: true }).click();
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
+  await openAdventureTool(page, "Guide tour");
   await expect(page.locator(".guide-tour")).toBeVisible();
 }
 async function jump(page: Page, id: string) {
@@ -91,7 +92,7 @@ test("deleting a character in another tab dismisses its running tour safely", as
   await other.locator(".title-adventure-row").first().click();
   await other.getByRole("button", { name: "Skip tour", exact: true }).click();
   await other.getByRole("button", { name: "Menu", exact: true }).click();
-  await other.getByRole("button", { name: "Manage character", exact: true }).click();
+  await openAdventureTool(other, "Manage character");
   await other.getByRole("button", { name: "Delete this character", exact: true }).click();
   await other.getByLabel("Type DELETE to confirm", { exact: true }).fill("DELETE");
   await other.getByRole("button", { name: "Delete permanently", exact: true }).click();

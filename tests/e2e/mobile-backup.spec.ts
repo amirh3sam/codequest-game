@@ -1,3 +1,5 @@
+import { openAdventureTool } from "./helpers/adventure-tools";
+
 declare const Buffer: { from(input: string): Uint8Array };
 
 import { expect, test } from "@playwright/test";
@@ -31,7 +33,7 @@ test("adventure backup can be downloaded and restored as a separate save", async
   await page.getByRole("button", { name: "Start adventure" }).click();
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Save backup file", exact: true }).click();
+  await openAdventureTool(page, "Save backup file");
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toMatch(/^CodeQuest-javascript-Backup\.json$/);
   const state = await page.evaluate(() => {
@@ -55,6 +57,6 @@ test("adventure backup can be downloaded and restored as a separate save", async
   });
   await expect(page.locator(".hero-name")).toHaveText("Backup");
   await page.getByRole("button", { name: "Menu", exact: true }).click();
-  await page.getByRole("button", { name: "Switch adventure", exact: true }).click();
+  await openAdventureTool(page, "Switch adventure");
   await expect(page.locator(".adventure-card")).toHaveCount(2);
 });
