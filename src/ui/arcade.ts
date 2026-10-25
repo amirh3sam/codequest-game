@@ -10,6 +10,7 @@ export type ArcadeHost = {
   panel(title: string, subtitle: string, wide?: boolean): HTMLElement;
   recordPacketDash(score: number): void;
   recordSignalStack(score: number): void;
+  creations?(): void;
 };
 
 export function openArcade(host: ArcadeHost): void {
@@ -56,4 +57,5 @@ export function openArcade(host: ArcadeHost): void {
   );
   games.append(dash, stack);
   panel.append(games);
+  if (host.creations) panel.append(button("My arcade · Play your own creations", host.creations, "button primary"));
 }

@@ -20,6 +20,7 @@ import {
   studyBossFor,
   studyTaskFor,
 } from "../content/study-curriculum";
+import { type GameDesign, readGameDesign } from "../core/arcade-creation";
 import { executionError } from "../grader/grade";
 import type { Lang, RunResult } from "../runners/types";
 import { beginnerHint, diagnosticLine, focusEditorLine } from "./debug-guidance";
@@ -58,6 +59,8 @@ type TabletHost = {
   help?(tab: number): void;
   beginner?(): void;
   adventures?(): void;
+  playCreation?(design: GameDesign): void;
+  myArcade?(): void;
   studyLevelOffset?: number;
   studyPrerequisiteComplete?: boolean;
   studyWorld?: {
@@ -535,7 +538,13 @@ export function openTablet(host: TabletHost): () => void {
       ),
     );
   };
+  let playable: GameDesign | null = null;
+  const invalidateCreation = () => {
+    playable = null;
+    panel.querySelector<HTMLButtonElement>(".studio-play-creation")?.setAttribute("hidden", "");
+  };
   const persistProject = () => {
+    invalidateCreation();
     project.files[activePath] = code.value;
     if (!writeWorkspace(workspaceKey, project))
       status.textContent = "Browser storage is full; connect or download your project.";
@@ -601,6 +610,14 @@ export function openTablet(host: TabletHost): () => void {
   });
   const output = el("pre", "studio-output", "Run a program to see its output here.");
   output.setAttribute("aria-label", "Practice output");
+  const playCreation = button(
+    "Play my game",
+    () => {
+      if (playable) host.playCreation?.(playable);
+    },
+    "button primary studio-play-creation",
+  );
+  playCreation.hidden = true;
   const feedback = el("p", "studio-feedback");
   const debugHelp = el("div", "debug-guidance");
   feedback.setAttribute("role", "status");
@@ -615,6 +632,7 @@ export function openTablet(host: TabletHost): () => void {
   const execute = async () => {
     if (running || !panel.isConnected) return;
     running = true;
+    invalidateCreation();
     run.disabled = true;
     code.disabled = true;
     monacoEditor?.setReadOnly(true);
@@ -629,6 +647,8 @@ export function openTablet(host: TabletHost): () => void {
       const result = await host.run(project.files[runPath] ?? code.value, projectSources, runPath);
       if (!panel.isConnected) return;
       const error = executionError(result);
+      playable = error ? null : readGameDesign(result.stdout);
+      playCreation.hidden = !playable || !host.playCreation;
       const lineOffset =
         host.lang === "java"
           ? 0
@@ -806,7 +826,7 @@ export function openTablet(host: TabletHost): () => void {
     action.prepend(toolIcon(icon));
     projectActions.append(action);
   }
-  toolbar.append(run, el("span", "studio-run-hint", "Ctrl / ⌘ + Enter"), projectActions, importInput);
+  toolbar.append(run, playCreation, el("span", "studio-run-hint", "Ctrl / ⌘ + Enter"), projectActions, importInput);
   const javaShortcutHint =
     host.lang === "java"
       ? el("p", "studio-java-shortcuts", `Java snippets: ${JAVA_SHORTCUTS} · Press Ctrl+Space for suggestions`)
@@ -817,6 +837,7 @@ export function openTablet(host: TabletHost): () => void {
       el("span", "eyebrow", "MULTI-FILE PROJECTS"),
       el("h3", "", "Build something that works together"),
     );
+    if (host.myArcade) projectsPane.append(button("My arcade", host.myArcade, "button primary"));
     for (const quest of PROJECT_QUESTS) {
       const card = el("article", "studio-project-card");
       const progress = readProjectQuestProgress(host.adventureId ?? `guest-${host.lang}`, quest.id);
@@ -848,7 +869,13 @@ export function openTablet(host: TabletHost): () => void {
       } else {
         card.append(
           button(
-            progress ? "Resume project quest" : "Start project quest",
+            quest.id === "arcade-builder"
+              ? progress
+                ? "Resume Arcade Builder"
+                : "Start Arcade Builder"
+              : progress
+                ? "Resume project quest"
+                : "Start project quest",
             () => launchProjectQuest(quest),
             "button primary",
           ),

@@ -18,6 +18,7 @@ import {
   restartAdventure,
 } from "../core/adventure-management";
 import { ADVENTURES_KEY, loadAdventures, saveAdventure } from "../core/adventures";
+import type { GameDesign } from "../core/arcade-creation";
 import { makeAdventureBackup, parseAdventureBackup } from "../core/backup";
 import { type BeginnerProgress, createBeginnerProgress } from "../core/beginner";
 import { checkpoint, deliveryExample } from "../core/companion";
@@ -63,6 +64,7 @@ import { beginnerHint, diagnosticLine, focusEditorLine } from "./debug-guidance"
 import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
 import { openFirstProgram } from "./first-program";
+import { openGridGame } from "./grid-game";
 import { openGuidedTour } from "./guided-tour";
 import { openHubFinale } from "./hub-finale";
 import { openLightingConsole } from "./lighting-console";
@@ -1204,6 +1206,7 @@ export class GameApp {
       packetDashBest = this.state.games?.packetDashBest ?? 0,
       signalStackBest = this.state.games?.signalStackBest ?? 0;
     openArcade({
+      creations: () => this.myArcade(),
       name,
       runner,
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
@@ -1364,6 +1367,8 @@ export class GameApp {
       help: (tab) => this.training("tablet", false, tab),
       beginner: () => this.beginnerChapter(),
       adventures: () => this.learningHub(),
+      playCreation: (design) => this.creationPreview(design),
+      myArcade: () => this.myArcade(),
       focusCamera: () => this.scene.focusTablet(),
       panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
       run: (code, files, entryPath) => this.practice(code, files, entryPath),
@@ -2005,11 +2010,107 @@ export class GameApp {
         "Write loops and delivery lists, then send your named partner along real city paths.",
         () => this.companionLab(),
       ],
+      [
+        "4 · Arcade Builder",
+        "Make a playable game by editing its rules in a multi-file project. Save and replay your own creations.",
+        () => this.myArcade(),
+      ],
     ] as const) {
       const card = el("article", "adventure-hub-card");
       card.append(el("h3", "", title), el("p", "", body), button(`Open ${title}`, action, "button primary"));
       panel.append(card);
     }
+  }
+  private creationPreview(design: GameDesign): void {
+    if (!this.state) return;
+    const panel = this.panel("Your playable creation", `${design.name} · Real rules from your program`, true);
+    const existing = this.state.journey?.creations?.find((c) => c.design.name === design.name);
+    panel.append(
+      el(
+        "p",
+        "zero-concept",
+        `${design.goal} gems · ${design.obstacles} walls · ${design.points} points per gem · ${design.speed} steps/second · ${design.theme} theme`,
+      ),
+      el(
+        "p",
+        "muted",
+        "Saving keeps these playable rules and your record in this adventure and its disk backup. Export project in the tablet to download the editable source files too. Updating a design starts a fresh record.",
+      ),
+    );
+    const save = button(
+      existing ? "Update saved game & play" : "Save game & play",
+      () => {
+        if (!this.state) return;
+        const creations = this.state.journey?.creations ?? [];
+        if (!existing && creations.length >= 8) return;
+        const item = { id: existing?.id ?? crypto.randomUUID(), design: structuredClone(design), best: 0, won: false };
+        const updated = existing ? creations.map((c) => (c.id === existing.id ? item : c)) : [...creations, item];
+        if (this.updateJourney({ creations: updated })) this.playCreation(design, item.id);
+        else this.toast("Saving unavailable. Free device space or download an adventure backup.");
+      },
+      "button primary",
+    );
+    save.disabled = !existing && (this.state.journey?.creations?.length ?? 0) >= 8;
+    if (save.disabled)
+      panel.append(
+        el("p", "feedback", "Your eight game slots are full. Remove a creation from My arcade or play without saving."),
+      );
+    panel.append(
+      save,
+      button("Play without saving", () => this.playCreation(design)),
+      button("Return to project", () => this.tablet(false, undefined, undefined, 6)),
+    );
+  }
+  private myArcade(): void {
+    if (!this.state) return;
+    const panel = this.panel("My arcade", "Your saved games · Each adventure has its own library", true);
+    const creations = this.state.journey?.creations ?? [];
+    panel.append(
+      el(
+        "p",
+        "zero-concept",
+        `${creations.length}/8 saved creations. Make a game in Tablet → Projects → Arcade Builder. Disk adventure backups include playable rules and records; use Export project for the source code.`,
+      ),
+      button("Build a game in tablet", () => this.tablet(false, undefined, undefined, 6), "button primary"),
+    );
+    for (const c of creations) {
+      const card = el("article", "adventure-hub-card");
+      card.append(
+        el("h3", "", c.design.name),
+        el("p", "", `${c.design.goal} gems · ${c.design.obstacles} walls · Best ${c.best}${c.won ? " · Beaten!" : ""}`),
+        button(`Play ${c.design.name}`, () => this.playCreation(c.design, c.id), "button primary"),
+        button(`Delete ${c.design.name}`, () => {
+          if (
+            !this.state ||
+            !confirm(`Delete saved game “${c.design.name}” and its record? Project source files stay in your tablet.`)
+          )
+            return;
+          this.updateJourney({ creations: this.state.journey?.creations?.filter((item) => item.id !== c.id) ?? [] });
+          this.myArcade();
+        }),
+      );
+      panel.append(card);
+    }
+  }
+  private playCreation(design: GameDesign, creationId?: string): void {
+    if (!this.state) return;
+    const adventureId = this.state.adventureId;
+    this.tabletCleanup = openGridGame({
+      design,
+      best: this.state.journey?.creations?.find((c) => c.id === creationId)?.best ?? 0,
+      panel: () => this.panel(design.name, "Your code, your game · Collect data gems and avoid walls", true),
+      library: () => this.myArcade(),
+      record: (score, won) => {
+        if (!this.state || this.state.adventureId !== adventureId || !creationId) return;
+        const c = this.state.journey?.creations?.find((c) => c.id === creationId);
+        if (!c || (score <= c.best && (!won || c.won))) return;
+        this.updateJourney({
+          creations: this.state.journey?.creations?.map((item) =>
+            item.id === creationId ? { ...item, best: Math.max(item.best, score), won: item.won || won } : item,
+          ),
+        });
+      },
+    });
   }
   private companionLab(): void {
     if (!this.state) return;

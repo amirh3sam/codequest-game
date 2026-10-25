@@ -1,0 +1,38 @@
+.grid-game-panel {
+  max-width: 900px;
+}
+.grid-game-canvas {
+  display: block;
+  width: min(100%, 600px);
+  height: auto;
+  margin: 16px auto;
+  border: 2px solid #4e88a5;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px #0006;
+  touch-action: none;
+}
+.grid-game-status {
+  text-align: center;
+  font-family: var(--font-mono, monospace);
+  color: #aff5e4;
+  min-height: 2em;
+}
+.grid-game-panel > .button {
+  margin: 4px 5px 4px 0;
+}
+.grid-game-controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0;
+}
+.grid-game-controls .button {
+  min-width: 64px;
+  min-height: 48px;
+}
+@media (max-width: 600px) {
+  .grid-game-controls .button {
+    min-width: 54px;
+    padding: 10px;
+  }
+}

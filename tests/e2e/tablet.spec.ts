@@ -164,7 +164,12 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
       timeout: 60_000,
     });
     await page.getByRole("tab", { name: "Projects", exact: true }).click();
-    await expect(page.locator(".studio-project-progress")).toHaveText("2 / 2 project milestones");
+    await expect(
+      page
+        .locator(".studio-project-card")
+        .filter({ has: page.getByRole("heading", { name: "Badge Builder", exact: true }) })
+        .locator(".studio-project-progress"),
+    ).toHaveText("2 / 2 project milestones");
     await expect(page.getByText("Project complete! You built a working multi-file feature.")).toBeVisible();
   });
 }

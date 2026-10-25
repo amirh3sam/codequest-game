@@ -1,0 +1,32 @@
+import { expect, test } from "@playwright/test";
+import { openAdventureTool } from "./helpers/adventure-tools";
+
+test.use({ reducedMotion: "reduce" });
+test("phone arcade creation runs code, saves a game and uses touch controls after rotation", async ({ page }, info) => {
+  test.setTimeout(120000);
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/");
+  await page.getByRole("button", { name: "Start adventure", exact: true }).click();
+  await openAdventureTool(page, "Tablet");
+  await page.getByRole("tab", { name: "Projects", exact: true }).click();
+  await page.getByRole("button", { name: "Start Arcade Builder", exact: true }).click();
+  await page.getByRole("button", { name: "Open project files", exact: true }).click();
+  await page.getByRole("button", { name: "Run practice code", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Play my game", exact: true })).toBeVisible({ timeout: 60000 });
+  await page.getByRole("button", { name: "Play my game", exact: true }).click();
+  await page.getByRole("button", { name: "Save game & play", exact: true }).click();
+  await page.getByRole("button", { name: "Right", exact: true }).click();
+  await expect(page.locator(".grid-game-status")).toContainText("column 2");
+  await page.getByRole("button", { name: "Pause game", exact: true }).click();
+  await page.getByRole("button", { name: "Right", exact: true }).click();
+  await expect(page.locator(".grid-game-status")).toContainText("column 2");
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.getByRole("button", { name: "Resume game", exact: true }).click();
+  await page.getByRole("button", { name: "Right", exact: true }).click();
+  await expect(page.locator(".grid-game-status")).toContainText("column 3");
+  await page.screenshot({ path: info.outputPath("phone-custom-arcade.png") });
+  await page.getByRole("button", { name: "My arcade", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Play My Byte Run", exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+});
