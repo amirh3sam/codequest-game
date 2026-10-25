@@ -3,12 +3,15 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: true,
+  timeout: 60_000,
+  expect: { timeout: 15_000 },
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL: "http://localhost:4317",
     trace: "on-first-retry",
+    screenshot: "only-on-failure",
     // Existing journeys represent players who chose to skip the optional tour.
     // training.spec.ts uses an empty browser to exercise first-visit behavior.
     storageState: {

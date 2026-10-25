@@ -1,0 +1,30 @@
+.companion-panel .setting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #456b82;
+  border-radius: 9px;
+  background: #122d40;
+  margin: 16px 0;
+}
+.companion-panel .setting-row input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: #8ce4cf;
+}
+.companion-panel .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 14px 0;
+}
+.companion-panel .zero-code {
+  min-height: 200px;
+}
+.companion-panel .zero-output[data-state="error"] {
+  color: #ffd0c5;
+  border-color: #a66a75;
+  background: #291c2a;
+}

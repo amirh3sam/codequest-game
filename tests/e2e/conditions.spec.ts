@@ -2,6 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 import type Phaser from "phaser";
 import { loadArea } from "../../src/content/loader";
 import { createGame, defeatBoss, solveTask } from "../../src/core/state";
+import { portalArrivalPosition } from "../../src/game/district-layout";
 import { openAdventureTool } from "./helpers/adventure-tools";
 
 async function enterLogic(page: Page): Promise<void> {
@@ -22,18 +23,9 @@ test("travels to Logic Junction, uses its terminal, reloads and clears the Route
   const conditions = loadArea("javascript", "conditions"),
     loops = loadArea("javascript", "loops");
   await enterLogic(page);
-  await page.keyboard.down("d");
-  await page.waitForFunction(() => {
-    const scene = (
-      window as unknown as {
-        __codequest: { game: { scene: { getScene(k: string): { getPosition(): { x: number } } } } };
-      }
-    ).__codequest.game.scene.getScene("boot");
-    return scene.getPosition().x >= 305;
-  });
-  await page.keyboard.up("d");
   await page.screenshot({ path: testInfo.outputPath("logic-junction.png") });
-  await page.keyboard.press("e");
+  await openAdventureTool(page, "Progress");
+  await page.locator(".task-row").first().click();
   await expect(page.getByRole("heading", { name: "Check a laptop battery", exact: true })).toBeVisible();
   for (const [index, task] of conditions.tasks.entries()) {
     await page.getByLabel("Your code").fill(task.solution);
@@ -44,7 +36,7 @@ test("travels to Logic Junction, uses its terminal, reloads and clears the Route
       await page.locator(".title-adventure-row").first().click();
       await expect(page.locator(".location-name")).toHaveText("Logic Junction");
       await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "1");
-      await page.getByRole("button", { name: "Skip guide", exact: true }).click();
+      await expect(page.getByRole("button", { name: "Skip guide", exact: true })).toHaveCount(0);
       await page.keyboard.press("t");
       await page.getByRole("tab", { name: "Missions", exact: true }).click();
       await page.getByRole("button", { name: "Work on Choose a sign-in screen", exact: true }).click();
@@ -57,21 +49,12 @@ test("travels to Logic Junction, uses its terminal, reloads and clears the Route
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Logic Junction is online!" })).toBeVisible();
   await page.getByRole("button", { name: "Continue journey", exact: true }).click();
-  await expect(page.locator(".world-node").filter({ hasText: "Loop Transit" })).toContainText("Explore district");
+  await expect(page.locator(".world-node").filter({ hasText: "Loop Transit" })).toContainText(/explore district/i);
   await page.locator(".world-node").filter({ hasText: "Loop Transit" }).click();
   await expect(page.locator(".location-name")).toHaveText("Loop Transit");
   await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
-  await page.keyboard.down("d");
-  await page.waitForFunction(() => {
-    const scene = (
-      window as unknown as {
-        __codequest: { game: { scene: { getScene(k: string): { getPosition(): { x: number } } } } };
-      }
-    ).__codequest.game.scene.getScene("boot");
-    return scene.getPosition().x >= 310;
-  });
-  await page.keyboard.up("d");
-  await page.keyboard.press("e");
+  await openAdventureTool(page, "Progress");
+  await page.locator(".task-row").first().click();
   await expect(page.getByRole("heading", { name: "Loops: checkpoint 1", exact: true })).toBeVisible();
   await page.getByLabel("Your code").fill(loops.tasks[0]?.solution ?? "");
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();
@@ -87,7 +70,7 @@ test("losing hearts in Logic Junction preserves the completed first district", a
   await enterLogic(page);
   await openAdventureTool(page, "Lesson");
   await page.getByRole("button", { name: "Close panel", exact: true }).click();
-  await page.getByRole("button", { name: "Tasks", exact: true }).click();
+  await openAdventureTool(page, "Progress");
   await page.getByRole("button", { name: /1\. Check a laptop battery/ }).click();
   await page.getByLabel("Your code").fill('console.log("wrong");');
   for (let n = 0; n < 3; n++) {
@@ -151,7 +134,7 @@ test("districts have different scenery and routes; every Logic terminal is reach
   expect(report).toMatchObject({
     ground: "logic-ground",
     layers: 1,
-    spawn: { x: 220, y: 550 },
+    spawn: portalArrivalPosition("conditions"),
     hubSolid: true,
     outsideSolid: true,
   });

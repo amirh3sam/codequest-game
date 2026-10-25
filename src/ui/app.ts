@@ -627,11 +627,10 @@ export class GameApp {
       else void this.viewport.requestLandscape();
       return;
     }
-    if (!existing && training.welcome === "new" && guide.status === "new") this.guidedTour();
+    if (firstRun && training.welcome === "new" && guide.status === "new") this.guidedTour();
     else if (!existing && training.welcome !== "in-progress" && guide.status === "in-progress")
       this.guidedTour(guide.index);
-    else if (!existing && (training.welcome === "new" || training.welcome === "in-progress"))
-      this.training(training.chapter);
+    else if (!existing && training.welcome === "in-progress") this.training(training.chapter);
     else if (training.autoDistricts && !state.training?.districts.includes(state.currentArea))
       this.training(undefined, true);
     else void this.viewport.requestLandscape();
@@ -2044,6 +2043,7 @@ export class GameApp {
   private guidedTour(initial = 0): void {
     this.guideCleanup?.();
     this.guideCleanup = null;
+    if (!this.state) this.intro();
     if (this.state?.journey?.path) this.updateJourney({ path: { ...this.state.journey.path, help: "tour" } });
     this.capturePosition();
     this.tabletNavigation = false;

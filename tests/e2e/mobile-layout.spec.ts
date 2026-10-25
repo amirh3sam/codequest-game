@@ -37,8 +37,9 @@ test("portrait shows menus and a rotate prompt; landscape keeps the city clear",
 
   await page.getByRole("button", { name: "Open game menu" }).tap();
   await expect(page.getByRole("heading", { name: "Adventure menu" })).toBeVisible();
-  await expect(page.locator(".mobile-game-menu .objective")).toBeVisible();
-  await expect(page.locator(".mobile-game-menu").getByLabel("First steps guide")).toBeVisible();
+  await expect(page.locator(".mobile-game-menu .zero-concept")).toContainText("Your next step:");
+  await expect(page.locator(".mobile-game-menu .mobile-player-stats")).toContainText("0/8 city tasks");
+  await expect(page.locator(".mobile-game-menu .adventure-menu-primary > button")).toHaveCount(7);
   await page.getByRole("button", { name: "World map", exact: true }).tap();
   await expect(page.locator(".world-node")).toHaveCount(23);
   await page.getByRole("button", { name: "Close panel", exact: true }).tap();
@@ -55,7 +56,6 @@ test("portrait shows menus and a rotate prompt; landscape keeps the city clear",
   await page.screenshot({ path: testInfo.outputPath("mobile-landscape-city.png") });
   await page.getByRole("button", { name: "Open game menu" }).tap();
   await expect(page.getByRole("button", { name: "Move up" })).toBeHidden();
-  await page.getByRole("button", { name: "Skip guide" }).tap();
   await expect(page.locator(".mobile-game-menu .field-guide")).toHaveCount(0);
   await page.getByRole("button", { name: "Resume adventure", exact: true }).tap();
   await page.setViewportSize({ width: 390, height: 844 });

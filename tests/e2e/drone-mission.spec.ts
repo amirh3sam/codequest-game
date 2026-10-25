@@ -106,6 +106,7 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     await expect(page.locator(".toast")).toContainText("Delivery complete!");
     await page.reload();
     await page.locator(".title-adventure-row").first().click();
+    await expect(page.locator(".guide-tour, .training-overlay")).toHaveCount(0);
     expect(await routeOpen(page)).toBe(true);
     expect((await saved(page, lang)).areas.variables).toMatchObject({
       solved: ["variables-1", "variables-2"],
@@ -129,7 +130,7 @@ test("Kai gives a purpose to the first badge and leads into the lesson", async (
   await page.goto("/");
   await page.getByRole("button", { name: "Start adventure", exact: true }).click();
   await openAdventureTool(page, "Mission");
-  await expect(page.getByRole("heading", { name: "Kai · A delivery worth debugging" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Kai - A delivery worth debugging" })).toBeVisible();
   await page.getByRole("button", { name: "Create the training badge", exact: true }).click();
   await page.getByLabel("Your code", { exact: true }).fill(loadVariables("javascript").tasks[0]?.solution ?? "");
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();
@@ -160,7 +161,7 @@ test("a closed gate stops walking; an existing completion restores a walkable la
 test("opening the tablet during a delivery restores the camera and permits walking afterward", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await seed(page, "javascript");
-  await page.getByRole("button", { name: "Tasks", exact: true }).click();
+  await openAdventureTool(page, "Progress");
   await page.getByRole("button", { name: /2\. Charge the delivery drone/ }).click();
   await page.getByLabel("Your code", { exact: true }).fill(loadVariables("javascript").tasks[1]?.solution ?? "");
   await page.getByRole("button", { name: "Submit answer", exact: true }).click();

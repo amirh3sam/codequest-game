@@ -45,7 +45,7 @@ export class RestoredCity {
     const campus = state.currentArea === "variables",
       logic = state.currentArea === "conditions";
     const ticket = scene.add
-      .container(campus ? 480 : logic ? 768 : 1280, campus ? 238 : logic ? 423 : 748)
+      .container(campus ? 515 : logic ? 768 : 1280, campus ? 278 : logic ? 449 : 748)
       .setDepth(logic ? 433 : 4)
       .setName("tram-ticket-desk")
       .setData("service", tram ? "online" : "offline");
@@ -81,7 +81,7 @@ export class RestoredCity {
     if (workshop) art.fillStyle(0x102b39).fillRect(-8, -20, 16, 37);
     root.add(art);
     const label = scene.add
-      .text(0, -34, workshop ? "WORKSHOP / OPEN" : "WORKSHOP / LOCKED", {
+      .text(0, 38, workshop ? "WORKSHOP / OPEN" : "WORKSHOP / LOCKED", {
         fontFamily: "Consolas",
         fontSize: "8px",
         color: workshop ? "#b0ffe3" : "#c2cbd9",

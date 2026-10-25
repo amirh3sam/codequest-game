@@ -2,6 +2,9 @@ import { expect, test } from "@playwright/test";
 import { chargeInstruction } from "../../src/content/first-program";
 import { openAdventureTool } from "./helpers/adventure-tools";
 import { beginnerState, seedBeginner } from "./helpers/beginner";
+import { emulateManualRotation } from "./helpers/mobile";
+
+test.beforeEach(({ page }) => emulateManualRotation(page));
 
 test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
 test.setTimeout(150_000);
@@ -14,7 +17,10 @@ for (const lang of ["javascript", "java"] as const) {
     const run = page.getByRole("button", { name: "Test my rescue code", exact: true });
     await run.tap();
     await expect(run).toBeEnabled({ timeout: 60_000 });
-    await expect(page.locator(".zero-feedback")).toContainText("Rescue successful");
+    await expect(
+      page.locator(".zero-feedback"),
+      await page.getByLabel("Beginner output", { exact: true }).innerText(),
+    ).toContainText("Rescue successful");
     expect(await page.locator(".zero-shell").evaluate((node) => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
     await expect(page.locator(".zero-scene")).toBeInViewport();
     const label = await page.locator(".zero-clinic small").boundingBox();

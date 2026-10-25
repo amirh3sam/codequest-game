@@ -2,6 +2,12 @@
 
 Each task fits in one session. Tags point to PRD requirements.
 
+## Final release verification (2026-10-25)
+
+- [x] Exercise all 232 E2E scenarios and investigate every failure; retain passing evidence for all original cases after fixes and targeted reruns.
+- [x] Repair legacy onboarding, title-tour targets, phone output visibility, rendered service-label clearance and robot-lab diagnostics; validate across the affected languages and browsers.
+- [x] Recheck lint, TypeScript, all 312 unit tests and the production build; preserve raw browser artifacts outside version control.
+
 ## Visible controls and current project showcase (2026-10-25)
 
 - [x] Keep the tablet Close action prominent at the right edge, with a label, contrast, keyboard hint and a usable phone header.

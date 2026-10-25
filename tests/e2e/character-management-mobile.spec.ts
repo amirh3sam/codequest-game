@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { ADVENTURES_KEY } from "../../src/core/adventures";
 import { createGame } from "../../src/core/state";
+import { emulateManualRotation } from "./helpers/mobile";
+
+test.beforeEach(({ page }) => emulateManualRotation(page));
 
 test.use({ reducedMotion: "reduce", viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 test("all character controls work in portrait; erasing the profile preserves unrelated data", async ({

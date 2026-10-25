@@ -1,8 +1,11 @@
 import { openAdventureTool } from "./helpers/adventure-tools";
+import { emulateManualRotation } from "./helpers/mobile";
 
 declare const Buffer: { from(input: string): Uint8Array };
 
 import { expect, test } from "@playwright/test";
+
+test.beforeEach(({ page }) => emulateManualRotation(page));
 
 test.describe("mobile movement", () => {
   test.use({ viewport: { width: 844, height: 390 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });

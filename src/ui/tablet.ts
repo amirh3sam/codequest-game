@@ -127,8 +127,15 @@ export function openTablet(host: TabletHost): () => void {
   const panes = [editorPane, examplesPane, missionsPane, guidePane, dailyPane, studyPane, projectsPane],
     tabButtons: HTMLButtonElement[] = [];
   let selectedTab = 0;
-  if (host.help)
-    panel.querySelector(".panel-header-actions")?.prepend(button("Tablet help", () => host.help?.(selectedTab)));
+  if (host.help) {
+    const help = button("", () => host.help?.(selectedTab), "button tablet-help-button");
+    help.setAttribute("aria-label", "Tablet help");
+    help.title = "Tablet controls and workspace help";
+    const icon = el("span", "tablet-help-icon", "?");
+    icon.setAttribute("aria-hidden", "true");
+    help.append(icon, el("span", "tablet-help-label", "Tablet help"));
+    panel.querySelector(".panel-header-actions")?.prepend(help);
+  }
   const select = (index: number, focus = false) => {
     selectedTab = index;
     for (const [i, pane] of panes.entries()) {

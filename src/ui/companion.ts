@@ -4,6 +4,7 @@ import type { Lang, RunResult } from "../runners/types";
 import { beginnerHint } from "./debug-guidance";
 import { button, el } from "./dom";
 import "./first-program.css";
+import "./companion.css";
 
 export function openCompanion(host: {
   lang: Lang;
@@ -18,6 +19,7 @@ export function openCompanion(host: {
 }): () => void {
   const panel = host.panel(),
     c = structuredClone(host.companion);
+  panel.classList.add("companion-panel");
   let alive = true,
     busy = false,
     verified: number[] | null = null;
@@ -32,7 +34,7 @@ export function openCompanion(host: {
     summary = el("p", "zero-goal", `${c.trips} completed routes · Current district: ${host.district}`);
   if (c.trip && c.trip.next < 3)
     summary.textContent += ` · Saved route ${c.trip.stops.join(" → ")}: ${c.trip.next}/3 delivered. Return to its district to resume.`;
-  const code = el("textarea", "zero-editor");
+  const code = el("textarea", "zero-code");
   code.setAttribute("aria-label", "Delivery program");
   code.spellcheck = false;
   code.value = c.draft || deliveryExample(host.lang);
@@ -60,13 +62,15 @@ export function openCompanion(host: {
     verified = null;
     deploy.disabled = true;
     code.disabled = run.disabled = true;
+    for (const b of examples.querySelectorAll<HTMLButtonElement>("button")) b.disabled = true;
     persist();
     output.textContent = "Running your program…";
     try {
       const result = await host.run(code.value);
       if (!alive) return;
-      output.textContent = result.stdout || result.stderr || "(No output)";
       const error = executionError(result);
+      output.textContent = [result.stdout, result.stderr, error?.message].filter(Boolean).join("\n") || "(No output)";
+      output.dataset.state = error ? "error" : "ready";
       if (error) {
         status.textContent = beginnerHint(error.message, host.lang);
         return;
@@ -83,6 +87,7 @@ export function openCompanion(host: {
       if (alive) {
         busy = false;
         code.disabled = run.disabled = false;
+        for (const b of examples.querySelectorAll<HTMLButtonElement>("button")) b.disabled = false;
       }
     }
   }
@@ -109,13 +114,14 @@ export function openCompanion(host: {
     c.enabled = enabled.checked;
     persist();
   });
+  const actions = el("div", "actions");
+  actions.append(run, deploy);
   panel.append(
     summary,
     label,
     examples,
     code,
-    run,
-    deploy,
+    actions,
     status,
     output,
     el(

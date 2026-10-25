@@ -20,7 +20,9 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
       await expect(b).toBeEnabled({ timeout: 60000 });
     };
     await run();
-    await expect(page.getByLabel("Delivery output")).toContainText("1\n2\n3");
+    await expect(page.getByLabel("Delivery output"), await page.locator(".feedback").innerText()).toContainText(
+      "1\n2\n3",
+    );
     await page.getByRole("button", { name: "Load delivery list", exact: true }).click();
     await expect(page.getByRole("button", { name: "Deploy route in city", exact: true })).toBeDisabled();
     await run();
@@ -57,6 +59,16 @@ for (const lang of ["javascript", "typescript", "python", "java"] as const) {
     );
     expect(state.journey.companion.trip.stops).toEqual([2, 1, 3]);
     expect(state.areas.variables.solved).toEqual([]);
+    const invalid = {
+      javascript: "const = ;",
+      typescript: "const = ;",
+      python: "def broken(:",
+      java: "public class Main { public static void main(String[] args) { int = ; } }",
+    };
+    await page.getByLabel("Delivery program").fill(invalid[lang]);
+    await run();
+    await expect(page.getByLabel("Delivery output")).toContainText(/unexpected|expected|syntax|error|illegal/i);
+    await expect(page.getByRole("button", { name: "Deploy route in city", exact: true })).toBeDisabled();
     expect(errors).toEqual([]);
   });
 }

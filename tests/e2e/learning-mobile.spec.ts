@@ -3,6 +3,9 @@ import { REWARD_IDS } from "../../src/core/developer-room";
 import { reviewLesson } from "../../src/core/learning-review";
 import { createGame } from "../../src/core/state";
 import { openAdventureTool } from "./helpers/adventure-tools";
+import { emulateManualRotation } from "./helpers/mobile";
+
+test.beforeEach(({ page }) => emulateManualRotation(page));
 
 test.use({ reducedMotion: "reduce" });
 test("phone arcade creation runs code, saves a game and uses touch controls after rotation", async ({ page }, info) => {

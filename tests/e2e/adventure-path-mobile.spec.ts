@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { openAdventureTool } from "./helpers/adventure-tools";
+import { emulateManualRotation } from "./helpers/mobile";
+
+test.beforeEach(({ page }) => emulateManualRotation(page));
 
 test.use({
   storageState: { cookies: [], origins: [] },

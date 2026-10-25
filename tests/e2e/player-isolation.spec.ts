@@ -19,6 +19,7 @@ test("two players opening the same link retain separate characters, missions and
       await page.goto("/");
       await page.getByRole("button", { name: hero, exact: true }).click();
       await page.getByRole("textbox", { name: "Developer name", exact: true }).fill(name);
+      await page.getByLabel("How would you like to play?").selectOption("free");
       await page.getByRole("button", { name: "Start adventure", exact: true }).click();
       await page.evaluate(() =>
         (window as unknown as { __codequest: { game: Phaser.Game } }).__codequest.game.loop.sleep(),

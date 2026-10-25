@@ -1,5 +1,8 @@
 import { expect, type Page, test } from "@playwright/test";
 import type { Lang } from "../../src/runners/types";
+import { emulateManualRotation } from "./helpers/mobile";
+
+test.beforeEach(({ page }) => emulateManualRotation(page));
 
 const CODE: Record<Lang, string> = {
   javascript: 'console.log("Mobile run OK");',

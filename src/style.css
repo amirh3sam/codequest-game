@@ -1196,25 +1196,30 @@ small {
   background: #2b617d;
   box-shadow: 0 0 0 3px #70dcff22;
 }
+.tablet-help-icon {
+  display: none;
+  font: 700 18px monospace;
+}
 @media (max-width: 600px) {
   .tablet-shell .panel-heading {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px;
   }
   .tablet-shell .panel-heading > h2 {
-    grid-area: 1 / 1;
+    font-size: 18px;
     overflow-wrap: normal;
   }
   .tablet-shell .panel-header-actions {
-    display: contents;
+    gap: 8px;
   }
-  .tablet-shell .close-button {
-    grid-area: 1 / 2;
+  .tablet-shell .tablet-help-label {
+    display: none;
   }
-  .tablet-shell .panel-header-actions > .button {
-    grid-row: 2;
-    justify-self: start;
+  .tablet-shell .tablet-help-icon {
+    display: inline;
+  }
+  .tablet-shell .tablet-help-button {
+    width: 44px;
+    padding: 8px;
   }
 }
 .accessibility-setting {
