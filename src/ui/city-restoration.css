@@ -1,0 +1,31 @@
+.city-reaction {
+  padding: 14px 18px;
+  border-left: 3px solid #74dac7;
+  background: #0b2738;
+  border-radius: 4px 12px 12px 4px;
+  color: #cff6ec;
+  line-height: 1.6;
+}
+.city-restoration-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 16px;
+}
+.city-restoration-grid .adventure-hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+.city-restoration-grid .adventure-hub-card .feedback {
+  flex: 1;
+}
+.city-restoration-grid [data-service="workshop"] {
+  border-top: 3px solid #8fe8c2;
+}
+.city-restoration-grid [data-service="tram"] {
+  border-top: 3px solid #e9bf80;
+}
+.city-restoration-grid [data-service="network"] {
+  border-top: 3px solid #b9a4fb;
+}

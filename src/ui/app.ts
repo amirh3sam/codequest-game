@@ -21,6 +21,7 @@ import { ADVENTURES_KEY, loadAdventures, saveAdventure } from "../core/adventure
 import type { GameDesign } from "../core/arcade-creation";
 import { makeAdventureBackup, parseAdventureBackup } from "../core/backup";
 import { type BeginnerProgress, createBeginnerProgress } from "../core/beginner";
+import { cityReaction, restoreService, SERVICES, serviceRequirement } from "../core/city-restoration";
 import { checkpoint, deliveryExample } from "../core/companion";
 import { DRONE_TASK_ID, isDroneRepaired, readBatteryOutput } from "../core/drone-mission";
 import { hubStage, restoreHubSubsystem } from "../core/finale";
@@ -65,6 +66,7 @@ import { button, el } from "./dom";
 import { batteryCard, openDroneLesson } from "./drone-lesson";
 import { openFirstProgram } from "./first-program";
 import { openGridGame } from "./grid-game";
+import "./city-restoration.css";
 import { openGuidedTour } from "./guided-tour";
 import { openHubFinale } from "./hub-finale";
 import { openLightingConsole } from "./lighting-console";
@@ -1175,6 +1177,9 @@ export class GameApp {
     gameAudio.play("open");
     if (id === "courier") this.mission();
     else if (id === "companion") this.companionLab();
+    else if (id === "restoration") this.cityRestoration();
+    else if (id === "restored-tram") this.worldMap();
+    else if (id === "restored-workshop") this.workshop();
     else if (id === "level-portal") this.worldMap();
     else if (id === "discovery-beacon") this.communityBeacon();
     else if (id === "lesson") this.lesson();
@@ -1281,6 +1286,7 @@ export class GameApp {
         "A stranded drone. A city lane waiting for your code.",
       );
       panel.classList.add("drone-lesson");
+      panel.append(el("p", "city-reaction", `${this.courierName()}: ${cityReaction(this.state)}`));
       const portrait = el("div", "courier-intro");
       portrait.append(
         this.icon(this.state.hero.kind === "boy" ? "heroGirl" : "heroBoy", true),
@@ -1299,7 +1305,11 @@ export class GameApp {
     openDroneLesson({
       lang: this.lang,
       courierName: this.courierName(),
-      panel: (title, subtitle, wide) => this.panel(title, subtitle, wide),
+      panel: (title, subtitle, wide) => {
+        const panel = this.panel(title, subtitle, wide);
+        if (this.state) panel.append(el("p", "city-reaction", `${this.courierName()}: ${cityReaction(this.state)}`));
+        return panel;
+      },
       run: (code) => this.practice(code),
       preview: (value) => this.scene.previewDrone(value),
       build: () => {
@@ -2015,11 +2025,97 @@ export class GameApp {
         "Make a playable game by editing its rules in a multi-file project. Save and replay your own creations.",
         () => this.myArcade(),
       ],
+      [
+        "5 · Restore the city",
+        "Reopen your workshop, get the tram running and reconnect the district. Your code leaves a lasting mark.",
+        () => this.cityRestoration(),
+      ],
     ] as const) {
       const card = el("article", "adventure-hub-card");
       card.append(el("h3", "", title), el("p", "", body), button(`Open ${title}`, action, "button primary"));
       panel.append(card);
     }
+  }
+  private cityRestoration(): void {
+    if (!this.state) return;
+    const state = this.state,
+      panel = this.panel(
+        "City restoration",
+        "Your learning changes the world · Restorations are saved with your adventure",
+        true,
+      );
+    panel.classList.add("restoration-panel");
+    const labels = { workshop: "Developer workshop", tram: "City tram", network: "Data exchange" };
+    panel.append(el("p", "city-reaction", `${this.courierName()}: ${cityReaction(state)}`));
+    const cards = el("div", "city-restoration-grid");
+    for (const id of SERVICES) {
+      const restored = state.journey?.restored?.includes(id),
+        requirement = serviceRequirement(state, id),
+        card = el("article", "adventure-hub-card");
+      card.dataset.service = id;
+      const description =
+        id === "workshop"
+          ? "A safe gate reopens the campus workshop. Its door leads to your project-building space."
+          : id === "tram"
+            ? "Your robot delivers replacement parts. The tram runs again and its ticket desk opens unlocked destinations."
+            : "Your workshop and creative project reconnect the exchange. Green data windows and a network beacon come online at the campus.";
+      card.append(
+        el("h3", "", labels[id]),
+        el("p", "", description),
+        el(
+          "p",
+          "feedback",
+          restored ? "Restored · remembered by this adventure" : (requirement ?? "Ready to restore!"),
+        ),
+      );
+      if (!restored) {
+        const action = button(
+          `Restore ${labels[id]}`,
+          () => {
+            if (!this.state) return;
+            const next = restoreService(this.state, id);
+            if (!next) return;
+            const saved = this.updateJourney({ restored: next });
+            gameAudio.play("beacon");
+            this.cityRestoration();
+            if (!saved)
+              this.toast("Restored in this session, but device saving is unavailable. Download an adventure backup.");
+          },
+          "button primary",
+        );
+        action.disabled = !!requirement;
+        card.append(action);
+      } else
+        card.append(
+          button(
+            id === "workshop" ? "Enter workshop" : id === "tram" ? "Choose tram destination" : "Program city lights",
+            () => (id === "workshop" ? this.workshop() : id === "tram" ? this.worldMap() : this.communityBeacon()),
+            "button primary",
+          ),
+        );
+      if (!restored && requirement)
+        card.append(
+          button(
+            id === "workshop" ? "Learn gate conditions" : id === "tram" ? "Program robot deliveries" : "Build a game",
+            () => (id === "workshop" ? this.smartGate() : id === "tram" ? this.companionLab() : this.myArcade()),
+          ),
+        );
+      cards.append(card);
+    }
+    panel.append(cards);
+  }
+  private workshop(): void {
+    if (!this.state?.journey?.restored?.includes("workshop")) {
+      this.cityRestoration();
+      return;
+    }
+    const panel = this.panel("Developer workshop", "Your reopened campus space · Build, test and play", true);
+    panel.append(
+      el("p", "city-reaction", `${this.courierName()}: ${cityReaction(this.state)}`),
+      button("Open developer studio", () => this.tablet(false, undefined, undefined, 6), "button primary"),
+      button("My arcade", () => this.myArcade()),
+      button("City restoration", () => this.cityRestoration()),
+    );
   }
   private creationPreview(design: GameDesign): void {
     if (!this.state) return;

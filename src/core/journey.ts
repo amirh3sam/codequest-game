@@ -1,4 +1,5 @@
 import { type ArcadeCreation, isArcadeCreations } from "./arcade-creation";
+import { type CityService, isRestored } from "./city-restoration";
 import { type CompanionState, isCompanion } from "./companion";
 
 export type LessonProgress = {
@@ -9,7 +10,12 @@ export type LessonProgress = {
   drafts: Record<string, string>;
 };
 export const GATE_STEPS = ["welcome", "predict", "branches", "modify", "challenge"] as const;
-export type JourneyState = { gate?: LessonProgress; companion?: CompanionState; creations?: ArcadeCreation[] };
+export type JourneyState = {
+  gate?: LessonProgress;
+  companion?: CompanionState;
+  creations?: ArcadeCreation[];
+  restored?: CityService[];
+};
 export function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -42,6 +48,7 @@ export function isJourney(value: unknown): value is JourneyState {
     record(value) &&
     (value.gate === undefined || isLesson(value.gate, GATE_STEPS, ["modify", "challenge"])) &&
     (value.companion === undefined || isCompanion(value.companion)) &&
-    (value.creations === undefined || isArcadeCreations(value.creations))
+    (value.creations === undefined || isArcadeCreations(value.creations)) &&
+    (value.restored === undefined || isRestored(value.restored))
   );
 }

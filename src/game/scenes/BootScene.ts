@@ -17,6 +17,7 @@ import { createHeroTextures, type Facing, heroFrame } from "../hero-sprites";
 import { HubSignals } from "../hub-signals";
 import { findWalkingRoute } from "../navigation";
 import { createQuestProps } from "../quest-props";
+import { RestoredCity } from "../restored-city";
 import { RobotCompanion } from "../robot-companion";
 import { TransitPortal } from "../transit-portal";
 
@@ -48,6 +49,7 @@ export class BootScene extends Phaser.Scene {
   private markers: Marker[] = [];
   private droneQuest!: DroneQuest;
   private companion!: RobotCompanion;
+  private restoredCity!: RestoredCity;
   private communityBeacon!: CommunityBeacon;
   private districtLighting!: DistrictLighting;
   private levelPortal!: TransitPortal;
@@ -135,6 +137,9 @@ export class BootScene extends Phaser.Scene {
         );
     });
     this.droneQuest.sync(null);
+    this.restoredCity = new RestoredCity(this, this.reducedMotion, (id) => {
+      if (!this.blocked) this.callbacks?.interact(id);
+    });
     this.companion = new RobotCompanion(
       this,
       () => ({ bounds: districtLayout(this.area?.id).bounds, solids: this.worldSolids() }),
@@ -294,6 +299,7 @@ export class BootScene extends Phaser.Scene {
     this.hero.setVisible(Boolean(state));
     this.shadow.setVisible(Boolean(state));
     if (!state || !area) {
+      this.restoredCity.sync(null);
       this.companion.sync(null, this.position);
       this.districtLighting.sync(null);
       this.cameras.main.stopFollow().centerOn(village.world.width / 2, village.world.height / 2);
@@ -301,6 +307,7 @@ export class BootScene extends Phaser.Scene {
     }
     const changedDistrict = previous?.currentArea !== state.currentArea;
     if (changedDistrict) {
+      this.restoredCity.clear();
       this.world.destroy();
       this.world = buildAdventureWorld(this, this.reducedMotion, area.id);
       const layout = districtLayout(area.id);
@@ -366,6 +373,7 @@ export class BootScene extends Phaser.Scene {
         : { ...entrance };
     this.hero.setPosition(this.position.x, this.position.y + 4).setDepth(this.position.y);
     this.companion.sync(state, this.position);
+    this.restoredCity.sync(state);
     this.shadow.setPosition(this.position.x, this.position.y - 1);
     this.cameras.main.startFollow(this.hero, true, 0.14, 0.14);
     if (changedDistrict) this.cameras.main.centerOn(this.position.x, this.position.y);
@@ -617,6 +625,7 @@ export class BootScene extends Phaser.Scene {
   syncJourney(state: GameState): void {
     this.state = state;
     this.companion.sync(state, this.position);
+    this.restoredCity.sync(state);
   }
   update(time: number, delta: number): void {
     if (this.blocked || !this.state || !this.area || document.activeElement?.matches("input, textarea, select")) return;
