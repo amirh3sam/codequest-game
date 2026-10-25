@@ -90,7 +90,9 @@ export function openGuidedTour(host: GuideHost): () => void {
     count,
     button("Open detailed handbook", () => host.done("handbook"), "guide-handbook"),
   );
-  card.append(identity, meter, chooseLabel, fullText, visibleText, reveal, download, controls, links);
+  const body = el("div", "guide-body");
+  body.append(identity, meter, chooseLabel, fullText, visibleText, reveal, download);
+  card.append(body, controls, links);
   root.append(shade, ring, arrow, card);
   const priorFocus = document.activeElement as HTMLElement | null,
     wasInert = host.background.inert;
@@ -199,8 +201,9 @@ export function openGuidedTour(host: GuideHost): () => void {
         const minimum = size.height - visibleText.getBoundingClientRect().height + 40;
         if (available < minimum) card.classList.add("guide-compact");
         size = card.getBoundingClientRect();
-        const compactMinimum = size.height - visibleText.getBoundingClientRect().height + 40;
-        if (available >= compactMinimum) card.style.maxHeight = `${Math.floor(available)}px`;
+        // Keep navigation visible while the caption/header scroll inside the space
+        // beside the real control, even when large touch buttons need more room.
+        card.style.maxHeight = `${Math.max(1, Math.floor(available))}px`;
         size = card.getBoundingClientRect();
         place = guidePlacement(innerWidth, innerHeight, size, focus);
       }

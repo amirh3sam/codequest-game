@@ -73,17 +73,21 @@ export function fileIcon(path: string): HTMLElement {
   );
 }
 
-export function toolIcon(type: "folder" | "export" | "import", open = false): HTMLElement {
+export function toolIcon(type: "folder" | "export" | "import" | "rename" | "delete", open = false): HTMLElement {
   return drawIcon({
     type,
-    color: "#8ddaea",
+    color: type === "delete" ? "#ffb4b4" : "#8ddaea",
     path:
       type === "folder"
         ? open
           ? "M3 8V5h6l2 2h9v3 M3 10h19l-4 10H3z"
           : "M3 5h6l2 2h10v13H3z"
-        : type === "export"
-          ? "M12 3v12 M7 10l5 5 5-5 M4 15v6h16v-6"
-          : "M12 16V4 M7 9l5-5 5 5 M4 15v6h16v-6",
+        : type === "rename"
+          ? "M4 16v4h4L20 8l-4-4z M14 6l4 4"
+          : type === "delete"
+            ? "M4 7h16 M9 7V4h6v3 M6 7l1 14h10l1-14 M10 10v7 M14 10v7"
+            : type === "export"
+              ? "M12 3v12 M7 10l5 5 5-5 M4 15v6h16v-6"
+              : "M12 16V4 M7 9l5-5 5 5 M4 15v6h16v-6",
   });
 }

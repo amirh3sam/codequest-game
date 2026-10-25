@@ -127,7 +127,8 @@ export function openTablet(host: TabletHost): () => void {
   const panes = [editorPane, examplesPane, missionsPane, guidePane, dailyPane, studyPane, projectsPane],
     tabButtons: HTMLButtonElement[] = [];
   let selectedTab = 0;
-  if (host.help) panel.querySelector(".panel-heading")?.append(button("Tablet help", () => host.help?.(selectedTab)));
+  if (host.help)
+    panel.querySelector(".panel-header-actions")?.prepend(button("Tablet help", () => host.help?.(selectedTab)));
   const select = (index: number, focus = false) => {
     selectedTab = index;
     for (const [i, pane] of panes.entries()) {
@@ -321,9 +322,13 @@ export function openTablet(host: TabletHost): () => void {
   const parentPath = (path: string) => path.split("/").slice(0, -1).join("/");
   const entryActions = (path: string, kind: "file" | "folder") => {
     const actions = el("div", "studio-entry-actions");
-    const rename = button("Rename", () => promptRename(path, kind), "studio-entry-action");
+    const rename = button("", () => promptRename(path, kind), "studio-entry-action");
+    rename.append(toolIcon("rename"));
+    rename.title = `Rename ${path}`;
     rename.setAttribute("aria-label", `Rename ${path}`);
-    const remove = button("Delete", () => deleteEntry(path, kind), "studio-entry-action danger");
+    const remove = button("", () => deleteEntry(path, kind), "studio-entry-action danger");
+    remove.append(toolIcon("delete"));
+    remove.title = `Delete ${path}`;
     remove.setAttribute("aria-label", `Delete ${path}`);
     actions.append(rename, remove);
     return actions;

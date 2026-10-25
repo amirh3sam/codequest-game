@@ -317,12 +317,18 @@ export class GameApp {
     if (this.tabletNavigation) {
       panel.classList.add("tablet-shell", "tablet-task-view");
       this.overlay.classList.add("tablet-overlay");
-      head.append(button("Tablet home", () => this.tablet(false)));
     }
     if (this.state) {
-      const close = button("×", () => this.close(), "close-button");
+      const actions = el("div", "panel-header-actions");
+      if (this.tabletNavigation) actions.append(button("Tablet home", () => this.tablet(false)));
+      const close = button("", () => this.close(), "close-button");
+      const icon = el("span", "close-button-icon", "×");
+      icon.setAttribute("aria-hidden", "true");
+      close.append(icon, el("span", "", "Close"));
       close.setAttribute("aria-label", "Close panel");
-      head.append(close);
+      close.title = "Close panel (Esc)";
+      actions.append(close);
+      head.append(actions);
     }
     panel.append(head);
     if (subtitle) panel.append(el("p", "subtitle", subtitle));

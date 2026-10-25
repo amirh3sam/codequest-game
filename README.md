@@ -8,6 +8,8 @@ A 2D adventure game that teaches programming in a modern tech city. Pick **Java,
 
 Open **Menu → My adventure** or **Tablet → Guide → My adventure** to continue. Completed, current and upcoming steps appear in order. Expand **All activities · Free play** to revisit an activity whenever you want:
 
+![The guided adventure welcomes a new player with one clear next action and an ordered learning path](docs/screenshots/guided-adventure.png)
+
 | Adventure | What your code changes |
 | --- | --- |
 | The Smart Gate | Test `if/else`, comparison boundaries and delivery badges against five visitors. |
@@ -31,7 +33,7 @@ Progress saves in this browser profile and survives refreshes. Use **Menu → Sa
 
 ![Logic Junction's skyrail plaza and solid routing-control hub](docs/screenshots/logic-junction.png)
 
-![CodeQuest gameplay: hoodie developer, Kai the courier and coding terminals in the modern tech city](docs/screenshots/tech-city.png)
+![CodeQuest gameplay: hoodie developer, courier and coding terminals in the current tech city](docs/screenshots/current-city.png)
 
 Choose from color-coded JavaScript, Python, TypeScript or Java, then start a personal adventure. The untimed first robot rescue introduces instruction cards, a name variable, battery predictions, a guided value replay and independent repairs with different inputs. Clues and unlimited retries help you practise. All four runtimes execute real code; Java's surrounding class/main method is supplied. Open **Progress** to see mission counts, the next skill and story chapter. **Help & controls → Accessibility & controls** offers larger text, high contrast and remappable movement keys. Practice previews are free; accepted repairs earn progress and change the city.
 
@@ -68,7 +70,7 @@ Coding tasks use a separate mission-console boot animation: the city node and ta
 
 The full-screen tablet has seven tabs: Code, Examples, Missions, Guide, Daily Quest, Study Path and Projects. Explorer and file tabs show colored file-format icons. The editor, Run button and output stay together; drag the handle above Output to resize it, or focus the handle and use arrows/Home/End. Your panel height is remembered. Open local folder, Export project and Import project manage the coding files and their separate backups. Each adventure keeps its own practice work; free practice never spends hearts or awards gems. Press **Esc** to return to the city. The top bar keeps Tablet, World map and Menu handy; Menu holds the other tools, adventure backups, sound and settings.
 
-![The in-game tablet showing practice code and its real output together](docs/screenshots/developer-tablet.png)
+![The current tablet with a visible Close button, project files, game rules and actual output together](docs/screenshots/coding-workspace.png)
 
 ![Writing and running the drone repair with real output and a full battery](docs/screenshots/code-repair.png)
 

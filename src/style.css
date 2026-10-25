@@ -27,6 +27,14 @@ textarea {
 button {
   cursor: var(--cursor-action);
 }
+:where(#ui button) {
+  padding: 9px 13px;
+  border: 1px solid #648eb966;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #253e60, #1b304e);
+  color: #e2edff;
+  line-height: 1.4;
+}
 button:disabled {
   cursor: default;
   opacity: 0.48;
@@ -768,6 +776,16 @@ summary {
   justify-content: space-between;
   gap: 20px;
 }
+.panel-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 100%;
+  margin-left: auto;
+  flex-shrink: 0;
+}
 h2 {
   margin: 0;
   color: #edf6ff;
@@ -775,6 +793,11 @@ h2 {
   letter-spacing: -0.5px;
   font-family: "Segoe UI", system-ui, serif;
   font-weight: 400;
+}
+.panel-heading > h2 {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 h3 {
   color: #edf6ff;
@@ -996,7 +1019,8 @@ h3 {
 }
 .button:hover:not(:disabled),
 .task-row:hover:not(:disabled) {
-  background: #294b39;
+  border-color: #8ecce8;
+  background: #2b4f6d;
 }
 .choice:hover {
   background: linear-gradient(140deg, color-mix(in srgb, var(--language-accent) 25%, #172943), #172943);
@@ -1089,6 +1113,7 @@ small {
   flex-shrink: 0;
 }
 .button {
+  min-height: 44px;
   padding: 10px 15px;
   color: #e2edff;
   border: 1px solid #648eb94d;
@@ -1100,6 +1125,10 @@ small {
   box-shadow:
     inset 0 1px #ffffff08,
     0 2px 3px #0001;
+}
+.panel > .button {
+  margin-top: 12px;
+  margin-right: 10px;
 }
 .primary {
   background: linear-gradient(180deg, #83e6ff, #3dbbdf);
@@ -1139,12 +1168,54 @@ small {
   font-size: 13px;
 }
 .close-button {
-  background: transparent;
-  color: #9eb29f;
-  border: 0;
-  font-size: 30px;
-  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 94px;
+  min-height: 44px;
+  flex-shrink: 0;
+  padding: 8px 13px;
+  border: 1px solid #8edcf3;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #224c65, #163349);
+  color: #f1fbff;
+  font-size: 13px;
+  font-weight: 700;
   line-height: 1;
+  box-shadow:
+    inset 0 1px #ffffff1a,
+    0 3px 12px #0004;
+}
+.close-button-icon {
+  font-size: 27px;
+  font-weight: 400;
+}
+.close-button:hover:not(:disabled) {
+  border-color: #c5f5ff;
+  background: #2b617d;
+  box-shadow: 0 0 0 3px #70dcff22;
+}
+@media (max-width: 600px) {
+  .tablet-shell .panel-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+  .tablet-shell .panel-heading > h2 {
+    grid-area: 1 / 1;
+    overflow-wrap: normal;
+  }
+  .tablet-shell .panel-header-actions {
+    display: contents;
+  }
+  .tablet-shell .close-button {
+    grid-area: 1 / 2;
+  }
+  .tablet-shell .panel-header-actions > .button {
+    grid-row: 2;
+    justify-self: start;
+  }
 }
 .accessibility-setting {
   display: flex;
@@ -1821,7 +1892,7 @@ small {
     display: none;
   }
   .hud-actions {
-    gap: 4px;
+    gap: 8px;
   }
   .objective {
     top: 80px;
@@ -2310,7 +2381,7 @@ small {
 .studio-file-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 10px;
   margin: 10px 0;
 }
 .studio-folder-target {
@@ -2379,7 +2450,7 @@ small {
 .studio-entry-actions {
   display: flex;
   flex: 0 0 auto;
-  gap: 2px;
+  gap: 8px;
   opacity: 0;
 }
 .studio-entry-row:hover .studio-entry-actions,
@@ -2392,11 +2463,16 @@ small {
   }
 }
 .studio-entry-action {
-  min-height: 24px;
-  padding: 2px 4px;
-  border: 0;
-  color: #9bb6c8;
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 5px;
+  border: 1px solid #4b718a;
+  border-radius: 6px;
+  color: #c3deeb;
+  background: #183447;
   font: 9px monospace;
 }
 .studio-entry-action:hover {
@@ -2406,6 +2482,12 @@ small {
 .studio-entry-action.danger:hover {
   color: #ff9b9b;
   background: #a8323228;
+}
+@media (pointer: coarse) {
+  .studio-entry-action {
+    min-width: 44px;
+    min-height: 44px;
+  }
 }
 .studio-file {
   width: 100%;
@@ -2661,7 +2743,7 @@ small {
 .studio-project-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 10px;
   margin-left: auto;
 }
 .studio-project-action {
@@ -2669,7 +2751,7 @@ small {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 34px;
+  min-height: 44px;
   padding: 6px 9px;
   border: 1px solid #5684a957;
   border-radius: 7px;
@@ -2760,7 +2842,7 @@ small {
 .study-topic-nav {
   display: grid;
   align-content: start;
-  gap: 4px;
+  gap: 8px;
   overflow: auto;
   padding-right: 5px;
 }
@@ -3768,7 +3850,7 @@ small {
     padding: 6px 8px;
   }
   .studio-toolbar .button {
-    min-height: 36px;
+    min-height: 44px;
     padding: 8px 10px;
     font-size: 11px;
     white-space: nowrap;
@@ -3866,7 +3948,7 @@ small {
 .lighting-presets {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 10px;
   margin: 18px 0;
 }
 .lighting-color-example::before {

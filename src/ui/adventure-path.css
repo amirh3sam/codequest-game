@@ -200,7 +200,7 @@
 .adventure-menu-utilities {
   display: flex;
   flex-wrap: wrap;
-  gap: 9px;
+  gap: 12px;
   margin-top: 16px;
 }
 .adventure-help-grid {
@@ -209,17 +209,28 @@
   grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
 }
 .adventure-help-grid article {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
   padding: 16px;
   border: 1px solid #496780;
   border-radius: 12px;
   background: #11273d;
 }
 .adventure-help-grid h3 {
-  margin-top: 0;
+  margin: 0;
 }
 .adventure-help-grid p {
+  margin: 0 0 4px;
   line-height: 1.6;
   color: #c9dbea;
+}
+.adventure-help-grid .button {
+  width: 100%;
+  white-space: normal;
+  min-height: 48px;
+  text-align: left;
 }
 .studio-path-goal {
   border: 1px solid #8bdac5;

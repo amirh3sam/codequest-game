@@ -50,7 +50,7 @@
   flex-direction: column;
   width: min(370px, calc(100vw - 24px));
   max-height: calc(100dvh - 24px);
-  overflow: auto;
+  overflow: hidden;
   padding: 20px;
   box-sizing: border-box;
   border: 1px solid var(--guide-color);
@@ -67,9 +67,21 @@
 .guide-card > * {
   flex-shrink: 0;
 }
+.guide-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 3px;
+  overscroll-behavior: contain;
+}
+.guide-body > * {
+  flex-shrink: 0;
+}
 .guide-identity {
   display: grid;
-  grid-template-columns: 82px minmax(0, 1fr) 22px;
+  grid-template-columns: 82px minmax(0, 1fr) 44px;
   align-items: center;
   gap: 10px;
   min-height: 94px;
@@ -98,9 +110,12 @@
   color: #eff8ff;
 }
 .guide-close {
-  border: 0;
-  background: transparent;
-  color: #b2cbd9;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #82cce5;
+  border-radius: 9px;
+  background: #183b52;
+  color: #effaff;
   font-size: 24px;
   cursor: var(--cursor-action);
   align-self: start;
@@ -152,14 +167,14 @@
 }
 .guide-text-toggle,
 .guide-handbook {
-  border: 0;
-  background: transparent;
+  border: 1px solid #54728d;
+  border-radius: 8px;
+  background: #12293b;
   color: #a8d6e6;
   font: inherit;
   font-size: 11px;
-  padding: 6px 0;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  padding: 8px 10px;
+  min-height: 44px;
   cursor: var(--cursor-action);
 }
 .guide-text-toggle:disabled {
@@ -169,13 +184,13 @@
 }
 .guide-controls {
   display: flex;
-  gap: 7px;
+  gap: 10px;
   margin-top: 10px;
 }
 .guide-controls .button {
   padding: 10px 12px;
   font-size: 12px;
-  min-height: 42px;
+  min-height: 44px;
   flex: 1;
 }
 .guide-links {
@@ -211,7 +226,7 @@
   display: none;
 }
 @media (max-width: 699px) {
-  .guide-tour-open .panel:has(.menu-actions)::after {
+  .guide-tour-open .panel:has(:is(.menu-actions, .adventure-menu-primary))::after {
     content: "";
     display: block;
     height: min(55dvh, 440px);
@@ -241,7 +256,7 @@
   }
   .guide-identity {
     min-height: 50px;
-    grid-template-columns: 48px minmax(0, 1fr) 22px;
+    grid-template-columns: 48px minmax(0, 1fr) 44px;
   }
   .guide-avatar {
     width: 48px;
@@ -279,7 +294,7 @@
   padding: 14px 16px;
 }
 .guide-compact .guide-identity {
-  grid-template-columns: 52px minmax(0, 1fr) 22px;
+  grid-template-columns: 52px minmax(0, 1fr) 44px;
   min-height: 61px;
 }
 .guide-compact .guide-avatar {

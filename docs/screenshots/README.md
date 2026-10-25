@@ -3,6 +3,23 @@
 Captured from the running CodeQuest app in Chromium at 1440 × 900. These show the
 real game and working code, rather than concept art or interface mockups.
 
+The current GitHub/profile showcase uses six fresh 1440 × 1000 captures:
+
+- `guided-adventure.png`: mentor welcome, one next step and ordered learning progress.
+- `current-city.png`: the actual starting city, developer, courier and solid terminals.
+- `robot-rescue.png`: a named robot with a successful real-code variable lesson.
+- `coding-workspace.png`: GameRules/Main files, real output and the prominent right-aligned Close control.
+- `created-game.png`: the saved Byte Run design produced by the code in the workspace.
+- `tablet-cinematic.png`: the live illustrated 2D wrist-tablet opening.
+
+Run `node scripts/capture-showcase.mjs` with a preview on `http://localhost:4317`,
+or set `CODEQUEST_SCREENSHOT_URL`. It uses isolated desktop/phone browser saves,
+checks styled action sizes and spacing across menus, and records phone layout
+checks under ignored test output. The captures use the real interface and workers;
+they do not change any user's saves. The profile presents them in three rows of two.
+
+Older feature captures below remain available:
+
 - `tech-city.png`: Variable District, a developer, city objects and coding terminals.
 - `drone-lesson.png`: a real prediction example printing 5 and updating the battery.
 - `code-repair.png`: a learner's repair printing 12 in the actual editor.

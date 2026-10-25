@@ -2,6 +2,13 @@
 
 Each task fits in one session. Tags point to PRD requirements.
 
+## Visible controls and current project showcase (2026-10-25)
+
+- [x] Keep the tablet Close action prominent at the right edge, with a label, contrast, keyboard hint and a usable phone header.
+- [x] Give shared buttons consistent styling, spacing and touch sizes; separate Help actions and improve editor, lesson, tour and save controls.
+- [x] Preserve visible tour navigation and a separate highlighted target on phones as controls grow.
+- [x] Refresh the GitHub profile's CodeQuest showcase with six actual screenshots of the guided path, city, robot lesson, coding workspace, built game and wrist-tablet opening.
+
 ## Clear first-time learning path (2026-10-25)
 
 - [x] Default new players to one guided adventure with an automatic welcome, one next action, expected outcomes and an eight-step progress timeline.

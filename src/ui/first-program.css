@@ -29,7 +29,7 @@
 .zero-steps {
   position: relative;
   display: flex;
-  gap: 5px;
+  gap: 8px;
   padding: 12px 0;
   overflow-x: auto;
 }
@@ -390,7 +390,7 @@
   margin: 12px 0;
 }
 .zero-work .button {
-  min-height: 40px;
+  min-height: 44px;
   font-size: 12px;
 }
 .zero-shell .button.primary:hover:not(:disabled) {
@@ -420,13 +420,13 @@
   min-width: 140px;
 }
 .zero-card-action {
-  margin-left: 5px;
+  margin-left: 8px;
   border: 1px solid #729bb45c;
   border-radius: 4px;
   background: #264359;
   color: #d3ecf4;
-  min-width: 28px;
-  min-height: 30px;
+  min-width: 44px;
+  min-height: 44px;
 }
 .zero-editor-label {
   display: block;
