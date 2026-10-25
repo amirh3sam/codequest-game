@@ -41,6 +41,10 @@ async function audit(page, label) {
       return r.width > 0 && r.height > 0 && !b.closest("[hidden]") && getComputedStyle(b).visibility !== "hidden";
     });
     const issues = [];
+    for (const name of panel.querySelectorAll(".studio-entry-name")) {
+      if (name.parentElement.getBoundingClientRect().width && name.getBoundingClientRect().width < 12)
+        issues.push(`${name.textContent.trim()}: filename crowded by controls`);
+    }
     for (const b of nodes) {
       const r = b.getBoundingClientRect(),
         css = getComputedStyle(b);
