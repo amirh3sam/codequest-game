@@ -1,6 +1,17 @@
-# CodeQuest
+<p align="center">
+  <img src="assets/banner.svg" alt="CodeQuest. A browser coding adventure in a tech city, teaching Java, JavaScript, TypeScript and Python." width="100%">
+</p>
 
-**[Play CodeQuest](https://codequest-game-inky.vercel.app/)** · [Public source](https://github.com/amirh3sam/codequest-game)
+<p align="center">
+  <a href="https://codequest-game-inky.vercel.app/"><img alt="Play now" src="https://img.shields.io/badge/play-now-3fe0c5?style=flat-square&labelColor=0a0e14"></a> <img alt="23 districts" src="https://img.shields.io/badge/districts-23-3fe0c5?style=flat-square&labelColor=0a0e14"> <img alt="4 languages" src="https://img.shields.io/badge/languages-Java%20%C2%B7%20JS%20%C2%B7%20TS%20%C2%B7%20Python-a98bff?style=flat-square&labelColor=0a0e14"> <img alt="Runs in the browser" src="https://img.shields.io/badge/runs%20in-your%20browser-a98bff?style=flat-square&labelColor=0a0e14"> <img alt="No account needed" src="https://img.shields.io/badge/account-not%20needed-f5c451?style=flat-square&labelColor=0a0e14"> <a href="https://github.com/amirh3sam/codequest-game/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/amirh3sam/codequest-game?style=flat-square&labelColor=0a0e14&color=f5c451"></a>
+</p>
+
+<p align="center">
+  <a href="https://codequest-game-inky.vercel.app/"><b>Play CodeQuest</b></a> ·
+  <a href="#run-it-locally">Run it locally</a> ·
+  <a href="#develop">Develop</a> ·
+  <a href="#docs">Docs</a>
+</p>
 
 A 2D adventure game that teaches programming in a modern tech city. Pick **Java, JavaScript, TypeScript or Python**, choose a hoodie developer, and help your courier repair the city. Explore 23 districts, each with eight coding tasks and a boss. Your code runs in the browser, with no account.
 
@@ -98,3 +109,9 @@ npm run dev          # open http://localhost:5173
 
 ## Docs
 [PRD](docs/PRD.md) · [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md) · [Decisions](docs/DECISIONS.md) · [Progress](docs/PROGRESS.md) · [Credits](docs/CREDITS.md)
+
+## About
+
+Made by **[AmirHesam Tech](https://amirhesamtech.com)**. More tech content on TikTok: [@techwithamirh3sam](https://www.tiktok.com/@techwithamirh3sam).
+
+If you enjoyed it, please give it a star. It helps other people find it.
